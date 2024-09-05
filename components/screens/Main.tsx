@@ -1,11 +1,34 @@
-import { Text, View } from "react-native"
-import { Link } from "expo-router"
+import { View, StyleSheet, Text } from "react-native"
+import HomeCard from "../molecules/HomeCard";
+import SearchInput from "../organisms/SearchInput";
 
 export default function Main() {
   return (
-    <View>
-        <Text style={{color: 'white'}}>Main</Text>
-        <Link href="/login">Login</Link>
-    </View>
+    <View style={styles.content}>
+        <HomeCard
+          text="Peliculas"
+          href="/listItems"
+          color="red"
+        />
+        <HomeCard
+          text="Pokémon"
+          href="/login"
+          color="green"
+        />
+        <HomeCard
+          text="Video Juegos"
+          href="/login"
+          color="blue"
+        />
+      </View>
   )
 }
+
+const styles = StyleSheet.create({
+  content: {
+    flexDirection: 'column',
+    justifyContent: 'space-evenly',
+    alignContent: 'center',
+    height: '90%'
+  }
+})
