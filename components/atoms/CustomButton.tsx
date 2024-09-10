@@ -1,14 +1,32 @@
-import { Pressable } from "react-native"
+import { Pressable, Text, StyleSheet } from "react-native";
+import { useFonts } from 'expo-font';
 
 type CustomButtonProps = {
-    text: string,
-    customFun: () => void
+  text: string,
+  customFun: () => void;
 }
 
-export default function CustomButton( { text, customFun }: CustomButtonProps) {
+export const CustomButton = ({ text, customFun }: CustomButtonProps) => {
   return (
-    <Pressable onPress={customFun}>
-        { text }
+    <Pressable style={styles.buttonLogin} onPress={customFun}>
+      <Text style={styles.textStyle}>{text}</Text>
     </Pressable>
-  )
+  );
 }
+
+const styles = StyleSheet.create({
+  buttonLogin: {
+    width: 187,
+    height: 46,
+    elevation: 5,
+    backgroundColor:'#4894FE',
+    borderRadius:10,
+    justifyContent:'center',
+    alignItems:'center',
+    },
+    textStyle:{
+      color:'#FFFFFF',
+      fontFamily:'poppins-regular',
+      fontSize:16
+    }
+  })
