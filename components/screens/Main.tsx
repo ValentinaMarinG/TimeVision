@@ -17,7 +17,7 @@ export default function Main() {
         />
         <HomeCard
           text="Video Juegos"
-          href="/login"
+          href="/home"
           color="blue"
         />
       </View>
