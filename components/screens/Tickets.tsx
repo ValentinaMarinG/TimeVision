@@ -2,13 +2,13 @@ import { View, Text, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import BottomBar from "../organisms/BottomBar"
 
-export default function Calendar() {
+export default function Tickets() {
     const insets = useSafeAreaInsets();
     
     return (
       <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-        <Text style={styles.text}>Calendar</Text>
-        <BottomBar activeRoute="/calendar"/>
+        <Text style={styles.text}>Tickets</Text>
+        <BottomBar activeRoute="/tickets"/>
       </View>
     );
   }
