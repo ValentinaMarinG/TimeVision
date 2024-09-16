@@ -7,12 +7,6 @@ module.exports = {
   ],
   theme: {
     extend: {},
-    colors:{
-      'ColorTitle':'#0D1B34',
-      'ColorInput':'#F5F5F5',
-      'ColorDescriptionText':'#858585',
-      'black': "#0000"
-    }
   },
   plugins: [],
 }

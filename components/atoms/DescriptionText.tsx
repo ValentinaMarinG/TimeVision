@@ -1,18 +1,48 @@
-import { View, StyleSheet, Text } from "react-native"
-import { useFonts } from 'expo-font';
-import * as Tokens from '../tokens';
+import { Text } from "react-native";
+
+import * as Tokens from "../tokens";
 
 export const LoginUserText = () => {
-    
   return (
-    <Text className={`${Tokens.textSizeDescription} text-left color-ColorDescriptionText mt-5`}>Correo empresarial:</Text>
-  )
-}
+    <Text className={`${Tokens.standardFormDescriptionText}`}>
+      Correo empresarial:
+    </Text>
+  );
+};
 
 export const LoginPasswordText = () => {
+  return (
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Contraseña:</Text>
+  );
+};
+
+export const RequestTypeText = () => {
+  return (
+    <Text className={`${Tokens.standardFormDescriptionText}`}>
+      Tipo de solicitud
+    </Text>
+  );
+};
+
+export const RequestTitleText = () => {
+  return (
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Titulo</Text>
+  );
+};
+
+export const RequestDescriptionText = () => {
+  return (
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Descripción</Text>
+  );
+};
+
+export const AccessModal = () => {
+  return (
+    <Text className="text-center text-lg text-[#858585] my-5">
+      ¡Genial! Tu solicitud de acceso fue creada con éxito, tu administrador te
+      brindará acceso pronto.
+    </Text>
+  );
+};
 
 
-return (
-  <Text className={`${Tokens.textSizeDescription} text-left color-ColorDescriptionText`}>Contraseña:</Text>
-)
-}
