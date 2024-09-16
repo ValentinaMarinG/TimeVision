@@ -8,6 +8,7 @@ import { LoginPasswordText } from "../atoms/DescriptionText";
 import { CustomButton } from "../atoms/CustomButton";
 import { SubTitleTextRequest } from "../atoms/SubtitleText";
 import { useRouter } from "expo-router";
+import * as Tokens from '../tokens'
 
 export default function Login() {
   const [user, setUser] = useState("");
@@ -29,30 +30,30 @@ export default function Login() {
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View className="flex-grow mt-[55]">
+          <View className="flex-grow mt-[70]">
             <View className="justify-center items-center mx-5">
               <TitleTextLogin />
-              <MainIcon size={115} source={require("../../assets/LogoGrey.png")} />
+              <MainIcon size={Tokens.logoSizeIcon} source={require("../../assets/LogoGrey.png")} />
               <SubTitleTextLogin />
             </View>
 
-            <View className="items-center">
+            <View className="items-center mt-5">
               <View className="w-72">
                 <LoginUserText />
                 <TextInput
-                  className="h-12 w-full rounded-xl bg-ColorInput mb-5 pl-2"
+                  className={`${Tokens.standardInput}`}
                   onChangeText={setUser}
                 />
                 <LoginPasswordText />
                 <TextInput
-                  className="h-12 w-full rounded-xl bg-ColorInput mb-5 pl-2"
+                  className={`${Tokens.standardInput}`}
                   onChangeText={setPass}
                   secureTextEntry={true}
                 />
               </View>
             </View>
-            <View className="justify-center items-center mx-5">
-              <View className="m-4 items-center justify-between">
+            <View className="justify-center items-center mx-10">
+              <View className="w-full items-center justify-between">
                 <CustomButton text="Ingresa" customFun={handlePress} />
               </View>
               <SubTitleTextRequest />

@@ -5,6 +5,9 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView
 } from "react-native";
 import { useState } from "react";
 import { TitleTextAccess } from "../atoms/TitleText";
@@ -33,51 +36,56 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white w-full">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "android" ? "height" : "padding"}
-        style={{ flex: 1 }}
-      >
-        <View className="flex-1 justify-center items-center">
-          <View className="flex justify-center items-center my-2">
-            <TitleTextAccess />
-            <MainIcon
-              size={Tokens.logoSizeIcon}
-              source={require("../../assets/LogoGrey.png")}
-            />
-            <View className="w-3/4">
-              <SubTitleTextAccess />
-            </View>
-          </View>
-          <View className="w-3/4 m-5">
-            <LoginUserText />
-            <TextInput
-              className={`${Tokens.standardInput}`}
-              onChangeText={setUser}
-            />
-            <View className="my-4 items-center justify-center">
-              <CustomButton text="Realizar solicitud" customFun={handlePress} />
-            </View>
-          </View>
-        </View>
-
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(!modalVisible);
-          }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1 w-full"
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
         >
-          <View className="flex-1 justify-center items-center bg-[#858585] bg-opacity-25">
-            <View className="bg-white p-6 rounded-lg w-3/4 items-center">
-              <AccessModal />
-              <CustomButton text="Salir" customFun={handleModalClose} />
+          <View className="flex-1 justify-center items-center">
+            <View className="flex justify-center items-center my-2">
+              <TitleTextAccess />
+              <MainIcon
+                size={Tokens.logoSizeIcon}
+                source={require("../../assets/LogoGrey.png")}
+              />
+              <View className="w-3/4">
+                <SubTitleTextAccess />
+              </View>
+            </View>
+            <View className="w-3/4 m-5">
+              <LoginUserText />
+              <TextInput
+                className={`${Tokens.standardInput}`}
+                onChangeText={setUser}
+              />
+              <View className="my-4 items-center justify-center">
+                <CustomButton text="Realizar solicitud" customFun={handlePress} />
+              </View>
             </View>
           </View>
-        </Modal>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              setModalVisible(!modalVisible);
+            }}
+          >
+            <View className="flex-1 justify-center items-center bg-[#858585] bg-opacity-25">
+              <View className="bg-white p-6 rounded-lg w-3/4 items-center">
+                <AccessModal />
+                <CustomButton text="Salir" customFun={handleModalClose} />
+              </View>
+            </View>
+          </Modal>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
