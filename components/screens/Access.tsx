@@ -42,7 +42,7 @@ export default function Login() {
           <View className="flex justify-center items-center my-2">
             <TitleTextAccess />
             <MainIcon
-              size={115}
+              size={Tokens.logoSizeIcon}
               source={require("../../assets/LogoGrey.png")}
             />
             <View className="w-3/4">

@@ -31,7 +31,7 @@ export default function Login() {
         <View className="flex-1 justify-center items-center">
           <View className="flex justify-center items-center my-2">
             <TitleTextLogin />
-            <MainIcon size={115} source={require("../../assets/LogoGrey.png")} />
+            <MainIcon size={Tokens.logoSizeIcon} source={require("../../assets/LogoGrey.png")} />
             <SubTitleTextLogin />
           </View>
           <View className="w-3/4 m-5">

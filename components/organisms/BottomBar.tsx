@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
 import { HomeIcon, CalendarIcon, MessageIcon, UserIcon } from "../atoms/Icon";
 import * as Tokens from "../tokens";
@@ -60,37 +60,5 @@ const BottomBar = ({ activeRoute }: BottomBarProps) => (
     </TouchableOpacity>
   </View>
 );
-
-/* const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 10,
-    backgroundColor: "#ffffff",
-    borderTopWidth: 1,
-    borderTopColor: "#dddddd",
-  },
-  button: {
-    padding: 10,
-  },
-  iconWrapper: {
-    alignItems: "center",
-  },
-  iconContainer: {
-    padding: 10,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  activeIcon: {
-    backgroundColor: "rgba(99, 180, 255, 0.1)",
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-}); */
 
 export default BottomBar;

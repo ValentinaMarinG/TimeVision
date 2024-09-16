@@ -1,32 +1,18 @@
-import { useFonts } from "expo-font";
-import { View, StyleSheet, Text } from "react-native";
+import { Text } from "react-native";
+import * as Tokens from '../tokens'
 
 export const TitleTextLogin = () => {
-  return <Text style={styles.welcome}>¡Bienvenido a TimeVision!</Text>;
+  return <Text className={`${Tokens.standardTextTitle}`}>¡Bienvenido a TimeVision!</Text>;
 };
 
 export const TitleTextAccess = () => {
-  return <Text style={styles.welcome}>Solicita acceso a TimeVision</Text>;
+  return <Text className={`${Tokens.standardTextTitle}`}>Solicita acceso a TimeVision</Text>;
 };
 
 export const TitleTextTickets = () => {
-  return <Text style={styles.ticket}>Solicitudes</Text>;
+  return <Text className={`${Tokens.standardTextTitleBold}`}>Solicitudes</Text>;
 };
 
 export const TitleTextTicketsRequest = () => {
-  return <Text style={styles.ticket}>Crear Ticket</Text>;
+  return <Text className={`${Tokens.standardTextTitleBold}`}>Crear Ticket</Text>;
 };
-
-const styles = StyleSheet.create({
-  welcome: {
-    color: "#0D1B34",
-    fontSize: 24,
-    marginBottom: 15,
-  },
-  ticket: {
-    color: "#0D1B34",
-    fontSize: 24,
-    margin: 15,
-    fontWeight: "bold",
-  },
-});

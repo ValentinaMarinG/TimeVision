@@ -1,5 +1,4 @@
-import { Pressable, Text, StyleSheet } from "react-native";
-/* import { useFonts } from 'expo-font'; */
+import { Pressable, Text} from "react-native";
 
 type CustomButtonProps = {
   text: string,
@@ -24,18 +23,3 @@ export const AddButton = ({ text, customFun }: CustomButtonProps) => {
 }
 
 
-/* const styles = StyleSheet.create({
-  buttonLogin: {
-    width: 187,
-    height: 46,
-    elevation: 5,
-    backgroundColor:'#4894FE',
-    borderRadius:10,
-    justifyContent:'center',
-    alignItems:'center',
-    },
-    textStyle:{
-      color:'#FFFFFF',
-      fontSize:16
-    }
-  }) */

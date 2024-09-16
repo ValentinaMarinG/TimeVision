@@ -1,53 +1,36 @@
-import { View, StyleSheet, Text, Alert} from "react-native"
-import { Link, useRouter } from "expo-router"
+import { StyleSheet, Text } from "react-native";
+import { useRouter } from "expo-router";
+import * as Tokens from '../tokens'
 
 export const SubTitleTextLogin = () => {
- 
-    return (
-    <Text style={styles.login}>Inicia sesión para ver tus horarios</Text>
-  )
-}
-
-export const SubTitleTextAccess = () => {
- 
-    return (
-    <Text style={styles.login}>Ingresa tu correo para comenzar a usar TimeVision</Text>
-  )
-}
-
-export const SubTitleTextRequest = () => {
-    const router = useRouter();
-
-    const handlePress = () => {
-        router.push('/access');
-    };
-
-    return (
-    <Text style={styles.login}>
-      ¿No tienes acceso? Solicítalo a tu administrador{" "}
-      <Text style={styles.link} onPress={handlePress}>aquí.</Text>
+  return (
+    <Text className={`${Tokens.standardSubtitleLogin}`}>
+      Inicia sesión para ver tus horarios
     </Text>
   );
-}
+};
 
-export const SubTitleTextTickets = () => {
+export const SubTitleTextAccess = () => {
+  return (
+    <Text className={`${Tokens.standardSubtitleLogin}`}>
+      Ingresa tu correo para comenzar a usar TimeVision
+    </Text>
+  );
+};
+
+export const SubTitleTextRequest = () => {
+  const router = useRouter();
+
+  const handlePress = () => {
+    router.push("/access");
+  };
 
   return (
-  <Text style={styles.login}>No cuenta con solicitudes</Text>
-)
-}
-
-const styles = StyleSheet.create({
-    login: {
-      color:'#8696BB',
-      fontSize: 16,
-      /* fontFamily:'poppins-regular', */
-      marginTop:15,
-      textAlign:'center',
-
-    },
-    link: {
-        color: '#69748D',
-        textDecorationLine: 'underline',
-      },
-  })
+    <Text className={`${Tokens.standardSubtitleLogin}`}>
+      ¿No tienes acceso? Solicítalo a tu administrador{" "}
+      <Text className="text-[#69748D] underline text-center" onPress={handlePress}>
+        aquí.
+      </Text>
+    </Text>
+  );
+};
