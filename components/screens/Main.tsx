@@ -29,6 +29,6 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-evenly',
     alignContent: 'center',
-    height: '90%'
+    height: '90%',
   }
 })
