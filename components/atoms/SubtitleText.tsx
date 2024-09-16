@@ -11,7 +11,7 @@ export const SubTitleTextLogin = () => {
 export const SubTitleTextAccess = () => {
  
     return (
-    <Text style={styles.login}>Ingresa tu correo y comienza a usar TimeVision</Text>
+    <Text style={styles.login}>Ingresa tu correo para comenzar a usar TimeVision</Text>
   )
 }
 
@@ -30,11 +30,18 @@ export const SubTitleTextRequest = () => {
   );
 }
 
+export const SubTitleTextTickets = () => {
+
+  return (
+  <Text style={styles.login}>No cuenta con solicitudes</Text>
+)
+}
+
 const styles = StyleSheet.create({
     login: {
       color:'#8696BB',
       fontSize: 16,
-      fontFamily:'poppins-regular',
+      /* fontFamily:'poppins-regular', */
       marginTop:15,
       textAlign:'center',
 

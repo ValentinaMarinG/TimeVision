@@ -17,7 +17,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 type IconsProps = {
   size: number,
-  color: '#63B4FF' | '#8696BB'
+  color: '#63B4FF' | '#8696BB' | '#B0B0B0'
 }
 
 export const LoginIcon = ({ size, color }: IconsProps) => (
