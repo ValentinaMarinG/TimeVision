@@ -26,7 +26,6 @@ const styles = StyleSheet.create({
     },
     textStyle:{
       color:'#FFFFFF',
-      fontFamily:'poppins-regular',
       fontSize:16
     }
   })

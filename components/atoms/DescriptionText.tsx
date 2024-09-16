@@ -1,10 +1,11 @@
 import { View, StyleSheet, Text } from "react-native"
 import { useFonts } from 'expo-font';
+import * as Tokens from '../tokens';
 
 export const LoginUserText = () => {
     
   return (
-    <Text style={styles.login}>Correo empresarial:</Text>
+    <Text className={`${Tokens.textSizeDescription} text-left color-ColorDescriptionText mt-5`}>Correo empresarial:</Text>
   )
 }
 
@@ -12,16 +13,6 @@ export const LoginPasswordText = () => {
 
 
 return (
-  <Text style={styles.login}>Contraseña:</Text>
+  <Text className={`${Tokens.textSizeDescription} text-left color-ColorDescriptionText`}>Contraseña:</Text>
 )
 }
-
-const styles = StyleSheet.create({
-  login: {
-      color:'#858585',
-      fontSize: 18,
-      fontFamily:'poppins-regular',
-      paddingLeft:15,
-      marginBottom:5
-    }
-  })

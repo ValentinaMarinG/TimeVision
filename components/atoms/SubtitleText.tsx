@@ -34,7 +34,6 @@ const styles = StyleSheet.create({
     login: {
       color:'#8696BB',
       fontSize: 16,
-      fontFamily:'poppins-regular',
       marginTop:15,
       textAlign:'center',
 

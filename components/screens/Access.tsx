@@ -63,7 +63,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     marginBottom:35,
     padding:10,
-    fontFamily:'poppins-regular'
   },
   buttonContainer:{
     margin:15,
