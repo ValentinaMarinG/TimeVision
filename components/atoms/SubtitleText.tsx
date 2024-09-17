@@ -34,3 +34,23 @@ export const SubTitleTextRequest = () => {
     </Text>
   );
 };
+
+export const SubTitleProfileName = () => {
+  return <Text className={`${Tokens.standardSubtitleLogin}`}>Nombre</Text>;
+}
+
+export const SubTitleProfileDocument = () => {
+  return <Text className={`${Tokens.standardSubtitleLogin}`}>Documento</Text>;
+}
+
+export const SubTitleProfileCargo = () => {
+  return <Text className={`${Tokens.standardSubtitleLogin}`}>Cargo</Text>;
+}
+
+export const SubTitleProfileDepartament = () => {
+  return <Text className={`${Tokens.standardSubtitleLogin}`}>Departamento</Text>;
+}
+
+export const SubTitleProfileEmail = () => {
+  return <Text className={`${Tokens.standardSubtitleLogin}`}>Correo</Text>;
+}
