@@ -20,15 +20,16 @@ export default function Login() {
   };
   return (
     <KeyboardAvoidingView
-      className="flex-1"
+      className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{ flexGrow: 1}}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <View className="flex-grow mt-[70]">
+          <View className="flex-grow mt-[90] bg-white">
             <View className="justify-center items-center mx-5">
               <TitleTextLogin />
               <MainIcon size={Tokens.logoSizeIcon} source={require("../../assets/LogoGrey.png")} />

@@ -14,7 +14,7 @@ export default function App() {
         <Stack.Screen
           name="Login" 
           component={Login}
-          options={{ headerShown: false }}
+          options={{ headerShown: true }}
         />
         <Stack.Screen
           name="home" 
@@ -22,7 +22,6 @@ export default function App() {
           options={{
             title: 'Home Screen',
             headerStyle: { backgroundColor: 'black' },
-            headerTintColor: 'white',
           }}
         />
       </Stack>

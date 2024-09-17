@@ -8,12 +8,10 @@ import SearchInput from '../organisms/SearchInput';
 import ShiftsList from '../organisms/ShiftsList';
 
 export default function Home() {
-  const insets = useSafeAreaInsets();
-
   return (
-    <View className={`flex-1 pt-${insets.top} pb-${insets.bottom} px-5`}>
-      <View className="flex-1 justify-between">
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+    <View className="flex-1 w-full justify-between">
+      <View className="flex-1 justify-between px-5 mt-12">
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
           <View className="mb-5">
             <SubTitleTextHome />
             <TitleTextHome />
@@ -37,8 +35,9 @@ export default function Home() {
             </View>
           </View>
         </ScrollView>
-        <BottomBar activeRoute="/home" />
+
       </View>
+      <BottomBar activeRoute="/home" />
     </View>
   );
 }

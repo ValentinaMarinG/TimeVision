@@ -42,9 +42,9 @@ export default function TicketRequest() {
   return (
     <ScrollView className="w-full mt-4" keyboardShouldPersistTaps="handled">
       <View className="w-full justify-center items-center self-center">
-        <View className="w-full flex flex-row border-b border-slate-200">
+        <View className="w-full flex flex-row border-b border-slate-200 mt-5">
           <View className="flex-[0.3]">
-            <Link href={"/tickets"}>
+            <Link href={"/tickets"} className="ml-2">
               <ArrowLeftIcon size={Tokens.standardSizeIcon} color={"#595A69"} />
             </Link>
           </View>
@@ -63,7 +63,7 @@ export default function TicketRequest() {
               save="value"
               placeholder="Seleccionar opción"
               boxStyles={{
-                backgroundColor: "#edf2f7",
+                backgroundColor: "#E5E7EB",
                 borderColor: "#edf2f7",
                 borderRadius: 12
               }}
@@ -72,7 +72,7 @@ export default function TicketRequest() {
                 color: '#8696BB'
               }}
               dropdownStyles={{
-                backgroundColor: "#edf2f7",
+                backgroundColor: "#E5E7EB",
                 borderColor: "#edf2f7"
               }}
               dropdownTextStyles={{

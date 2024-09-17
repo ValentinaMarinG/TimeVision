@@ -10,11 +10,11 @@ export const TitleTextAccess = () => {
 };
 
 export const TitleTextTickets = () => {
-  return <Text className={`${Tokens.standardTextTitleBold}`}>Solicitudes</Text>;
+  return <Text className={`${Tokens.standardTextTitleBold}`}>SOLICITUDES</Text>;
 };
 
 export const TitleTextTicketsRequest = () => {
-  return <Text className={`${Tokens.standardTextTitleBold} text-center`}>Crear Ticket</Text>;
+  return <Text className={`${Tokens.standardTextTitleBold} text-center`}>CREAR TICKET</Text>;
 };
 
 export const TitleTextHome = () => {
@@ -22,6 +22,6 @@ export const TitleTextHome = () => {
 };
 
 export const TitleProfile = () => {
-  return <Text className={`${Tokens.standardTextTitle} text-center mb-12`}>Perfil</Text>;
+  return <Text className={`${Tokens.standardTextTitle} text-center mb-12`}>PERFIL</Text>;
 }
 

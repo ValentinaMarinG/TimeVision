@@ -6,6 +6,7 @@ import { SubTitleProfileCargo, SubTitleProfileName, SubTitleProfileDocument, Sub
 import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
 import { useState } from 'react';
+import BottomBar from '../organisms/BottomBar';
 
 export default function Profile() {
   const insets = useSafeAreaInsets();
@@ -104,6 +105,7 @@ export default function Profile() {
           </View>
         </View>
       </Modal>
+      <BottomBar activeRoute="/profile" />
     </ScrollView>
   );
 }
