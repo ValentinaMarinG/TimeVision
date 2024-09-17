@@ -1,25 +1,23 @@
-import { View, TextInput, ScrollView, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from "react-native";
-import { MainIcon } from "../atoms/Icon";
-import { useState } from "react";
-import { TitleTextLogin } from "../atoms/TitleText";
-import { SubTitleTextLogin } from "../atoms/SubtitleText";
-import { LoginUserText } from "../atoms/DescriptionText";
-import { LoginPasswordText } from "../atoms/DescriptionText";
-import { CustomButton } from "../atoms/CustomButton";
-import { SubTitleTextRequest } from "../atoms/SubtitleText";
-import { useRouter } from "expo-router";
-import * as Tokens from '../tokens'
+import React, { useState } from 'react';
+import { View, TextInput, ScrollView, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { MainIcon } from '../atoms/Icon';
+import { TitleTextLogin } from '../atoms/TitleText';
+import { SubTitleTextLogin } from '../atoms/SubtitleText';
+import { LoginUserText, LoginPasswordText } from '../atoms/DescriptionText';
+import { CustomButton } from '../atoms/CustomButton';
+import { SubTitleTextRequest } from '../atoms/SubtitleText';
+import * as Tokens from '../tokens';
+import { useRouter } from 'expo-router';
 
 export default function Login() {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
 
-  const router = useRouter();
+  const router = useRouter();  
 
-  const handlePress = () => {
-    router.push("/home");
+  const handleLogin = () => {
+    router.push('/home');
   };
-
   return (
     <KeyboardAvoidingView
       className="flex-1"
@@ -36,7 +34,6 @@ export default function Login() {
               <MainIcon size={Tokens.logoSizeIcon} source={require("../../assets/LogoGrey.png")} />
               <SubTitleTextLogin />
             </View>
-
             <View className="items-center mt-5">
               <View className="w-72">
                 <LoginUserText />
@@ -54,7 +51,7 @@ export default function Login() {
             </View>
             <View className="justify-center items-center mx-10">
               <View className="w-full items-center justify-between">
-                <CustomButton text="Ingresa" customFun={handlePress} />
+                <CustomButton text="Ingresa" customFun={handleLogin} />
               </View>
               <SubTitleTextRequest />
             </View>

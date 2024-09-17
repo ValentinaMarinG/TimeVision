@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "schema": "proc",
+    "scheme": "proc",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
