@@ -40,6 +40,19 @@ export const UploadButton = ({ text, customFun }: CustomButtonProps) => {
     </Pressable>
   );
 };
+export const ButtonProfile = ({ text, customFun }: CustomButtonProps) => {
+  return (
+    <Pressable 
+      className={`w-44 h-8 bg-gray-100 rounded-lg border border-gray-400 shadow-2xl mb-4`} 
+      onPress={customFun}
+    >
+      <Text className={`text-gray-600 text-sm text-center`}>{text}</Text>
+    </Pressable>
+  );
+};
+
+
+
 
 export const CancelButton = ({ text, customFun }: CustomButtonProps) => {
   return (
