@@ -1,9 +1,9 @@
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import BottomBar from "../organisms/BottomBar";
 import { AddButton } from "../atoms/CustomButton";
 import { useRouter } from "expo-router";
 import { TitleTextTickets } from "../atoms/TitleText";
+import BottomBar from "../organisms/BottomBar"
 
 export default function Tickets() {
   const insets = useSafeAreaInsets();
@@ -22,7 +22,7 @@ export default function Tickets() {
       <View className="absolute bottom-24 right-6">
         <AddButton text="+" customFun={handlePress} />
       </View>
-      <BottomBar activeRoute="/tickets" />
+      <BottomBar activeRoute="/tickets"/>
     </View>
   );
 }
