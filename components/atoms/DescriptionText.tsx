@@ -36,6 +36,19 @@ export const RequestDescriptionText = () => {
   );
 };
 
+export const RequestOtherTypeText = () => {
+  return (
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Especifique el tipo de solicitud</Text>
+  );
+};
+
+export const RequestImageText = () => {
+  return (
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Por favor adjuntar el justificante médico</Text>
+  );
+};
+
+
 export const AccessModal = () => {
   return (
     <Text className="text-center text-lg text-[#858585] my-5">

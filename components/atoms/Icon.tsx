@@ -8,7 +8,7 @@ type IconLogo = {
 
 type IconsProps = {
   size: number;
-  color: "#63B4FF" | "#8696BB" | "#B0B0B0" | "#FFFFFF" | "#858585" | "#FEB052" | "#4894FE";
+  color: "#63B4FF" | "#8696BB" | "#B0B0B0" | "#FFFFFF" | "#858585" | "#FEB052" | "#4894FE" | "#595A69" |"#d9dee0";
 };
 
 export const MainIcon = ({ size, source }: IconLogo) => (
@@ -47,3 +47,14 @@ export const Time = ({ size, color }: IconsProps) => (
   <AntDesign name="clockcircleo" size={size} color={color} />
 );
 
+export const UploadIcon = ({ size, color }: IconsProps) => (
+  <AntDesign name="folder1" size={24} color={color} />
+);
+
+export const ArrowLeftIcon = ({ size, color }: IconsProps) => (
+  <AntDesign name="left" size={size} color={color}  className="absolute top-0 left-0 ml-14" />
+);
+
+export const CloseIcon = ({ size, color }: IconsProps) => (
+  <AntDesign name="closecircleo" size={size} color={color}  className="mb-4 right-0"/>
+);
