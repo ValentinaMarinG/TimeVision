@@ -15,11 +15,11 @@ export default function Tickets() {
   };
 
   return (
-    <View className="flex-1 w-full justify-between" style={{ paddingBottom: insets.bottom }}>
+    <View className="flex-1 w-full mt-4 justify-between" style={{ paddingBottom: insets.bottom }}>
       <View className="justify-center items-center border-b border-slate-200">
         <TitleTextTickets/>
       </View>
-      <View className="absolute bottom-20 right-6">
+      <View className="absolute bottom-24 right-6">
         <AddButton text="+" customFun={handlePress} />
       </View>
       <BottomBar activeRoute="/tickets" />
