@@ -1,14 +1,14 @@
 import { View } from "react-native";
 import { ArrowIcon } from "../atoms/Icon";
 import * as Tokens from "../tokens";
-import ProfilePhoto from "../atoms/ProfilePhoto";
+import  { ProfilePhotoHome } from "../atoms/ProfilePhoto";
 import {CompanyHomeCard, NameHomeCard, ProfileHomeCard} from "../atoms/DescriptionText";
 import { Link} from "expo-router";
 export default function HomeCard() {
   return (
     <View className="bg-cardColor w-full rounded-2xl p-5 ">
         <View className="flex-row items-center">
-        <ProfilePhoto/>
+        <ProfilePhotoHome/>
             <View className="flex-1 justify-between ml-5">
             <NameHomeCard/>
             <ProfileHomeCard/>
