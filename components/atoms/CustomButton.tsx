@@ -1,5 +1,5 @@
 import { Pressable, Text } from "react-native";
-import { CloseIcon, UploadIcon } from "./Icon";
+import { CloseIcon, EditIcon, UploadIcon } from "./Icon";
 import * as Tokens from "../tokens";
 
 type CustomButtonProps = {
@@ -51,9 +51,6 @@ export const ButtonProfile = ({ text, customFun }: CustomButtonProps) => {
   );
 };
 
-
-
-
 export const CancelButton = ({ text, customFun }: CustomButtonProps) => {
   return (
     <Pressable
@@ -64,3 +61,15 @@ export const CancelButton = ({ text, customFun }: CustomButtonProps) => {
     </Pressable>
   );
 };
+
+export const EditProfileButton = ({ text, customFun }: CustomButtonProps) => {
+  return (
+    <Pressable
+      className="w-10 h-10 bg-[#858585] rounded-full justify-center items-center"
+      onPress={customFun}
+    >
+      <EditIcon size={25} color={"#d9dee0"} />
+    </Pressable>
+  );
+};
+

@@ -1,6 +1,6 @@
 import { StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
-import * as Tokens from '../tokens'
+import * as Tokens from "../tokens";
 
 export const SubTitleTextLogin = () => {
   return (
@@ -27,7 +27,10 @@ export const SubTitleTextRequest = () => {
   return (
     <Text className={`${Tokens.standardSubtitleLogin}`}>
       ¿No tienes acceso? Solicítalo a tu administrador{" "}
-      <Text className="text-[#69748D] underline text-center" onPress={handlePress}>
+      <Text
+        className="text-[#69748D] underline text-center"
+        onPress={handlePress}
+      >
         aquí.
       </Text>
     </Text>
@@ -42,38 +45,39 @@ export const SubTitleTextHome = () => {
   );
 };
 
-
 export const ShiftTextHome = () => {
-  return (
-    <Text className={`${Tokens.ShiftsSubtitleHome}`}>
-      Turnos
-    </Text>
-  );
+  return <Text className={`${Tokens.ShiftsSubtitleHome}`}>Turnos</Text>;
 };
 
 export const ShiftDay = () => {
-  return (
-    <Text className={`${Tokens.ShiftsDay}`}>
-      Jueves
-    </Text>
-  );
+  return <Text className={`${Tokens.ShiftsDay}`}>Jueves</Text>;
 };
 export const SubTitleProfileName = () => {
   return <Text className={`${Tokens.standardSubtitleLogin}`}>Nombre</Text>;
-}
+};
 
 export const SubTitleProfileDocument = () => {
   return <Text className={`${Tokens.standardSubtitleLogin}`}>Documento</Text>;
-}
+};
+
+export const SubTitleProfileDocumentType = () => {
+  return <Text className={`${Tokens.standardSubtitleLogin}`}>Tipo de documento</Text>;
+};
+
+export const SubTitleProfileNumeroEmpleado = () => {
+  return <Text className={`${Tokens.standardSubtitleLogin}`}>Código de empleado</Text>;
+};
 
 export const SubTitleProfileCargo = () => {
   return <Text className={`${Tokens.standardSubtitleLogin}`}>Cargo</Text>;
-}
+};
 
 export const SubTitleProfileDepartament = () => {
-  return <Text className={`${Tokens.standardSubtitleLogin}`}>Departamento</Text>;
-}
+  return (
+    <Text className={`${Tokens.standardSubtitleLogin}`}>Departamento</Text>
+  );
+};
 
 export const SubTitleProfileEmail = () => {
   return <Text className={`${Tokens.standardSubtitleLogin}`}>Correo</Text>;
-}
+};

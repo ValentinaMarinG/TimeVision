@@ -58,3 +58,7 @@ export const ArrowLeftIcon = ({ size, color }: IconsProps) => (
 export const CloseIcon = ({ size, color }: IconsProps) => (
   <AntDesign name="closecircleo" size={size} color={color}  className="mb-4 right-0"/>
 );
+
+export const EditIcon = ({ size, color }: IconsProps) => (
+  <AntDesign name="camerao" size={size} color={color} />
+);

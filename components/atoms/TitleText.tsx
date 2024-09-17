@@ -22,6 +22,6 @@ export const TitleTextHome = () => {
 };
 
 export const TitleProfile = () => {
-  return <Text className={`${Tokens.standardTextTitle} text-center mb-12`}>PERFIL</Text>;
+  return <Text className={`${Tokens.standardTextTitleBold}`}>PERFIL</Text>;
 }
 
