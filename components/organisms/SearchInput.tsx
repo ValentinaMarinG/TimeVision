@@ -1,39 +1,12 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput } from 'react-native'
-
-import ConfigIcon from '../atoms/ConfigIcon';
+import React from 'react'
+import { View } from 'react-native'
+import * as Tokens from "../tokens"
+import { Search } from '../atoms/Icon'
+import SearchField from '../molecules/Search'
+import { Link } from 'expo-router'
 
 export default function SearchInput() {
-
-  const [text, setText] = useState('')
-
   return (
-    <View style={styles.header}>
-      <ConfigIcon />
-      <TextInput
-        style={styles.input}
-        onChangeText={setText}
-      />
-    </View>
+        <SearchField/>
   )
 }
-
-const styles = StyleSheet.create({
-  header: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    height: '10%',
-    backgroundColor: 'black'
-  },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-    width: '70%',
-    borderRadius: 50,
-    backgroundColor: 'white'
-  },
-});

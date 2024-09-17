@@ -24,13 +24,37 @@ export const SubTitleTextRequest = () => {
   const handlePress = () => {
     router.push("/access");
   };
-
   return (
     <Text className={`${Tokens.standardSubtitleLogin}`}>
       ¿No tienes acceso? Solicítalo a tu administrador{" "}
       <Text className="text-[#69748D] underline text-center" onPress={handlePress}>
         aquí.
       </Text>
+    </Text>
+  );
+};
+
+export const SubTitleTextHome = () => {
+  return (
+    <Text className={`${Tokens.standardSubtitleHome}`}>
+      ¡Bienvenido a TimeVision!
+    </Text>
+  );
+};
+
+
+export const ShiftTextHome = () => {
+  return (
+    <Text className={`${Tokens.ShiftsSubtitleHome}`}>
+      Turnos
+    </Text>
+  );
+};
+
+export const ShiftDay = () => {
+  return (
+    <Text className={`${Tokens.ShiftsDay}`}>
+      Jueves
     </Text>
   );
 };

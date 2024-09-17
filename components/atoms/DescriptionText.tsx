@@ -45,4 +45,76 @@ export const AccessModal = () => {
   );
 };
 
+export const NameHomeCard = () => {
+  return (
+    <Text className={`${Tokens.nameTextCard}`}>
+      Manuel Castro Duque
+    </Text>
+  );
+};
 
+export const ProfileHomeCard = () => {
+  return (
+    <Text className={`${Tokens.myProfileTextCard}`}>
+      Mi perfil
+    </Text>
+  );
+};
+
+export const CompanyHomeCard = () => {
+  return (
+    <Text className={`${Tokens.companyTextCard}`}>
+      Universidad Autónoma de Manizales
+    </Text>
+  );
+};
+
+export const InputTextHome = () => {
+  return (
+    <Text className={`${Tokens.searchInputHome}`}>
+      Buscar una fecha
+    </Text>
+  );
+};
+
+
+export const ShiftDate = () => {
+  return (
+    <Text className={`${Tokens.standardSubtitleHome}`}>
+      29 de agosto del 2024
+    </Text>
+  );
+};
+
+export const ShiftInText = () => {
+  return (
+    <Text className={`${Tokens.standardShiftInHome}`}>
+      Ingreso
+    </Text>
+  );
+};
+
+export const ShiftInHour = () => {
+  return (
+    <Text className={`${Tokens.standardShiftInHome}`}>
+      6:00 am
+    </Text>
+  );
+};
+
+
+export const ShiftOutText = () => {
+  return (
+    <Text className={`${Tokens.standardShiftOutHome}`}>
+      Salida
+    </Text>
+  );
+};
+
+export const ShiftOutHour = () => {
+  return (
+    <Text className={`${Tokens.standardShiftOutHome}`}>
+      2:00 pm
+    </Text>
+  );
+};

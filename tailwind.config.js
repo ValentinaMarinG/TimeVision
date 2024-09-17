@@ -11,6 +11,12 @@ module.exports = {
         grayText: '#858585',
         blueText: '#8696BB',
         CText: '#595A69',
+        boldText:'#0D1B34',
+        cardColor: '#4894FE',
+        cardColorText: '#FFFFFF',
+        shiftInColor: '#FEB052',
+        shiftOutColor: '#4894FE',
+        backGroundShiftList: '#fafafa'
       }
     },
   },
