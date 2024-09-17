@@ -14,5 +14,5 @@ export const TitleTextTickets = () => {
 };
 
 export const TitleTextTicketsRequest = () => {
-  return <Text className={`${Tokens.standardTextTitleBold}`}>Crear Ticket</Text>;
+  return <Text className={`${Tokens.standardTextTitleBold} text-center`}>Crear Ticket</Text>;
 };

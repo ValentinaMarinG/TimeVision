@@ -9,7 +9,7 @@ type BottomBarProps = {
 };
 
 const BottomBar = ({ activeRoute }: BottomBarProps) => (
-  <View className="w-full h-16 border-t-2 border-slate-100 flex flex-row justify-around items-center bg-white">
+  <View className="w-full h-18 border-t-2 border-slate-100 flex flex-row justify-around items-center bg-white">
     <TouchableOpacity className="p-2.5">
       <Link href={'/home'}>
         <View

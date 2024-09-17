@@ -54,7 +54,7 @@ export default function Login() {
             </View>
             <View className="justify-center items-center mx-10">
               <View className="w-full items-center justify-between">
-                <CustomButton text="Ingresa" customFun={handlePress} />
+                <CustomButton text="Ingresar" customFun={handlePress} />
               </View>
               <SubTitleTextRequest />
             </View>
