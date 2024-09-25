@@ -17,7 +17,31 @@ export default function Login() {
   const router = useRouter();
 
   const handlePress = () => {
-    router.push('/home');
+
+    if (!user || !pass) {
+      Alert.alert('Error', 'Debes ingresar un usuario y una contraseña');
+      return;
+    }
+    
+    /* try {
+      const response = await fetch('http://tu-backend-api.com/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: user, password: pass }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Si las credenciales son correctas, redirige a la pantalla principal
+        router.push('/home');
+      } else {
+        Alert.alert('Error', 'Usuario o contraseña incorrectos');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Hubo un problema al iniciar sesión');
+    } */
   };
 
   return (
