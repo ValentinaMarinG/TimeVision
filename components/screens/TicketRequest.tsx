@@ -81,12 +81,6 @@ export default function TicketRequest() {
               }}
             />
           </View>
-          {selected === "Otro" && (
-            <View className="mt-5">
-              <RequestOtherTypeText />
-              <TextInput className={`${Tokens.standardInput}`} />
-            </View>
-          )}
           <View className="mt-2">
             <RequestTitleText />
             <TextInput className={`${Tokens.standardInput}`} />
