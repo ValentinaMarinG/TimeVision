@@ -1,28 +1,43 @@
-import { View, Text, StyleSheet } from 'react-native'
-import { useSafeAreaInsets } from "react-native-safe-area-context"
-import BottomBar from "../organisms/BottomBar"
+import { View, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BottomBar from "../organisms/BottomBar";
+import { ShiftTextHome, SubTitleTextHome } from '../atoms/SubtitleText';
+import { TitleTextHome } from '../atoms/TitleText';
+import HomeCard from '../organisms/HomeInfo';
+import SearchInput from '../organisms/SearchInput';
+import ShiftsList from '../organisms/ShiftsList';
 
 export default function Home() {
-    const insets = useSafeAreaInsets();
-    
-    return (
-      <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-        <Text style={styles.text}>home</Text>
-        <BottomBar activeRoute="/home"/>
-      </View>
-    );
-  }
+  return (
+    <View className="flex-1 w-full justify-between">
+      <View className="flex-1 justify-between px-5 mt-12">
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+          <View className="mb-5">
+            <SubTitleTextHome />
+            <TitleTextHome />
+          </View>
+          <View className="mb-5">
+            <HomeCard />
+          </View>
+          <View className="mb-5">
+            <SearchInput />
+          </View>
+          <View>
+            <ShiftTextHome />
+            <View className="flex-col">
+              <ShiftsList />
+              <ShiftsList />
+              <ShiftsList />
+              <ShiftsList />
+              <ShiftsList />
+              <ShiftsList />
+              <ShiftsList />
+            </View>
+          </View>
+        </ScrollView>
 
-const styles = StyleSheet.create({
-    container: {
-      width : '100%',
-      flex: 1,
-      justifyContent: 'space-between', 
-    },
-    text: {
-      color: 'black',
-      textAlign: 'center',
-      marginTop: 20,
-      fontSize: 24,
-    },
-  });
+      </View>
+      <BottomBar activeRoute="/home" />
+    </View>
+  );
+}

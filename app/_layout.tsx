@@ -1,22 +1,18 @@
-import { Slot } from "expo-router";
-import { View, StyleSheet } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Stack } from 'expo-router';
 
 export default function Layout() {
   return (
-    <SafeAreaProvider>
-      <View style={styles.container}>
-        <Slot />
-      </View>
-    </SafeAreaProvider>
+    <Stack screenOptions={{
+      headerShown: false,
+      animation: 'none',
+      contentStyle:{backgroundColor:'white'}
+      }}>
+      <Stack.Screen name="index"  />
+      <Stack.Screen name="login"  />
+      <Stack.Screen name="home"  />
+      <Stack.Screen name="calendar"  />
+      <Stack.Screen name="tickets"  />
+      <Stack.Screen name="profile"  />
+    </Stack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 40,
-  },
-});

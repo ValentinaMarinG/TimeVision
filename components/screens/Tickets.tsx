@@ -1,28 +1,30 @@
-import { View, Text, StyleSheet } from 'react-native'
-import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AddButton } from "../atoms/CustomButton";
+import { useRouter } from "expo-router";
+import { TitleTextTickets } from "../atoms/TitleText";
 import BottomBar from "../organisms/BottomBar"
 
 export default function Tickets() {
-    const insets = useSafeAreaInsets();
-    
-    return (
-      <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-        <Text style={styles.text}>Tickets</Text>
-        <BottomBar activeRoute="/tickets"/>
-      </View>
-    );
-  }
+  const insets = useSafeAreaInsets();
 
-const styles = StyleSheet.create({
-    container: {
-      width : '100%',
-      flex: 1,
-      justifyContent: 'space-between', 
-    },
-    text: {
-      color: 'black',
-      textAlign: 'center',
-      marginTop: 20,
-      fontSize: 24,
-    },
-  });
+  const router = useRouter();
+
+  const handlePress = () => {
+    router.push("/ticketrequest");
+  };
+
+  return (
+    <View className="flex-1 w-full mt-9 justify-between " style={{ paddingBottom: insets.bottom }}>
+      <View className="justify-center items-center border-b border-slate-200">
+        <TitleTextTickets/>
+      </View>
+      <View className="absolute bottom-16 right-6">
+        <AddButton text="+" customFun={handlePress} />
+      </View>
+      <BottomBar activeRoute="/tickets"/>
+    </View>
+  );
+}
+
+

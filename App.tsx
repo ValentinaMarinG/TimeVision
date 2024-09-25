@@ -1,24 +1,30 @@
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-
+import { View, Text } from 'react-native';
+import { MainIcon } from './components/atoms/Icon'; 
+import * as Tokens from './components/tokens'; 
 import Login from './components/screens/Login';
+import Home from './components/screens/Home';
 
 export default function App() {
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
       <StatusBar style="auto" />
-      <Login />
+      <Stack>
+        <Stack.Screen
+          name="Login" 
+          component={Login}
+          options={{ headerShown: true }}
+        />
+        <Stack.Screen
+          name="home" 
+          component={Home} 
+          options={{
+            title: 'Home Screen',
+            headerStyle: { backgroundColor: 'black' },
+          }}
+        />
+      </Stack>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height:'100%',
-    width:'100%'
-  }
-});
