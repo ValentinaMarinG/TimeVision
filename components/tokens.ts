@@ -1,8 +1,8 @@
-export const standardInput = 'h-12 w-full rounded-xl bg-gray-200 mb-9 p-2';
+export const standardInput = 'h-12 w-full rounded-xl bg-gray-200 p-2';
 
 export const homeInput = 'w-full rounded-xl bg-gray-200 p-2 flex-row mt-3';
 
-export const standardFormDescriptionText = `text-lg text-grayText mb-2`;
+export const standardFormDescriptionText = `text-lg text-grayText mb-2 mt-5`;
 
 export const searchInputHome = `text-lg text-grayText ml-5`;
 
