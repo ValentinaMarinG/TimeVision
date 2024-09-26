@@ -1,4 +1,4 @@
-export const standardInput = 'h-12 w-full rounded-xl bg-gray-200 mb-9 p-2';
+export const standardInput = 'h-12 w-full rounded-xl bg-gray-200 p-2';
 
 export const homeInput = 'w-full rounded-xl bg-gray-200 p-2 flex-row mt-3';
 

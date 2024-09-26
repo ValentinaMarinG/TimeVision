@@ -36,9 +36,9 @@ export const RequestDescriptionText = () => {
   );
 };
 
-export const RequestOtherTypeText = () => {
+export const RequestDatesText = () => {
   return (
-    <Text className={`${Tokens.standardFormDescriptionText}`}>Especifique el tipo de solicitud</Text>
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Fechas</Text>
   );
 };
 
