@@ -1,5 +1,5 @@
-import Search from "../components/screens/Search"
+import SearchScreen from "../components/screens/Search"
 
 export default function search() {
-  return <Search/>
+  return <SearchScreen/>
 }
