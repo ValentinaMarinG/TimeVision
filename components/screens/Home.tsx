@@ -4,7 +4,7 @@ import BottomBar from "../organisms/BottomBar";
 import { ShiftTextHome, SubTitleTextHome } from '../atoms/SubtitleText';
 import { TitleTextHome } from '../atoms/TitleText';
 import HomeCard from '../organisms/HomeInfo';
-import SearchInput from '../organisms/SearchInput';
+import { SearchInput} from '../organisms/SearchInput';
 import ShiftsList from '../organisms/ShiftsList';
 
 export default function Home() {

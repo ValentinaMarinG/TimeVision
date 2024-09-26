@@ -21,8 +21,11 @@ import * as Tokens from "../tokens";
 import { useState } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ProfilePhotoScreen } from "../atoms/ProfilePhoto";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function Profile() {
+
   const insets = useSafeAreaInsets();
   const [account, SetAccount] = useState({
     name: "Manuel Castro Duque",
@@ -37,7 +40,8 @@ export default function Profile() {
 
   const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('token');
     router.push("/login");
   };
 
