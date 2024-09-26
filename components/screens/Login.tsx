@@ -14,12 +14,17 @@ import {
 import { MainIcon } from "../atoms/Icon";
 import { TitleTextLogin } from "../atoms/TitleText";
 import { SubTitleTextLogin } from "../atoms/SubtitleText";
-import { LoginUserText, LoginPasswordText, AccessModal } from "../atoms/DescriptionText";
+import {
+  LoginUserText,
+  LoginPasswordText,
+  AccessModal,
+} from "../atoms/DescriptionText";
 import { CustomButton } from "../atoms/CustomButton";
 import { SubTitleTextRequest } from "../atoms/SubtitleText";
 import * as Tokens from "../tokens";
 import { useRouter } from "expo-router";
 import { loginRequest } from "../../config/routers";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Login() {
   const [user, setUser] = useState("");
@@ -62,14 +67,16 @@ export default function Login() {
 
     if (valid) {
       const result = await loginRequest(user, pass);
-
-      if (result.success) {
-        router.push("/home");
+      if (result?.success) {
+        const token = await AsyncStorage.getItem("token");
+        console.log(token);
+        if (token) { 
+          router.push("/home");
+         } 
       } else {
-        setLoginError(result.data);
+        setLoginError(result?.data);
       }
     }
-
   };
   return (
     <KeyboardAvoidingView
@@ -120,23 +127,23 @@ export default function Login() {
             </View>
           </View>
           {loginError ? (
-                  <Modal
-                  animationType="fade"
-                  transparent={true}
-                  visible={modalVisible}
-                  onRequestClose={() => {
-                    setModalVisible(!modalVisible);
-                  }}
-                >
-                  <View className="flex-1 justify-center items-center bg-[#858585] bg-opacity-25">
-                    <View className="bg-white p-6 rounded-lg w-3/4 items-center">
-                      <Text> {loginError} </Text>
-                      <CustomButton text="Salir" customFun={handleModalClose} />
-                    </View>
-                  </View>
-                </Modal>
-                ) : null}
-          </ScrollView>
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={modalVisible}
+              onRequestClose={() => {
+                setModalVisible(!modalVisible);
+              }}
+            >
+              <View className="flex-1 justify-center items-center bg-[#858585] bg-opacity-25">
+                <View className="bg-white p-6 rounded-lg w-3/4 items-center">
+                  <Text> {loginError} </Text>
+                  <CustomButton text="Salir" customFun={handleModalClose} />
+                </View>
+              </View>
+            </Modal>
+          ) : null}
+        </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );

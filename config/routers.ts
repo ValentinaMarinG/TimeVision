@@ -1,18 +1,20 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const loginRequest = async (user: string, pass: string) => {
     try {
-      const response = await fetch('xxxxxxxxx', {
+      const response = await fetch('http://192.168.1.75:3001/api/v1/login', {
+        /* para emulador la ip es 10.0.2.2 */
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email: user, password: pass }),
       });
-      
+  
       const data = await response.json();
-      
       if (response.ok) {
-        return { success: true, data };
+        await AsyncStorage.setItem('token', data.access);
+        return { success: true, data };     
       } else {
         switch (response.status) {
           case 400:
@@ -30,7 +32,7 @@ export const loginRequest = async (user: string, pass: string) => {
         }
       }
     } catch (error) {
-      return { success: false, message: "Error de red o servidor. Verifica tu conexión." };
+      console.error('Error al iniciar sesión:', error);
     }
   };
   
