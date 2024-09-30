@@ -1,19 +1,25 @@
-import { View, Text, ScrollView, Pressable, Platform, Alert } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  Platform,
+  Alert,
+  KeyboardAvoidingView,
+  TouchableOpacity,
+} from "react-native";
 import { TitleTextTicketsRequest } from "../atoms/TitleText";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   RequestDescriptionText,
-  RequestImageText,
   RequestDatesText,
   RequestTitleText,
   RequestTypeText,
 } from "../atoms/DescriptionText";
 import { TextInput } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CustomButton } from "../atoms/CustomButton";
 import { Link, useRouter } from "expo-router";
-
 import * as Tokens from "../tokens";
 import ImagesPicker from "../molecules/ImagesPicker";
 import { ArrowLeftIcon } from "../atoms/Icon";
@@ -22,18 +28,17 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
 import { createTicket } from "../../config/routers";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import jwtDecode from "jwt-decode";
+import DatePicker from "react-native-date-picker";
+import { Colors } from "react-native/Libraries/NewAppScreen";
 
 export default function TicketRequest() {
-  const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const [type, setType] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [title, setTitle] = useState<string>("");
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-  const [userId, setUserId] = useState<number>(0);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
   const [typeError, setTypeError] = useState<string>("");
   const [descriptionError, setDescriptionError] = useState<string>("");
@@ -45,6 +50,12 @@ export default function TicketRequest() {
   const [showPicker, setShowPicker] = useState(false);
   const [isStartDateSelected, setIsStartDateSelected] = useState(true);
 
+  const [open, setOpen] = useState(false);
+
+  const handleNavigation = (routeName: string) => {
+    router.push(routeName);
+  };
+
   const toggleDatepicker = () => {
     setShowPicker(!showPicker);
   };
@@ -52,17 +63,18 @@ export default function TicketRequest() {
   const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (event.type === "set" && selectedDate) {
       const currentDate = selectedDate;
+      console.log("fecha seleccionada", currentDate)
       setDate(currentDate);
       if (isStartDateSelected) {
         if (startDate) {
           setTypeError("");
         }
-        setStartDate(format(currentDate, "dd/MM/yyyy"));
+        setStartDate(currentDate);
       } else {
         if (endDateError) {
           setTypeError("");
         }
-        setEndDate(format(currentDate, "dd/MM/yyyy"));
+        setEndDate(currentDate);
       }
       if (Platform.OS === "android") {
         toggleDatepicker();
@@ -72,40 +84,35 @@ export default function TicketRequest() {
     }
   };
 
-  const router = useRouter();
-
   const handlePress = async () => {
-    if (validate()) {
+    if (validations()) {
       const response = await createTicket(
         startDate,
         endDate,
         type,
         title,
-        description,
-        userId
+        description
       );
       if (response.success) {
         router.push("/tickets");
       } else {
-        Alert.alert("Error", response.message); 
+        Alert.alert("Error", response.message);
       }
-      
     }
   };
 
   const data = [
     { key: "1", value: "Incapacidad médica" },
     { key: "2", value: "Enfermedad" },
-    { key: "3", value: "Calamidad doméstica" },
-    { key: "4", value: "Permiso laboral" },
-    { key: "5", value: "Cambio de turno" },
-    { key: "6", value: "Vacaciones" },
-    { key: "7", value: "Licencia" },
-    { key: "8", value: "Otro" },
+    { key: "3", value: "Cambio de turno" },
+    { key: "4", value: "Vacaciones" },
+    { key: "5", value: "Licencia" },
+    { key: "6", value: "Otro" },
   ];
 
-  const validate = () => {
+  const validations = () => {
     let isValid = true;
+    const currentDate = new Date();
 
     if (!type) {
       setTypeError("El tipo de solicitud es obligatorio.");
@@ -131,24 +138,24 @@ export default function TicketRequest() {
     if (!startDate) {
       setStartDateError("La fecha de inicio es obligatoria.");
       isValid = false;
-    } else {
-      setStartDateError("");
     }
 
     if (!endDate) {
       setEndDateError("La fecha final es obligatoria.");
       isValid = false;
-    } else {
-      setEndDateError("");
     }
 
-    if (isValid) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      if (start > end) {
-        setStartDateError(
-          "La fecha de inicio no puede ser posterior a la fecha final."
-        );
+    if (startDate && endDate) {
+      if (startDate < currentDate) {
+        setStartDateError("La fecha de inicio no puede ser de un año pasado.");
+        isValid = false;
+      }
+      if (endDate < currentDate) {
+        setEndDateError("La fecha final no puede ser de un año pasado.");
+        isValid = false;
+      }
+      if (startDate > endDate) {
+        setStartDateError("La fecha de inicio no puede ser posterior a la fecha de fin.");
         isValid = false;
       }
     }
@@ -156,164 +163,168 @@ export default function TicketRequest() {
     return isValid;
   };
 
-  useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-        if (token) {
-          const decoded = jwtDecode(token);
-          setUserId(decoded.user_id);
-        }
-      } catch (error) {
-        console.error("Error fetching user ID:", error);
-      }
-    };
-
-    fetchUserId();
-  }, []);
-
   return (
-    <ScrollView
-      className="w-full mt-4"
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
+    <KeyboardAvoidingView
+      className="flex-1 bg-white"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View className="w-full justify-center items-center self-center">
-        <View className="w-full flex flex-row border-b border-slate-200 mt-5">
-          <View className="flex-[0.3]">
-            <Link href={"/tickets"} className="ml-2">
-              <ArrowLeftIcon size={Tokens.standardSizeIcon} color={"#595A69"} />
-            </Link>
-          </View>
-
-          <View className="ml-20 text-center items-center justify-center">
-            <TitleTextTicketsRequest />
-          </View>
+      <View className="w-full flex flex-row border-b border-slate-200 mt-12 items-center mb-3">
+        <View className="flex-1">
+          <TouchableOpacity
+            onPress={() => handleNavigation("tickets")}
+            className="mb-3.5 ml-2"
+          >
+            <ArrowLeftIcon size={Tokens.standardSizeIcon} color={"#595A69"} />
+          </TouchableOpacity>
         </View>
-        <View className="w-5/6 my-5 justify-center">
-          <View className="my-5">
-            <RequestTypeText />
-            <SelectList
-              search={false}
-              setSelected={(item: string) => {
-                setType(item);
-                if (typeError) {
-                  setTypeError("");
-                }
-              }}
-              data={data}
-              save="value"
-              placeholder="Seleccionar opción"
-              boxStyles={{
-                backgroundColor: "#E5E7EB",
-                borderColor: "#edf2f7",
-                borderRadius: 12,
-              }}
-              inputStyles={{
-                fontSize: 14,
-                color: "#8696BB",
-              }}
-              dropdownStyles={{
-                backgroundColor: "#E5E7EB",
-                borderColor: "#edf2f7",
-              }}
-              dropdownTextStyles={{
-                fontSize: 14,
-                color: "#8696BB",
-              }}
-            />
-            {typeError ? (
-              <Text className="text-red-500 mt-2">{typeError}</Text>
-            ) : null}
-          </View>
-          <View className="mt-2 mb-6">
-            <RequestTitleText />
-            <TextInput
-              className={`${Tokens.standardInput}`}
-              onChangeText={(text) => {
-                setTitle(text);
-                if (titleError) {
-                  setTitleError("");
-                }
-              }}
-              value={title}
-            />
-            {titleError ? (
-              <Text className="text-red-500 mt-2">{titleError}</Text>
-            ) : null}
-          </View>
-          <View>
-            <RequestDatesText />
-            {showPicker && (
-              <DateTimePicker
-                mode="date"
-                display="spinner"
-                value={date}
-                onChange={onChange}
-              />
-            )}
-            <Pressable
-              onPress={() => {
-                setIsStartDateSelected(true);
-                toggleDatepicker();
-              }}
-            >
-              <TextInput
-                className={`${Tokens.standardInput} mt-3`}
-                value={startDate.toString()}
-                editable={false}
-                placeholder="dd/mm/aa"
-                placeholderTextColor={"#c8cbce"}
-              />
-              {startDateError ? (
-                <Text className="text-red-500 mt-2">{startDateError}</Text>
-              ) : null}
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                setIsStartDateSelected(false);
-                toggleDatepicker();
-              }}
-            >
-              <TextInput
-                className={`${Tokens.standardInput} mt-6`}
-                value={endDate.toString()}
-                editable={false}
-                placeholder="dd/mm/aa"
-                placeholderTextColor={"#c8cbce"}
-              />
-              {endDateError ? (
-                <Text className="text-red-500 mt-2 mb-5">{endDateError}</Text>
-              ) : null}
-            </Pressable>
-          </View>
-          <View className="mt-7 mb-5">
-            <RequestDescriptionText />
-            <TextInput
-              className={`${Tokens.standardInput} h-24`}
-              onChangeText={(text) => {
-                setDescription(text);
-                if (descriptionError) {
-                  setDescriptionError("");
-                }
-              }}
-              value={description}
-            />
-            {descriptionError ? (
-              <Text className="text-red-500 mt-2">{descriptionError}</Text>
-            ) : null}
-          </View>
-
-          {type === "Incapacidad médica" && (
-            <View className="w-full">
-              <ImagesPicker />
-            </View>
-          )}
-          <View className="w-full mt-5 items-center">
-            <CustomButton text="Crear solicitud" customFun={handlePress} />
-          </View>
+        <View className="absolute left-0 right-0 items-center">
+          <TitleTextTicketsRequest />
         </View>
       </View>
-    </ScrollView>
+      <ScrollView
+        className="w-full"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="w-full h-full items-center">
+          <View className="w-5/6 h-full flex flex-col">
+            <View className="flex-1 m-3">
+              <RequestTypeText />
+              <SelectList
+                search={false}
+                setSelected={(item: string) => {
+                  setType(item);
+                  if (typeError) {
+                    setTypeError("");
+                  }
+                }}
+                data={data}
+                save="value"
+                placeholder="Seleccionar opción"
+                maxHeight={100}
+                boxStyles={{
+                  backgroundColor: "#E5E7EB",
+                  borderColor: "transparent",
+                }}
+                inputStyles={{
+                  fontSize: 12,
+                  color: type ? "#000000" : "#8696BB",
+                }}
+                dropdownStyles={{
+                  backgroundColor: "#E5E7EB",
+                  borderColor: "transparent",
+                  marginTop: 0,
+                }}
+                dropdownTextStyles={{
+                  fontSize: 12,
+                  color: "#8696BB",
+                }}
+                dropdownShown={type !== ""}
+              />
+              {typeError ? (
+                <Text className="text-red-500 mt-2">{typeError}</Text>
+              ) : null}
+            </View>
+
+            <View className="flex-1 m-3">
+              <RequestTitleText />
+              <TextInput
+                className={`${Tokens.standardInput}`}
+                onChangeText={(text) => {
+                  setTitle(text);
+                  if (titleError) {
+                    setTitleError("");
+                  }
+                }}
+                value={title}
+              />
+              {titleError ? (
+                <Text className="text-red-500 mt-2">{titleError}</Text>
+              ) : null}
+            </View>
+
+            <View className="flex-1 m-3">
+              <RequestDatesText />
+              {showPicker && (
+                <DateTimePicker
+                  mode="date"
+                  display="calendar"
+                  positiveButton={{label: 'ACEPTAR'}}
+                  negativeButton={{label: 'CANCELAR'}}
+                  value={date}
+                  onChange={onChange}
+                  minimumDate={new Date("2024-01-01")}
+                />
+              )}
+              <Text>inicio</Text>
+              <Pressable
+                onPress={() => {
+                  setIsStartDateSelected(true);
+                  toggleDatepicker();
+                }}
+              >
+                <TextInput
+                  className={`${Tokens.standardInput} mb-2`}
+                  value={startDate ? format(startDate, 'dd/MM/yyyy') : ''}
+                  editable={false}
+                  placeholder="DD-MM-AAAA"
+                  placeholderTextColor={"#8696BB"}
+                />
+                {startDateError ? (
+                  <Text className="text-red-500 mt-2">{startDateError}</Text>
+                ) : null}
+              </Pressable>
+              <Text>Inicio</Text>
+              <Pressable
+                onPress={() => {
+                  setIsStartDateSelected(false);
+                  toggleDatepicker();
+                }}
+              >
+                <TextInput
+                  className={`${Tokens.standardInput} mt-2`}
+                  value={endDate ? format(endDate, 'dd/MM/yyyy') : ''}
+                  editable={false}
+                  placeholder="DD-MM-AAAA"
+                  placeholderTextColor={"#8696BB"}
+                />
+                {endDateError ? (
+                  <Text className="text-red-500 mt-2">{endDateError}</Text>
+                ) : null}
+              </Pressable>
+            </View>
+
+            <View className="flex-1 m-3">
+              <RequestDescriptionText />
+              <TextInput
+                className={`${Tokens.standardInput} h-24`}
+                multiline={true}
+                maxLength={500}
+                onChangeText={(text) => {
+                  setDescription(text);
+                  if (descriptionError) {
+                    setDescriptionError("");
+                  }
+                }}
+                value={description}
+              />
+              {descriptionError ? (
+                <Text className="text-red-500 mt-2">{descriptionError}</Text>
+              ) : null}
+            </View>
+
+            {type === "Incapacidad médica" && (
+              <View className="flex-1 m-3">
+                <ImagesPicker />
+              </View>
+            )}
+
+            <View className="w-full my-5 items-center">
+              <CustomButton text="Crear solicitud" customFun={handlePress} />
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

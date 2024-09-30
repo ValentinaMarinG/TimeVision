@@ -28,7 +28,7 @@ export default function ImagesPicker() {
 
   return (
     <View className="flex items-center justify-center w-full">
-      <View className="flex justify-around w-full mb-8">
+      <View className="flex justify-around w-full">
         <RequestImageText />
         <UploadButton
           text="Seleccionar archivo"

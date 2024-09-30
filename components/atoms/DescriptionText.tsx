@@ -44,7 +44,7 @@ export const RequestDatesText = () => {
 
 export const RequestImageText = () => {
   return (
-    <Text className={`${Tokens.standardFormDescriptionText}`}>Por favor adjuntar el justificante médico</Text>
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Por favor adjuntar justificante médico</Text>
   );
 };
 
