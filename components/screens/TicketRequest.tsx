@@ -31,7 +31,7 @@ import DateTimePicker, {
 import { format } from "date-fns";
 import DatePicker from "react-native-date-picker";
 import { Colors } from "react-native/Libraries/NewAppScreen";
-import { createTickets } from "../../config/routers";
+import { createRequest } from "../../config/routers";
 
 export default function TicketRequest() {
   const router = useRouter();
@@ -87,7 +87,7 @@ export default function TicketRequest() {
 
   const handlePress = async () => {
     if (validations()) {
-      const response = await createTickets(
+      const response = await createRequest(
         startDate,
         endDate,
         type,

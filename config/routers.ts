@@ -60,7 +60,7 @@ const getBlobFromUri = async (uri: string): Promise<Blob> => {
   return blob;
 };
 
-export const createTickets = async (
+export const createRequest = async (
   start_date: Date | null,
   end_date: Date | null,
   type: string,
