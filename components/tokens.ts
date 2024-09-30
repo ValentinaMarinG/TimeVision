@@ -4,6 +4,8 @@ export const homeInput = 'w-full rounded-xl bg-gray-200 p-2 flex-row mt-3';
 
 export const standardFormDescriptionText = `text-md text-grayText mb-2`;
 
+export const homeInputSearch = 'w-full rounded-xl bg-gray-200 p-2 flex-row';
+
 export const searchInputHome = `text-lg text-grayText ml-5`;
 
 export const standardSubtitleLogin = `text-base text-grayText mt-3.5 text-center`;

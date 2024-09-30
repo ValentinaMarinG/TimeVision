@@ -5,7 +5,7 @@ import { InputTextHome } from "../atoms/DescriptionText"
 import { Search } from "../atoms/Icon"
 import { Link } from "expo-router"
 
-export default function SearchField() {
+export const SearchField = () => {
   return (
 
     <View className={`${Tokens.homeInput}`}>
@@ -16,7 +16,5 @@ export default function SearchField() {
         </View>
       </Link>
     </View>
-
-
   )
 }
