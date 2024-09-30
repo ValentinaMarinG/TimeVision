@@ -42,6 +42,19 @@ export const RequestDatesText = () => {
   );
 };
 
+export const StartDateText = () => {
+  return (
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Fecha de inicio</Text>
+  );
+};
+
+export const EndDateText = () => {
+  return (
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Fecha de fin</Text>
+  );
+};
+
+
 export const RequestImageText = () => {
   return (
     <Text className={`${Tokens.standardFormDescriptionText}`}>Por favor adjuntar justificante médico</Text>

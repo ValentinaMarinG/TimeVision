@@ -14,6 +14,8 @@ import {
   RequestDatesText,
   RequestTitleText,
   RequestTypeText,
+  StartDateText,
+  EndDateText,
 } from "../atoms/DescriptionText";
 import { TextInput } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
@@ -27,9 +29,9 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
-import { createTicket } from "../../config/routers";
 import DatePicker from "react-native-date-picker";
 import { Colors } from "react-native/Libraries/NewAppScreen";
+import { createTickets } from "../../config/routers";
 
 export default function TicketRequest() {
   const router = useRouter();
@@ -39,6 +41,7 @@ export default function TicketRequest() {
   const [title, setTitle] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [imageUri, setImageUri] = useState<string | null>(null);  
 
   const [typeError, setTypeError] = useState<string>("");
   const [descriptionError, setDescriptionError] = useState<string>("");
@@ -50,7 +53,6 @@ export default function TicketRequest() {
   const [showPicker, setShowPicker] = useState(false);
   const [isStartDateSelected, setIsStartDateSelected] = useState(true);
 
-  const [open, setOpen] = useState(false);
 
   const handleNavigation = (routeName: string) => {
     router.push(routeName);
@@ -63,16 +65,15 @@ export default function TicketRequest() {
   const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (event.type === "set" && selectedDate) {
       const currentDate = selectedDate;
-      console.log("fecha seleccionada", currentDate)
       setDate(currentDate);
       if (isStartDateSelected) {
         if (startDate) {
-          setTypeError("");
+          setStartDateError("");
         }
         setStartDate(currentDate);
       } else {
         if (endDateError) {
-          setTypeError("");
+          setEndDateError("");
         }
         setEndDate(currentDate);
       }
@@ -86,12 +87,13 @@ export default function TicketRequest() {
 
   const handlePress = async () => {
     if (validations()) {
-      const response = await createTicket(
+      const response = await createTickets(
         startDate,
         endDate,
         type,
         title,
-        description
+        description,
+        imageUri
       );
       if (response.success) {
         router.push("/tickets");
@@ -113,6 +115,7 @@ export default function TicketRequest() {
   const validations = () => {
     let isValid = true;
     const currentDate = new Date();
+    const sqlInjectionPattern = /.*[!@#$%^&*,/\\\\()¿~_'<>:;+.=?-].*/;
 
     if (!type) {
       setTypeError("El tipo de solicitud es obligatorio.");
@@ -124,12 +127,18 @@ export default function TicketRequest() {
     if (!title) {
       setTitleError("El título es obligatorio.");
       isValid = false;
+    } else if (sqlInjectionPattern.test(title)) {
+      setTitleError("El título contiene caracteres no permitidos.");
+      isValid = false;
     } else {
       setTitleError("");
     }
-
+  
     if (!description) {
       setDescriptionError("La descripción es obligatoria.");
+      isValid = false;
+    } else if (sqlInjectionPattern.test(description)) {
+      setDescriptionError("La descripción contiene caracteres no permitidos.");
       isValid = false;
     } else {
       setDescriptionError("");
@@ -146,16 +155,21 @@ export default function TicketRequest() {
     }
 
     if (startDate && endDate) {
-      if (startDate < currentDate) {
+      const startYear = startDate.getFullYear();
+      const endYear = endDate.getFullYear();
+  
+      if (startYear < currentDate.getFullYear()) {
         setStartDateError("La fecha de inicio no puede ser de un año pasado.");
         isValid = false;
       }
-      if (endDate < currentDate) {
+      if (endYear < currentDate.getFullYear()) {
         setEndDateError("La fecha final no puede ser de un año pasado.");
         isValid = false;
       }
       if (startDate > endDate) {
-        setStartDateError("La fecha de inicio no puede ser posterior a la fecha de fin.");
+        setStartDateError(
+          "La fecha de inicio no puede ser posterior a la fecha de fin."
+        );
         isValid = false;
       }
     }
@@ -249,14 +263,16 @@ export default function TicketRequest() {
                 <DateTimePicker
                   mode="date"
                   display="calendar"
-                  positiveButton={{label: 'ACEPTAR'}}
-                  negativeButton={{label: 'CANCELAR'}}
+                  positiveButton={{ label: "ACEPTAR" }}
+                  negativeButton={{ label: "CANCELAR" }}
                   value={date}
                   onChange={onChange}
-                  minimumDate={new Date("2024-01-01")}
+                  /* minimumDate={new Date("2024-01-01")} */
                 />
               )}
-              <Text>inicio</Text>
+              <Text className="m-1">
+                <StartDateText />
+              </Text>
               <Pressable
                 onPress={() => {
                   setIsStartDateSelected(true);
@@ -264,8 +280,8 @@ export default function TicketRequest() {
                 }}
               >
                 <TextInput
-                  className={`${Tokens.standardInput} mb-2`}
-                  value={startDate ? format(startDate, 'dd/MM/yyyy') : ''}
+                  className={`${Tokens.standardInput}`}
+                  value={startDate ? format(startDate, "dd/MM/yyyy") : ""}
                   editable={false}
                   placeholder="DD-MM-AAAA"
                   placeholderTextColor={"#8696BB"}
@@ -274,7 +290,9 @@ export default function TicketRequest() {
                   <Text className="text-red-500 mt-2">{startDateError}</Text>
                 ) : null}
               </Pressable>
-              <Text>Inicio</Text>
+              <Text className="m-1 mt-5">
+                <EndDateText />
+              </Text>
               <Pressable
                 onPress={() => {
                   setIsStartDateSelected(false);
@@ -282,8 +300,8 @@ export default function TicketRequest() {
                 }}
               >
                 <TextInput
-                  className={`${Tokens.standardInput} mt-2`}
-                  value={endDate ? format(endDate, 'dd/MM/yyyy') : ''}
+                  className={`${Tokens.standardInput}`}
+                  value={endDate ? format(endDate, "dd/MM/yyyy") : ""}
                   editable={false}
                   placeholder="DD-MM-AAAA"
                   placeholderTextColor={"#8696BB"}
@@ -315,7 +333,7 @@ export default function TicketRequest() {
 
             {type === "Incapacidad médica" && (
               <View className="flex-1 m-3">
-                <ImagesPicker />
+                <ImagesPicker onImageSelected={setImageUri} />
               </View>
             )}
 
