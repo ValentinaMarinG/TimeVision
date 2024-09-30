@@ -10,6 +10,7 @@ import {
   Alert,
   Text,
   Modal,
+  TouchableOpacity, // Importa TouchableOpacity para el icono
 } from "react-native";
 import { MainIcon } from "../atoms/Icon";
 import { TitleTextLogin } from "../atoms/TitleText";
@@ -25,28 +26,27 @@ import * as Tokens from "../tokens";
 import { useRouter } from "expo-router";
 import { loginRequest } from "../../config/routers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from '@expo/vector-icons'; // Asegúrate de tener esta librería instalada
 
 export default function Login() {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
-
   const [userError, setUserError] = useState("");
   const [passError, setPassError] = useState("");
-
   const [loginError, setLoginError] = useState("");
-
   const [modalVisible, setModalVisible] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar contraseña
 
   const router = useRouter();
 
   const handleModalClose = () => {
     setModalVisible(false);
-    router.push("/login");
   };
 
   const handlePress = async () => {
     let valid = true;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalidCharRegex = /ñ/;
 
     setUserError("");
     setPassError("");
@@ -63,24 +63,28 @@ export default function Login() {
     if (!pass) {
       setPassError("La contraseña es requerida");
       valid = false;
+    } else if (invalidCharRegex.test(pass)) {
+      setPassError("La contraseña no puede contener la letra 'ñ'");
+      valid = false;
     }
 
     if (valid) {
       const result = await loginRequest(user, pass);
       if (result?.success) {
         const token = await AsyncStorage.getItem("token");
-        console.log(token);
-        if (token) { 
+        if (token) {
           router.push("/home");
-         } 
+        }
       } else {
-        setLoginError(result?.data);
+        setModalVisible(true);
+        setLoginError(result?.message);
       }
     }
   };
+
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
+      className="flex-1 bg-white mt-8"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -89,7 +93,7 @@ export default function Login() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="flex-grow mt-[90] bg-white">
+          <View className="flex-1 flex-grow mt-[90] bg-white">
             <View className="justify-center items-center mx-5">
               <TitleTextLogin />
               <MainIcon
@@ -104,16 +108,27 @@ export default function Login() {
                 <TextInput
                   className={`${Tokens.standardInput}`}
                   onChangeText={setUser}
+                  value={user}
                 />
                 {userError ? (
                   <Text className="text-red-500">{userError}</Text>
                 ) : null}
                 <LoginPasswordText />
-                <TextInput
-                  className={`${Tokens.standardInput}`}
-                  onChangeText={setPass}
-                  secureTextEntry={true}
-                />
+                <View className="flex-row items-center rounded-xl bg-gray-200 pr-2">
+                  <TextInput
+                    className={`${Tokens.standardInput} flex-1`}
+                    onChangeText={setPass}
+                    value={pass}
+                    secureTextEntry={!showPassword}
+                  />
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                    <Ionicons
+                      name={showPassword ? "eye" : "eye-off"}
+                      size={24}
+                      color="gray"
+                    />
+                  </TouchableOpacity>
+                </View>
                 {passError ? (
                   <Text className="text-red-500">{passError}</Text>
                 ) : null}
@@ -135,9 +150,11 @@ export default function Login() {
                 setModalVisible(!modalVisible);
               }}
             >
-              <View className="flex-1 justify-center items-center bg-[#858585] bg-opacity-25">
+              <View className="flex-1 justify-center items-center bg-[#858585]">
                 <View className="bg-white p-6 rounded-lg w-3/4 items-center">
-                  <Text> {loginError} </Text>
+                  <Text className="text-center text-lg text-[#858585] my-5">
+                    {loginError}
+                  </Text>
                   <CustomButton text="Salir" customFun={handleModalClose} />
                 </View>
               </View>

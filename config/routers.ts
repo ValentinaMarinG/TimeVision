@@ -1,8 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const ip1 = "http://10.0.2.2";
+const ip2 = "http://192.168.0.17";
+
 export const loginRequest = async (user: string, pass: string) => {
   try {
-    const response = await fetch("http://192.168.0.17:3001/api/v1/login", {
+    const response = await fetch(`${ip2}:3001/api/v1/login`, {
+      /* 192.168.1.75 */
       /* para emulador la ip es 10.0.2.2 */
       method: "POST",
       headers: {
@@ -12,6 +16,7 @@ export const loginRequest = async (user: string, pass: string) => {
     });
 
     const data = await response.json();
+
     if (response.ok) {
       await AsyncStorage.setItem("token", data.access);
       return { success: true, data };
@@ -20,7 +25,7 @@ export const loginRequest = async (user: string, pass: string) => {
         case 400:
           return {
             success: false,
-            message: "Solicitud incorrecta. Revisa los datos ingresados.",
+            message: "No fue posible la conexión con la base de datos.",
           };
         case 401:
           return {
@@ -50,7 +55,7 @@ export const loginRequest = async (user: string, pass: string) => {
       }
     }
   } catch (error) {
-    console.error("Error al iniciar sesión:", error);
+    console.error("Error de red. Verifica tu conexión.");
   }
 };
 
@@ -144,7 +149,7 @@ export const createRequest = async (
   } catch (error) {
     return {
       success: false,
-      message: "Error de red o servidor. Verifica tu conexión.",
+      message: "Error de red. Verifica tu conexión.",
     };
   }
 };
@@ -183,3 +188,63 @@ export const accessRequest = async (email: string) => {
       return { success: false, message: "Error de red o servidor. Verifica tu conexión." };
     }
   };
+
+export const getTickets = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    const response = await fetch(`${ip2}:3001/api/v1/request/me`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      return { success: true, data };
+    }else {
+      switch (response.status) {
+        case 404:
+          return {
+            success: true,
+            data:0,
+          };
+      }
+    }
+  } catch (error) {
+    console.error("Error al obtener tickets:", error);
+    return { success: false, message: "Error de red. Verifica tu conexión." };
+  }
+};
+
+export const getUserInfo = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    const response = await fetch(`${ip2}:3001/api/v1/user/me`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      return { success: true, data };
+    }else {
+      switch (response.status) {
+        case 404:
+          return {
+            success: true,
+            data:0,
+          };
+      }
+    }
+  } catch (error) {
+    console.error("Error al obtener el usuario:", error);
+    return { success: false, message: "Error de red. Verifica tu conexión." };
+  }
+};
