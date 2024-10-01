@@ -29,8 +29,6 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
-import DatePicker from "react-native-date-picker";
-import { Colors } from "react-native/Libraries/NewAppScreen";
 import { createRequest } from "../../config/routers";
 
 export default function TicketRequest() {
@@ -115,7 +113,7 @@ export default function TicketRequest() {
   const validations = () => {
     let isValid = true;
     const currentDate = new Date();
-    const sqlInjectionPattern = /.*[!@#$%^&*,/\\\\()¿~_'<>:;+.=?-].*/;
+    const sqlInjectionPattern = /.*[!@#$%^&*,/\\\\()¿~_'<>:;+=?-].*/;
 
     if (!type) {
       setTypeError("El tipo de solicitud es obligatorio.");
@@ -202,7 +200,7 @@ export default function TicketRequest() {
       >
         <View className="w-full h-full items-center">
           <View className="w-5/6 h-full flex flex-col">
-            <View className="flex-1 m-3">
+            <View className="flex-1 m-1">
               <RequestTypeText />
               <SelectList
                 search={false}
@@ -240,7 +238,7 @@ export default function TicketRequest() {
               ) : null}
             </View>
 
-            <View className="flex-1 m-3">
+            <View className="flex-1 m-1">
               <RequestTitleText />
               <TextInput
                 className={`${Tokens.standardInput}`}
@@ -257,7 +255,7 @@ export default function TicketRequest() {
               ) : null}
             </View>
 
-            <View className="flex-1 m-3">
+            <View className="flex-1 m-1">
               <RequestDatesText />
               {showPicker && (
                 <DateTimePicker
@@ -312,7 +310,7 @@ export default function TicketRequest() {
               </Pressable>
             </View>
 
-            <View className="flex-1 m-3">
+            <View className="flex-1 m-1">
               <RequestDescriptionText />
               <TextInput
                 className={`${Tokens.standardInput} h-24`}
@@ -332,7 +330,7 @@ export default function TicketRequest() {
             </View>
 
             {type === "Incapacidad médica" && (
-              <View className="flex-1 m-3">
+              <View className="flex-1 m-1">
                 <ImagesPicker onImageSelected={setImageUri} />
               </View>
             )}

@@ -8,11 +8,12 @@ import BottomBar from "../organisms/BottomBar";
 
 import * as Tokens from "../tokens";
 import { getTickets } from "../../config/routers";
+import { Ticket } from "../../types/games";
 
 export default function Tickets() {
   const insets = useSafeAreaInsets();
 
-  const [tickets, setTickets] = useState([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
 
   const router = useRouter();
 
@@ -23,10 +24,10 @@ export default function Tickets() {
   useEffect(() => {
     const fetchTickets = async () => {
       const response = await getTickets();
-      if (response.success) {
-        setTickets(response.data);
+      if (response?.success) {
+        setTickets(response?.data);
       } else {
-        console.error(response.message);
+        console.error(response?.message);
       }
     };
 
@@ -49,7 +50,7 @@ export default function Tickets() {
           {tickets.length > 0 ? (
             tickets.map((ticketMap) => (
               <View
-                key={ticketMap}
+                key={ticketMap.id}
                 className="mt-5 w-full h-24 flex-row justify-center items-center rounded-lg bg-gray-200"
               >
                 <View>

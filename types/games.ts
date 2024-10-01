@@ -6,3 +6,10 @@ export type Game = {
     title: string,
     image: string
 }
+
+export type Ticket = {
+    id: string,
+    type: string,
+    title: string,
+    start_date: Date; 
+  }

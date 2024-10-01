@@ -29,13 +29,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from '@expo/vector-icons'; // Asegúrate de tener esta librería instalada
 
 export default function Login() {
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
-  const [userError, setUserError] = useState("");
-  const [passError, setPassError] = useState("");
-  const [loginError, setLoginError] = useState("");
+  const [user, setUser] = useState<string>("");
+const [pass, setPass] = useState<string>("");
+  const [userError, setUserError] = useState<string>("");
+  const [passError, setPassError] = useState<string>("");
+  const [loginError, setLoginError] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar contraseña
+  const [showPassword, setShowPassword] = useState(false); 
 
   const router = useRouter();
 
@@ -46,7 +46,7 @@ export default function Login() {
   const handlePress = async () => {
     let valid = true;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const invalidCharRegex = /ñ/;
+    /* const invalidCharRegex = /ñ/; */
 
     setUserError("");
     setPassError("");
@@ -63,10 +63,10 @@ export default function Login() {
     if (!pass) {
       setPassError("La contraseña es requerida");
       valid = false;
-    } else if (invalidCharRegex.test(pass)) {
+    } /* else if (invalidCharRegex.test(pass)) {
       setPassError("La contraseña no puede contener la letra 'ñ'");
       valid = false;
-    }
+    } */
 
     if (valid) {
       const result = await loginRequest(user, pass);
@@ -77,7 +77,7 @@ export default function Login() {
         }
       } else {
         setModalVisible(true);
-        setLoginError(result?.message);
+        setLoginError(result?.message || "Error desconocido");
       }
     }
   };
@@ -106,9 +106,9 @@ export default function Login() {
               <View className="w-72 flex-1">
                 <LoginUserText />
                 <TextInput
-                  className={`${Tokens.standardInput}`}
+                  className={`${Tokens.standardInput} mb-4`}
                   onChangeText={setUser}
-                  value={user}
+                  value={user ?? ""}
                 />
                 {userError ? (
                   <Text className="text-red-500">{userError}</Text>
@@ -118,7 +118,7 @@ export default function Login() {
                   <TextInput
                     className={`${Tokens.standardInput} flex-1`}
                     onChangeText={setPass}
-                    value={pass}
+                    value={pass ?? ""}
                     secureTextEntry={!showPassword}
                   />
                   <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>

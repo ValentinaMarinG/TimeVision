@@ -38,19 +38,19 @@ export const RequestDescriptionText = () => {
 
 export const RequestDatesText = () => {
   return (
-    <Text className={`${Tokens.standardFormDescriptionText}`}>Fechas</Text>
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Duración de la solicitud</Text>
   );
 };
 
 export const StartDateText = () => {
   return (
-    <Text className={`${Tokens.standardFormDescriptionText}`}>Fecha de inicio</Text>
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Desde</Text>
   );
 };
 
 export const EndDateText = () => {
   return (
-    <Text className={`${Tokens.standardFormDescriptionText}`}>Fecha de fin</Text>
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Hasta</Text>
   );
 };
 
