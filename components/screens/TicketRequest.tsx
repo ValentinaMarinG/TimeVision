@@ -225,7 +225,6 @@ export default function TicketRequest() {
                 dropdownStyles={{
                   backgroundColor: "#E5E7EB",
                   borderColor: "transparent",
-                  marginTop: 0,
                 }}
                 dropdownTextStyles={{
                   fontSize: 12,

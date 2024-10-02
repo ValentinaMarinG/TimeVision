@@ -8,8 +8,9 @@ export type Game = {
 }
 
 export type Ticket = {
-    id: string,
+    _id: string,
     type: string,
     title: string,
+    state: string,
     start_date: Date; 
   }
