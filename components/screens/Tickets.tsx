@@ -39,7 +39,7 @@ export default function Tickets() {
       className="flex-1 w-full mt-9 justify-between"
       style={{ paddingBottom: insets.bottom }}
     >
-      <View className="justify-center items-center border-b border-slate-200">
+      <View className="justify-center items-center border-b border-slate-200 mt-3">
         <TitleTextTickets />
       </View>
       <View className="w-full flex-1 justify-centerb  items-center">
@@ -50,8 +50,8 @@ export default function Tickets() {
           {tickets.length > 0 ? (
             tickets.map((ticketMap) => (
               <View
-                key={ticketMap.id}
-                className="mt-5 w-full h-24 flex-row justify-center items-center rounded-lg bg-gray-200"
+                key={ticketMap._id}
+                className="mt-5 w-full h-auto flex-row justify-center items-center rounded-lg bg-gray-200"
               >
                 <View>
                   <Text className="font-bold text-lg">
@@ -81,7 +81,17 @@ export default function Tickets() {
                   </Text>
                 </View>
                 <View className="h-full flex flex-col items-end left-5 mt-5">
-                  <View className="w-[15] h-[15] rounded-full bg-orange-500"></View>
+                  <View
+                    className={`w-[15] h-[15] rounded-full  ${
+                      ticketMap.state === "aprobado"
+                        ? "bg-green-500"
+                        : ticketMap.state === "pendiente"
+                        ? "bg-orange-500"
+                        : ticketMap.state === "rechazado"
+                        ? "bg-red-500"
+                        : "bg-gray-500" 
+                    }`}
+                  ></View>
                 </View>
               </View>
             ))

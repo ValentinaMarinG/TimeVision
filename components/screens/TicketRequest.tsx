@@ -225,7 +225,6 @@ export default function TicketRequest() {
                 dropdownStyles={{
                   backgroundColor: "#E5E7EB",
                   borderColor: "transparent",
-                  marginTop: 0,
                 }}
                 dropdownTextStyles={{
                   fontSize: 12,
@@ -316,6 +315,8 @@ export default function TicketRequest() {
                 className={`${Tokens.standardInput} h-24`}
                 multiline={true}
                 maxLength={500}
+                numberOfLines={13}
+                textAlignVertical="top"
                 onChangeText={(text) => {
                   setDescription(text);
                   if (descriptionError) {
