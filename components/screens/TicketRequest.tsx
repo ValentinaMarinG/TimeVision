@@ -113,7 +113,7 @@ export default function TicketRequest() {
   const validations = () => {
     let isValid = true;
     const currentDate = new Date();
-    const sqlInjectionPattern = /.*[!@#$%^&*,/\\\\()¿~_'<>:;+=?-].*/;
+    const sqlInjectionPattern = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
 
     if (!type) {
       setTypeError("El tipo de solicitud es obligatorio.");

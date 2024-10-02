@@ -47,7 +47,7 @@ export default function Login() {
     let valid = true;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     /* const invalidCharRegex = /ñ/; */
-     const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
+    const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
 
     setUserError("");
     setPassError("");
