@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ip1 = "http://10.0.2.2";
-const ip2 = "http://192.168.1.15";
+const ip2 = "http://192.168.0.14";
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
@@ -248,3 +248,51 @@ export const getUserInfo = async () => {
     return { success: false, message: "Error de red. Verifica tu conexión." };
   }
 };
+
+export const getShifts = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    const response = await fetch(`${ip2}:3001/api/v1/shifts/me`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+
+      switch (response.status) {
+        case 404:
+          return {
+            success: false,
+            message: "No se encontraron turnos asignados.",
+          };
+        case 403:
+          return {
+            success: false,
+            message: "Acceso denegado. Verifica tus credenciales.",
+          };
+        default:
+          return {
+            success: false,
+            message: "Error al obtener los turnos. Intenta más tarde.",
+          };
+      }
+    }
+
+    const data = await response.json();
+
+    // Si la respuesta es correcta, devolvemos los datos
+    return { success: true, data };
+
+  } catch (error) {
+    // Aquí capturamos errores de red y mostramos el mensaje apropiado
+    console.error("Error de red:", error);  // Para verificar en consola
+    return {
+      success: false,
+      message: "Error de red. Verifica tu conexión.",
+    };
+  }
+};
+
