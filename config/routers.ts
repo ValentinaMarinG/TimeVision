@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ip1 = "http://10.0.2.2";
-const ip2 = "http://192.168.0.17";
+const ip2 = "http://192.168.1.15";
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
@@ -97,7 +97,7 @@ export const createRequest = async (
       formData.append("attach", imageBlob);
     }
 
-    const response = await fetch("http://192.168.0.17:3001/api/v1/request/", {
+    const response = await fetch(`${ip2}:3001/api/v1/request/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -156,7 +156,7 @@ export const createRequest = async (
 
 export const accessRequest = async (email: string) => {
     try {
-      const response = await fetch('xxxxxxxxx', {
+      const response = await fetch(`${ip2}:3001/api/v1/request/access`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

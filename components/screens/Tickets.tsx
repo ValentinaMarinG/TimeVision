@@ -42,7 +42,7 @@ export default function Tickets() {
       <View className="justify-center items-center border-b border-slate-200">
         <TitleTextTickets />
       </View>
-      <View className="w-full flex-1 justify-centerb  items-center">
+      <View className="w-full flex-1 justify-centerb  items-center px-5">
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
@@ -51,9 +51,9 @@ export default function Tickets() {
             tickets.map((ticketMap) => (
               <View
                 key={ticketMap.id}
-                className="mt-5 w-full h-24 flex-row justify-center items-center rounded-lg bg-gray-200"
+                className="mt-5 w-[350] h-auto p-2 flex-row items-center rounded-lg bg-gray-200"
               >
-                <View>
+                <View className="w-3/4 ml-2">
                   <Text className="font-bold text-lg">
                     Tipo de solicitud:{" "}
                     <Text className="text-md font-normal">
@@ -80,8 +80,8 @@ export default function Tickets() {
                     </Text>
                   </Text>
                 </View>
-                <View className="h-full flex flex-col items-end left-5 mt-5">
-                  <View className="w-[15] h-[15] rounded-full bg-orange-500"></View>
+                <View className="left-14 bottom-10">
+                  <View className="w-[17] h-[17] rounded-full bg-orange-500"></View>
                 </View>
               </View>
             ))

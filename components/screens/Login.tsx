@@ -30,12 +30,12 @@ import { Ionicons } from '@expo/vector-icons'; // Asegúrate de tener esta libre
 
 export default function Login() {
   const [user, setUser] = useState<string>("");
-const [pass, setPass] = useState<string>("");
+  const [pass, setPass] = useState<string>("");
   const [userError, setUserError] = useState<string>("");
   const [passError, setPassError] = useState<string>("");
   const [loginError, setLoginError] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
 
@@ -47,6 +47,7 @@ const [pass, setPass] = useState<string>("");
     let valid = true;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     /* const invalidCharRegex = /ñ/; */
+     const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
 
     setUserError("");
     setPassError("");
@@ -58,10 +59,16 @@ const [pass, setPass] = useState<string>("");
     } else if (!emailRegex.test(user)) {
       setUserError("Ingresa un correo valido");
       valid = false;
+    } else if (sqlInjectionRegex.test(user)) {
+      setUserError("El correo contiene caracteres no permitidos.");
+      valid = false;
     }
 
     if (!pass) {
       setPassError("La contraseña es requerida");
+      valid = false;
+    } else if (sqlInjectionRegex.test(pass)) {
+      setUserError("La contraseña contiene caracteres no permitidos.");
       valid = false;
     } /* else if (invalidCharRegex.test(pass)) {
       setPassError("La contraseña no puede contener la letra 'ñ'");
@@ -141,25 +148,26 @@ const [pass, setPass] = useState<string>("");
               <SubTitleTextRequest />
             </View>
           </View>
-          {loginError ? (
-            <Modal
-              animationType="fade"
-              transparent={true}
-              visible={modalVisible}
-              onRequestClose={() => {
-                setModalVisible(!modalVisible);
-              }}
-            >
-              <View className="flex-1 justify-center items-center bg-[#858585]">
-                <View className="bg-white p-6 rounded-lg w-3/4 items-center">
-                  <Text className="text-center text-lg text-[#858585] my-5">
-                    {loginError}
-                  </Text>
-                  <CustomButton text="Salir" customFun={handleModalClose} />
-                </View>
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              setModalVisible(!modalVisible);
+            }}
+          >
+            <View className="flex-1 justify-center items-center bg-[#858585] opacity-90">
+              <View className="bg-white p-6 rounded-lg w-3/4 items-center">
+                <Text className="text-center text-lg text-[#858585] my-5">
+                  {loginError}
+                </Text>
+                <CustomButton text="Salir" customFun={handleModalClose} />
               </View>
-            </Modal>
-          ) : null}
+            </View>
+          </Modal>
+
+
+
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

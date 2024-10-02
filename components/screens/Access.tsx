@@ -112,11 +112,13 @@ export default function Login() {
               setModalVisible(!modalVisible);
             }}
           >
-            <View className="flex-1 justify-center items-center bg-black opacity-80">
-              <View className="absolute bg-white p-6 rounded-lg w-3/4 items-center opacity-100">
+            <View className="flex-1 justify-center items-center bg-[#858585] opacity-90">
+            <View className="flex-1 justify-center items-center bg-black">
+              <View className="absolute bg-white p-6 rounded-lg w-3/4 items-center">
                 <AccessModal />
                 <CustomButton text="Salir" customFun={handleModalClose} />
               </View>
+            </View>
             </View>
           </Modal>
         </ScrollView>
