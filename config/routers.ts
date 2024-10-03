@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ip1 = "http://10.0.2.2";
-const ip2 = "http://192.168.0.14";
+const ip2 = "http://192.168.0.17";
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
@@ -161,7 +161,7 @@ export const accessRequest = async (email: string) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: email }),
+        body: JSON.stringify({ description: email }),
       });
       
       const data = await response.json();
@@ -172,10 +172,6 @@ export const accessRequest = async (email: string) => {
         switch (response.status) {
           case 400:
             return { success: false, message: "Solicitud incorrecta. Revisa los datos ingresados." };
-          case 401:
-            return { success: false, message: "Correo o contraseña incorrectos." };
-          case 403:
-            return { success: false, message: "Acceso denegado. Verifica tus credenciales." };
           case 404:
             return { success: false, message: "El servicio no está disponible. Intenta más tarde." };
           case 500:
@@ -249,10 +245,10 @@ export const getUserInfo = async () => {
   }
 };
 
-export const getShifts = async () => {
+export const getAssigments = async () => {
   try {
     const token = await AsyncStorage.getItem("token");
-    const response = await fetch(`${ip2}:3001/api/v1/shifts/me`, {
+    const response = await fetch(`${ip2}:3001/api/v1/assignment/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -261,7 +257,6 @@ export const getShifts = async () => {
     });
 
     if (!response.ok) {
-
       switch (response.status) {
         case 404:
           return {
@@ -281,14 +276,25 @@ export const getShifts = async () => {
       }
     }
 
-    const data = await response.json();
+    const assignments = await response.json();
+    const detailedShifts = [];
 
-    // Si la respuesta es correcta, devolvemos los datos
-    return { success: true, data };
+    for (const assignment of assignments) {
+      const shiftDetails = await getShiftDetails(assignment.id_shift);
+      if (shiftDetails.success) {
+        detailedShifts.push({
+          ...assignment,
+          ...shiftDetails.data,
+        });
+      } else {
+        console.error(`Error obteniendo detalles del turno ${assignment.id_shift}:`, shiftDetails.message);
+      }
+    }
+
+    return { success: true, data: detailedShifts };
 
   } catch (error) {
-    // Aquí capturamos errores de red y mostramos el mensaje apropiado
-    console.error("Error de red:", error);  // Para verificar en consola
+    console.error("Error de red:", error);
     return {
       success: false,
       message: "Error de red. Verifica tu conexión.",
@@ -296,3 +302,38 @@ export const getShifts = async () => {
   }
 };
 
+export const getShiftDetails = async (id_shift: string) => {
+  try {
+    const response = await fetch(`${ip2}:3001/api/v1/shift/${id_shift}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      },
+    });
+
+    if (!response.ok) {
+
+      switch (response.status) {
+        case 404:
+          return {
+            success: false,
+            message: "No se encontraro el turno",
+          };
+        default:
+          return {
+            success: false,
+            message: "Error al obtener los turnos. Intenta más tarde.",
+          };
+      }
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error de red:", error);  
+    return {
+      success: false,
+      message: "Error de red. Verifica tu conexión.",
+    };
+  }
+};

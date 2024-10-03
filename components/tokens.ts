@@ -16,9 +16,9 @@ export const standardTextTitleBold = `mb-3.5 text-boldText text-2xl font-bold`;
 
 export const standardSubtitleHome = `text-lg text-blueText text-left`;
 
-export const standardShiftInHome = `text-base text-shiftInColor mx-2`;
+export const standardShiftInHome = `text-base text-shiftInColor mx-1`;
 
-export const standardShiftOutHome = `text-base text-shiftOutColor mx-2`;
+export const standardShiftOutHome = `text-base text-shiftOutColor mx-1`;
 
 export const ShiftsSubtitleHome = `text-lg text-boldText mt-3.5 text-left font-bold`;
 

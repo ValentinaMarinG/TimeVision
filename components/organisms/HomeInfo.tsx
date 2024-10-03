@@ -32,7 +32,7 @@ export default function HomeCard() {
         <View className="flex-row items-center">
         <ProfilePhotoHome/>
             <View className="flex-1 justify-between ml-5">
-            <Text className="text-xl font-bold text-CText">{userInfo.name} {userInfo.lastname}</Text>
+            <Text className="text-xl text-white">{userInfo.name} {userInfo.lastname}</Text>
             <ProfileHomeCard/>
             </View>
         <Link href={"/profile"}>
