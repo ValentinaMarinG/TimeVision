@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ip1 = "http://10.0.2.2";
-const ip2 = "http://192.168.1.15";
+const ip2 = "http://192.168.0.17";
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
@@ -54,8 +54,6 @@ export const createRequest = async (
         message: "No se encontró el token de autenticación.",
       };
     }
-
-    console.log("token", token);
 
     const formData = new FormData();
     formData.append("start_date", start_date?.toISOString() || "");
@@ -127,36 +125,32 @@ export const createRequest = async (
 };
 
 export const accessRequest = async (email: string) => {
-  try {
-    const response = await fetch(`${ip2}:3001/api/v1/request/access`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email: email }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      return { success: true, data };
-    } else {
-      switch (response.status) {
-        case 400:
-          return { success: false, message: "Solicitud incorrecta. Revisa los datos ingresados." };
-        case 401:
-          return { success: false, message: "Correo o contraseña incorrectos." };
-        case 403:
-          return { success: false, message: "Acceso denegado. Verifica tus credenciales." };
-        case 404:
-          return { success: false, message: "El servicio no está disponible. Intenta más tarde." };
-        case 500:
-          return { success: false, message: "Error en el servidor. Intenta más tarde." };
-        default:
-          return { success: false, message: "Error desconocido. Intenta más tarde." };
+    try {
+      const response = await fetch(`${ip2}:3001/api/v1/request/access`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ description: email }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        return { success: true, data };
+      } else {
+        switch (response.status) {
+          case 400:
+            return { success: false, message: "Solicitud incorrecta. Revisa los datos ingresados." };
+          case 404:
+            return { success: false, message: "El servicio no está disponible. Intenta más tarde." };
+          case 500:
+            return { success: false, message: "Error en el servidor. Intenta más tarde." };
+          default:
+            return { success: false, message: "Error desconocido. Intenta más tarde." };
+        }
       }
-    }
-  } catch (error) {
+    } catch (error) {
     return { success: false, message: "Error de red o servidor. Verifica tu conexión." };
   }
 };
@@ -217,6 +211,99 @@ export const getUserInfo = async () => {
   } catch (error) {
     console.error("Error al obtener el usuario:", error);
     return { success: false, message: "Error de red. Verifica tu conexión." };
+  }
+};
+
+export const getAssigments = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    const response = await fetch(`${ip2}:3001/api/v1/assignment/me`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      switch (response.status) {
+        case 404:
+          return {
+            success: false,
+            message: "No se encontraron turnos asignados.",
+          };
+        case 403:
+          return {
+            success: false,
+            message: "Acceso denegado. Verifica tus credenciales.",
+          };
+        default:
+          return {
+            success: false,
+            message: "Error al obtener los turnos. Intenta más tarde.",
+          };
+      }
+    }
+
+    const assignments = await response.json();
+    const detailedShifts = [];
+
+    for (const assignment of assignments) {
+      const shiftDetails = await getShiftDetails(assignment.id_shift);
+      if (shiftDetails.success) {
+        detailedShifts.push({
+          ...assignment,
+          ...shiftDetails.data,
+        });
+      } else {
+        console.error(`Error obteniendo detalles del turno ${assignment.id_shift}:`, shiftDetails.message);
+      }
+    }
+
+    return { success: true, data: detailedShifts };
+
+  } catch (error) {
+    console.error("Error de red:", error);
+    return {
+      success: false,
+      message: "Error de red. Verifica tu conexión.",
+    };
+  }
+};
+
+export const getShiftDetails = async (id_shift: string) => {
+  try {
+    const response = await fetch(`${ip2}:3001/api/v1/shift/${id_shift}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      },
+    });
+
+    if (!response.ok) {
+
+      switch (response.status) {
+        case 404:
+          return {
+            success: false,
+            message: "No se encontraro el turno",
+          };
+        default:
+          return {
+            success: false,
+            message: "Error al obtener los turnos. Intenta más tarde.",
+          };
+      }
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error de red:", error);  
+    return {
+      success: false,
+      message: "Error de red. Verifica tu conexión.",
+    };
   }
 };
 

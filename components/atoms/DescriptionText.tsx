@@ -103,44 +103,38 @@ export const InputTextHome = () => {
   );
 };
 
+interface ShiftInHourProps {
+  time: string | null;
+}
 
-export const ShiftDate = () => {
-  return (
-    <Text className={`${Tokens.standardSubtitleHome}`}>
-      29 de agosto del 2024
-    </Text>
-  );
-};
+interface ShiftOutHourProps {
+  time: string | null; 
+}
 
 export const ShiftInText = () => {
-  return (
-    <Text className={`${Tokens.standardShiftInHome}`}>
-      Ingreso
-    </Text>
-  );
+  return <Text className={`${Tokens.standardShiftInHome}`}>Ingreso</Text>;
 };
-
-export const ShiftInHour = () => {
-  return (
-    <Text className={`${Tokens.standardShiftInHome}`}>
-      6:00 am
-    </Text>
-  );
-};
-
 
 export const ShiftOutText = () => {
-  return (
-    <Text className={`${Tokens.standardShiftOutHome}`}>
-      Salida
-    </Text>
-  );
+  return <Text className={`${Tokens.standardShiftOutHome}`}>Salida</Text>;
 };
 
-export const ShiftOutHour = () => {
+export const ShiftInHour: React.FC<ShiftInHourProps> = ({ time }) => {
+  return <Text className={`${Tokens.standardShiftInHome}`}>{time || "No se encontró turno"}</Text>;
+};
+
+export const ShiftOutHour: React.FC<ShiftOutHourProps> = ({ time }) => {
+  return <Text className={`${Tokens.standardShiftOutHome}`}>{time || "No se encontró turno"}</Text>;
+};
+
+interface ShiftDateProps {
+  date: string;
+}
+
+export const ShiftDate: React.FC<ShiftDateProps> = ({ date }) => {
   return (
-    <Text className={`${Tokens.standardShiftOutHome}`}>
-      2:00 pm
+    <Text className={`${Tokens.standardSubtitleHome}`}>
+      {date}
     </Text>
   );
 };

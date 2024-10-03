@@ -18,7 +18,7 @@ export const TitleTextTicketsRequest = () => {
 };
 
 export const TitleTextHome = () => {
-  return <Text className={`${Tokens.standardTextTitleBold}`}>Hola Manuel</Text>;
+  return <Text className={`${Tokens.standardTextTitleBold}`}>Hola</Text>;
 };
 
 export const TitleProfile = () => {
