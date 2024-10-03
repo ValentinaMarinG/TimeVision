@@ -12,7 +12,7 @@ export const LoginUserText = () => {
 
 export const LoginPasswordText = () => {
   return (
-    <Text className={`${Tokens.standardFormDescriptionText}`}>Contraseña:</Text>
+    <Text className={`${Tokens.standardFormDescriptionText} mt-4`}>Contraseña:</Text>
   );
 };
 
