@@ -28,7 +28,7 @@ export default function SearchScreen() {
               />
               <TextInput
                 className={`${Tokens.searchInputHome} w-full`}
-                placeholder="INGRESE DIA-MES"
+                placeholder="INGRESA DIA-MES"
                 value={searchText}
                 onChangeText={setSearchText}
               />

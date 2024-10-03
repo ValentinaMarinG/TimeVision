@@ -18,24 +18,57 @@ import {
 } from "../atoms/SubtitleText";
 import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ProfilePhotoScreen } from "../atoms/ProfilePhoto";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getUserInfo } from "../../config/routers";
+import ChangePasswordModal from "../organisms/ChangePassword";
 
 
 export default function Profile() {
 
   const insets = useSafeAreaInsets();
   const [account, SetAccount] = useState({
-    name: "Manuel Castro Duque",
-    documentType: "C.C",
-    document: "1.234.567.890",
-    employeeNumber: "EMP00123",
-    position: "Vigilante",
-    departament: "Seguridad",
-    email: "manuel.castroduq@autonoma.edu.co",
+    name: "",
+    lastname: "",
+    documentType: "",
+    document: "",
+    position: "",
+    departament: "",
+    email: "",
   });
+
+
+  useEffect(() => {
+    SetAccount({
+      name: "",
+      lastname: "",
+      documentType: "",
+      document: "",
+      position: "",
+      departament: "",
+      email: "",
+    });
+    const fetchUser = async () => {
+      const response = await getUserInfo();
+      if (response?.success) {
+        SetAccount({
+          name: response?.data.name,
+          lastname: response?.data.lastname,
+          documentType: response?.data.type_doc,
+          document: response?.data.num_doc,
+          position: response?.data.position,
+          departament: response?.data.id_department,
+          email: response?.data.email,
+        });
+      } else {
+        console.error(response?.message);
+      }
+    };
+    fetchUser();
+  }, []);
+
   const [modalVisible, setModalVisible] = useState(false);
 
   const router = useRouter();
@@ -59,6 +92,7 @@ export default function Profile() {
 
   const handleCloseModal = () => {
     setModalVisible(false);
+
   };
 
   return (
@@ -79,7 +113,7 @@ export default function Profile() {
           <View className="flex relative -top-8 left-10">
             <EditProfileButton text="" customFun={handlePress} />
           </View>
-          <Text className="text-xl font-bold text-CText">{account.name}</Text>
+          <Text className="text-xl font-bold text-CText">{account.name} {account.lastname}</Text>
           <Text className="text-sm text-blueText">{account.email}</Text>
         </View>
         <View className="w-full justify-center items-center my-5">
@@ -93,12 +127,6 @@ export default function Profile() {
             <SubTitleProfileDocument />
             <Text className={Tokens.standardTextProfileRight}>
               {account.document}
-            </Text>
-          </View>
-          <View className={Tokens.textSubtitleContainer}>
-            <SubTitleProfileNumeroEmpleado />
-            <Text className={Tokens.standardTextProfileRight}>
-              {account.employeeNumber}
             </Text>
           </View>
           <View className={Tokens.textSubtitleContainer}>
@@ -117,10 +145,11 @@ export default function Profile() {
         <View className="w-full flex items-center justify-center">
           <View className="w-3/4 justify-center items-center mt-3">
             <CustomButton
-              text="Actualizar Contraseña"
-              customFun={handlePassword}
+              text="Actualizar contraseña"
+              customFun={handleOpenModal}
             />
           </View>
+          <ChangePasswordModal visible={modalVisible} onClose={handleCloseModal} />
           <View className="w-3/4 justify-center items-center mt-5">
             <CustomButton text="Cerrar sesión" customFun={handleLogout} />
           </View>

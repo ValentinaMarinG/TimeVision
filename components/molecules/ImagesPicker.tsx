@@ -4,7 +4,11 @@ import * as ImagePicker from "expo-image-picker";
 import { CancelButton, UploadButton } from "../atoms/CustomButton";
 import { RequestImageText } from "../atoms/DescriptionText";
 
-export default function ImagesPicker() {
+interface ImagesPickerProps {
+  onImageSelected: (uri: string | null) => void; 
+}
+
+export default function ImagesPicker({ onImageSelected }: ImagesPickerProps) {
   const [image, setImage] = useState<string | null>(null);
 
   const pickImage = async () => {
@@ -18,17 +22,20 @@ export default function ImagesPicker() {
     console.log(result);
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      const selectedImageUri = result.assets[0].uri;
+      setImage(selectedImageUri);
+      onImageSelected(selectedImageUri);
     }
   };
 
   const removeImage = () => {
     setImage(null);
+    onImageSelected(null);
   };
 
   return (
     <View className="flex items-center justify-center w-full">
-      <View className="flex justify-around w-full mb-8">
+      <View className="flex justify-around w-full">
         <RequestImageText />
         <UploadButton
           text="Seleccionar archivo"

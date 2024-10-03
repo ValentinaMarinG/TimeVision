@@ -18,6 +18,17 @@ export const CustomButton = ({ text, customFun }: CustomButtonProps) => {
   );
 };
 
+export const CustomButtonPass = ({ text, customFun }: CustomButtonProps) => {
+  return (
+    <Pressable
+      className="w-9/12 h-12 bg-[#4894FE] rounded-lg justify-center items-center shadow-2xl m-2"
+      onPress={customFun}
+    >
+      <Text className="text-white text-base text-center">{text}</Text>
+    </Pressable>
+  );
+};
+
 export const AddButton = ({ text, customFun }: CustomButtonProps) => {
   return (
     <Pressable
@@ -36,7 +47,7 @@ export const UploadButton = ({ text, customFun }: CustomButtonProps) => {
       onPress={customFun}
     >
       <UploadIcon size={Tokens.standardSizeIcon2} color={"#63B4FF"}></UploadIcon>
-      <Text className="text-[#63B4FF] text-lg ml-2 text-center">{text}</Text>
+      <Text className="text-[#63B4FF] text-md ml-2 text-center">{text}</Text>
     </Pressable>
   );
 };

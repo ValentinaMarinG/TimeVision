@@ -7,46 +7,42 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
-  Alert,
   Text,
   Modal,
+  TouchableOpacity,
 } from "react-native";
 import { MainIcon } from "../atoms/Icon";
 import { TitleTextLogin } from "../atoms/TitleText";
 import { SubTitleTextLogin } from "../atoms/SubtitleText";
-import {
-  LoginUserText,
-  LoginPasswordText,
-  AccessModal,
-} from "../atoms/DescriptionText";
+import { LoginUserText, LoginPasswordText } from "../atoms/DescriptionText";
 import { CustomButton } from "../atoms/CustomButton";
 import { SubTitleTextRequest } from "../atoms/SubtitleText";
 import * as Tokens from "../tokens";
 import { useRouter } from "expo-router";
 import { loginRequest } from "../../config/routers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from '@expo/vector-icons';
 
 export default function Login() {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
-
   const [userError, setUserError] = useState("");
   const [passError, setPassError] = useState("");
-
   const [loginError, setLoginError] = useState("");
-
   const [modalVisible, setModalVisible] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
 
   const handleModalClose = () => {
     setModalVisible(false);
-    router.push("/login");
   };
 
   const handlePress = async () => {
     let valid = true;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
+    const invalidCharRegex = /ñ/;
 
     setUserError("");
     setPassError("");
@@ -56,12 +52,21 @@ export default function Login() {
       setUserError("El correo es requerido");
       valid = false;
     } else if (!emailRegex.test(user)) {
-      setUserError("Ingresa un correo valido");
+      setUserError("Ingresa un correo válido");
+      valid = false;
+    } else if (sqlInjectionRegex.test(user)) {
+      setUserError("El correo contiene caracteres no permitidos.");
       valid = false;
     }
 
     if (!pass) {
       setPassError("La contraseña es requerida");
+      valid = false;
+    } else if (sqlInjectionRegex.test(pass)) {
+      setPassError("La contraseña contiene caracteres no permitidos.");
+      valid = false;
+    } else if (invalidCharRegex.test(pass)) {
+      setPassError("La contraseña no puede contener la letra 'ñ'");
       valid = false;
     }
 
@@ -69,80 +74,88 @@ export default function Login() {
       const result = await loginRequest(user, pass);
       if (result?.success) {
         const token = await AsyncStorage.getItem("token");
-        console.log(token);
-        if (token) { 
+        if (token) {
           router.push("/home");
-         } 
+        }
       } else {
-        setLoginError(result?.data);
+        setModalVisible(true);
+        setLoginError(result?.message || "Error desconocido");
       }
     }
   };
+
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={100}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="flex-grow mt-[90] bg-white">
-            <View className="justify-center items-center mx-5">
-              <TitleTextLogin />
-              <MainIcon
-                size={Tokens.logoSizeIcon}
-                source={require("../../assets/LogoGrey.png")}
+          <View className="flex-1 mt-36 items-center">
+            <TitleTextLogin />
+            <MainIcon
+              size={Tokens.logoSizeIcon}
+              source={require("../../assets/LogoGrey.png")}
+            />
+            <SubTitleTextLogin />
+            <View className="w-72 mt-5">
+              <LoginUserText />
+              <TextInput
+                className={`${Tokens.standardInput} border border-gray-300`}
+                onChangeText={setUser}
+                value={user}
+                autoCapitalize="none"
+                onFocus={() => setUserError("")}
+                keyboardType="email-address"
+                returnKeyType="next"
+                onSubmitEditing={() => this.passwordInput.focus()}
               />
-              <SubTitleTextLogin />
-            </View>
-            <View className="items-center mt-5">
-              <View className="w-72 flex-1">
-                <LoginUserText />
+              {userError ? <Text className="text-red-500">{userError}</Text> : null}
+              <LoginPasswordText />
+              <View className="flex-row items-center rounded-xl bg-gray-200 pr-2 border border-gray-300">
                 <TextInput
-                  className={`${Tokens.standardInput}`}
-                  onChangeText={setUser}
-                />
-                {userError ? (
-                  <Text className="text-red-500">{userError}</Text>
-                ) : null}
-                <LoginPasswordText />
-                <TextInput
-                  className={`${Tokens.standardInput}`}
+                  ref={(input) => this.passwordInput = input}
+                  className={`${Tokens.standardInput} flex-1`}
                   onChangeText={setPass}
-                  secureTextEntry={true}
+                  value={pass}
+                  secureTextEntry={!showPassword}
+                  onFocus={() => setPassError("")}
+                  returnKeyType="done"
                 />
-                {passError ? (
-                  <Text className="text-red-500">{passError}</Text>
-                ) : null}
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <Ionicons
+                    name={showPassword ? "eye" : "eye-off"}
+                    size={24}
+                    color="gray"
+                  />
+                </TouchableOpacity>
               </View>
+              {passError ? <Text className="text-red-500">{passError}</Text> : null}
             </View>
-            <View className="justify-center items-center mx-10">
-              <View className="w-full items-center justify-between mt-9">
-                <CustomButton text="Ingresar" customFun={handlePress} />
-              </View>
-              <SubTitleTextRequest />
+            <View className="w-full items-center justify-between mt-9">
+              <CustomButton text="Ingresar" customFun={handlePress} />
+              <View className="justify-center items-center mx-10"><SubTitleTextRequest /></View>
             </View>
           </View>
-          {loginError ? (
-            <Modal
-              animationType="fade"
-              transparent={true}
-              visible={modalVisible}
-              onRequestClose={() => {
-                setModalVisible(!modalVisible);
-              }}
-            >
-              <View className="flex-1 justify-center items-center bg-[#858585] bg-opacity-25">
-                <View className="bg-white p-6 rounded-lg w-3/4 items-center">
-                  <Text> {loginError} </Text>
-                  <CustomButton text="Salir" customFun={handleModalClose} />
-                </View>
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={handleModalClose}
+          >
+            <View className="flex-1 justify-center items-center bg-[#858585] opacity-90">
+              <View className="bg-white p-6 rounded-lg w-3/4 items-center">
+                <Text className="text-center text-lg text-[#858585] my-5">
+                  {loginError}
+                </Text>
+                <CustomButton text="Salir" customFun={handleModalClose} />
               </View>
-            </Modal>
-          ) : null}
+            </View>
+          </Modal>
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

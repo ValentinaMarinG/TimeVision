@@ -7,7 +7,8 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
-  ScrollView
+  ScrollView,
+  Text
 } from "react-native";
 import { useState } from "react";
 import { TitleTextAccess } from "../atoms/TitleText";
@@ -18,22 +19,50 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MainIcon } from "../atoms/Icon";
 
+import { accessRequest } from "../../config/routers";
+
 import * as Tokens from "../tokens";
 
 export default function Login() {
-  const [user, setUser] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [email, setEmail] = useState("");
+
+  const  [emailError, setEmailError] = useState("")
 
   const router = useRouter();
 
-  const handlePress = () => {
-    setModalVisible(true);
+  const handlePress = async () => {
+    if (validate()) {
+      const response = await accessRequest(email);
+      
+      if (response.success) {
+        setModalVisible(true);
+      } else {
+        Alert.alert("Error", response.message); 
+      }
+    }
   };
 
   const handleModalClose = () => {
     setModalVisible(false);
     router.push("/login");
   };
+
+  const validate = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+    if (!email) {
+      setEmailError("El correo es obligatorio.");
+      return false;
+    } else if (!emailRegex.test(email)) {
+      setEmailError("El correo ingresado no es válido.");
+      return false;
+    } else {
+      setEmailError("");
+      return true;
+    }
+  };
+
 
   return (
     <KeyboardAvoidingView
@@ -60,8 +89,15 @@ export default function Login() {
               <LoginUserText />
               <TextInput
                 className={`${Tokens.standardInput}`}
-                onChangeText={setUser}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (emailError) {
+                    setEmailError(""); 
+                  }
+                }}
+                value={email}
               />
+              {emailError ? <Text className="text-red-500 mt-2">{emailError}</Text> : null}
               <View className="my-4 items-center justify-center">
                 <CustomButton text="Realizar solicitud" customFun={handlePress} />
               </View>
@@ -76,11 +112,13 @@ export default function Login() {
               setModalVisible(!modalVisible);
             }}
           >
-            <View className="flex-1 justify-center items-center bg-[#858585] bg-opacity-25">
-              <View className="bg-white p-6 rounded-lg w-3/4 items-center">
+            <View className="flex-1 justify-center items-center bg-[#858585] opacity-90">
+            <View className="flex-1 justify-center items-center bg-black">
+              <View className="absolute bg-white p-6 rounded-lg w-3/4 items-center">
                 <AccessModal />
                 <CustomButton text="Salir" customFun={handleModalClose} />
               </View>
+            </View>
             </View>
           </Modal>
         </ScrollView>

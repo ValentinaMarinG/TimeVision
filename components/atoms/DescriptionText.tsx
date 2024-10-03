@@ -12,7 +12,7 @@ export const LoginUserText = () => {
 
 export const LoginPasswordText = () => {
   return (
-    <Text className={`${Tokens.standardFormDescriptionText}`}>Contraseña:</Text>
+    <Text className={`${Tokens.standardFormDescriptionText} mt-4`}>Contraseña:</Text>
   );
 };
 
@@ -38,13 +38,26 @@ export const RequestDescriptionText = () => {
 
 export const RequestDatesText = () => {
   return (
-    <Text className={`${Tokens.standardFormDescriptionText}`}>Fechas</Text>
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Duración de la solicitud</Text>
   );
 };
 
+export const StartDateText = () => {
+  return (
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Desde</Text>
+  );
+};
+
+export const EndDateText = () => {
+  return (
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Hasta</Text>
+  );
+};
+
+
 export const RequestImageText = () => {
   return (
-    <Text className={`${Tokens.standardFormDescriptionText}`}>Por favor adjuntar el justificante médico</Text>
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Por favor adjuntar justificante médico</Text>
   );
 };
 
