@@ -22,65 +22,39 @@ import { useRouter } from "expo-router";
 import { loginRequest } from "../../config/routers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from '@expo/vector-icons';
+import { useForm, Controller } from "react-hook-form";
+
+type FormData = {
+  user: string;
+  pass: string;
+};
 
 export default function Login() {
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
-  const [userError, setUserError] = useState("");
-  const [passError, setPassError] = useState("");
-  const [loginError, setLoginError] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [loginError, setLoginError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
   const router = useRouter();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
 
   const handleModalClose = () => {
     setModalVisible(false);
   };
 
-  const handlePress = async () => {
-    let valid = true;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
-    const invalidCharRegex = /ñ/;
-
-    setUserError("");
-    setPassError("");
-    setLoginError("");
-
-    if (!user) {
-      setUserError("El correo es requerido");
-      valid = false;
-    } else if (!emailRegex.test(user)) {
-      setUserError("Ingresa un correo válido");
-      valid = false;
-    } else if (sqlInjectionRegex.test(user)) {
-      setUserError("El correo contiene caracteres no permitidos.");
-      valid = false;
-    }
-
-    if (!pass) {
-      setPassError("La contraseña es requerida");
-      valid = false;
-    } else if (sqlInjectionRegex.test(pass)) {
-      setPassError("La contraseña contiene caracteres no permitidos.");
-      valid = false;
-    } else if (invalidCharRegex.test(pass)) {
-      setPassError("La contraseña no puede contener la letra 'ñ'");
-      valid = false;
-    }
-
-    if (valid) {
-      const result = await loginRequest(user, pass);
-      if (result?.success) {
-        const token = await AsyncStorage.getItem("token");
-        if (token) {
-          router.push("/home");
-        }
-      } else {
-        setModalVisible(true);
-        setLoginError(result?.message || "Error desconocido");
+  const onSubmit = async (data: FormData) => {
+    const result = await loginRequest(data.user, data.pass);
+    if (result?.success) {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        router.push("/home");
       }
+    } else {
+      setModalVisible(true);
+      setLoginError(result?.message || "Error desconocido");
     }
   };
 
@@ -102,29 +76,63 @@ export default function Login() {
               source={require("../../assets/LogoGrey.png")}
             />
             <SubTitleTextLogin />
-            <View className="w-72 mt-5">
-              <LoginUserText />
-              <TextInput
-                className={`${Tokens.standardInput} border border-gray-300`}
-                onChangeText={setUser}
-                value={user}
-                autoCapitalize="none"
-                onFocus={() => setUserError("")}
-                keyboardType="email-address"
-                returnKeyType="next"
-                onSubmitEditing={() => this.passwordInput.focus()}
+            <View className="w-72 mt-10">
+              {/* <LoginUserText /> */}
+              <Controller
+                control={control}
+                rules={{
+                  required: "El correo es requerido.",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Ingresa un correo válido.",
+                  },
+                  validate: (value) => {
+                    const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
+                    return !sqlInjectionRegex.test(value) || "El correo contiene caracteres no permitidos.";
+                  }
+                }}
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    className={`${Tokens.standardInput} border border-gray-300`}
+                    onChangeText={onChange}
+                    value={value}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    placeholder="Correo empresarial"
+                  />
+                )}
+                name="user"
               />
-              {userError ? <Text className="text-red-500">{userError}</Text> : null}
-              <LoginPasswordText />
-              <View className="flex-row items-center rounded-xl bg-gray-200 pr-2 border border-gray-300">
-                <TextInput
-                  ref={(input) => this.passwordInput = input}
-                  className={`${Tokens.standardInput} flex-1`}
-                  onChangeText={setPass}
-                  value={pass}
-                  secureTextEntry={!showPassword}
-                  onFocus={() => setPassError("")}
-                  returnKeyType="done"
+              {errors.user && <Text className="text-red-500">{errors.user.message}</Text>}
+
+             {/*  <LoginPasswordText /> */}
+              <View className="flex-row items-center rounded-xl bg-gray-200 pr-2 border border-gray-300 mt-5">
+                <Controller
+                  control={control}
+                  rules={{
+                    required: "La contraseña es requerida.",
+                    validate: (value) => {
+                      const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
+                      const invalidCharRegex = /ñ/;
+                      if (sqlInjectionRegex.test(value)) {
+                        return "La contraseña contiene caracteres no permitidos.";
+                      }
+                      if (invalidCharRegex.test(value)) {
+                        return "La contraseña no puede contener la letra 'ñ'.";
+                      }
+                      return true;
+                    },
+                  }}
+                  render={({ field: { onChange, value } }) => (
+                    <TextInput
+                      className={`${Tokens.standardInput} flex-1`}
+                      onChangeText={onChange}
+                      value={value}
+                      secureTextEntry={!showPassword}
+                      placeholder="Contraseña"
+                    />
+                  )}
+                  name="pass"
                 />
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                   <Ionicons
@@ -134,13 +142,15 @@ export default function Login() {
                   />
                 </TouchableOpacity>
               </View>
-              {passError ? <Text className="text-red-500">{passError}</Text> : null}
+              {errors.pass && <Text className="text-red-500">{errors.pass.message}</Text>}
             </View>
-            <View className="w-full items-center justify-between mt-9">
-              <CustomButton text="Ingresar" customFun={handlePress} />
+
+            <View className="items-center justify-between mt-9 w-[300]">
+              <CustomButton text="Ingresar" customFun={handleSubmit(onSubmit)} />
               <View className="justify-center items-center mx-10"><SubTitleTextRequest /></View>
             </View>
           </View>
+
           <Modal
             animationType="fade"
             transparent={true}

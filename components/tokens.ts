@@ -37,7 +37,7 @@ export const standardSizeIcon = 30
 
 export const standardSizeIcon2 = 50
 
-export const logoSizeIcon = 115
+export const logoSizeIcon = 135
 
 export const logoSizeIconCard = 24
 
