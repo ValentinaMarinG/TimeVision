@@ -12,6 +12,7 @@ export type Ticket = {
   type: string;
   title: string;
   state: string;
+  description: string;
   start_date: Date;
 };
 
