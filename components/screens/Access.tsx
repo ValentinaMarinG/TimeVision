@@ -85,6 +85,7 @@ export default function Access() {
                     className={`${Tokens.standardInput}`}
                     onBlur={onBlur}
                     onChangeText={onChange}
+                    autoCapitalize="none"
                     value={value}
                     keyboardType="email-address"
                   />

@@ -13,7 +13,7 @@ const BottomBar = ({ activeRoute }: BottomBarProps) => {
   const router = useRouter();
 
   const handleNavigation = (routeName: string) => {
-    router.push(routeName);
+    router.replace(routeName);
   };
   const iconColor = (route: string) => activeRoute === route ? "#63B4FF" : "#B0B0B0";
   return (
