@@ -23,6 +23,8 @@ import { loginRequest } from "../../config/routers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from '@expo/vector-icons';
 import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LoginSchema } from "../../schemas/loginSchema";
 
 type FormData = {
   user: string;
@@ -39,7 +41,7 @@ export default function Login() {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>();
+  } = useForm<FormData>({resolver: zodResolver(LoginSchema)});
 
   const handleModalClose = () => {
     setModalVisible(false);
@@ -77,20 +79,8 @@ export default function Login() {
             />
             <SubTitleTextLogin />
             <View className="w-72 mt-10">
-              {/* <LoginUserText /> */}
               <Controller
                 control={control}
-                rules={{
-                  required: "El correo es requerido.",
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Ingresa un correo válido.",
-                  },
-                  validate: (value) => {
-                    const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
-                    return !sqlInjectionRegex.test(value) || "El correo contiene caracteres no permitidos.";
-                  }
-                }}
                 render={({ field: { onChange, value } }) => (
                   <TextInput
                     className={`${Tokens.standardInput} border border-gray-300`}
@@ -103,26 +93,11 @@ export default function Login() {
                 )}
                 name="user"
               />
-              {errors.user && <Text className="text-red-500">{errors.user.message}</Text>}
+              {errors.user && <Text className="text-red-500 ml-1">{errors.user.message}</Text>}
 
-             {/*  <LoginPasswordText /> */}
               <View className="flex-row items-center rounded-xl bg-gray-200 pr-2 border border-gray-300 mt-5">
                 <Controller
                   control={control}
-                  rules={{
-                    required: "La contraseña es requerida.",
-                    validate: (value) => {
-                      const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
-                      const invalidCharRegex = /ñ/;
-                      if (sqlInjectionRegex.test(value)) {
-                        return "La contraseña contiene caracteres no permitidos.";
-                      }
-                      if (invalidCharRegex.test(value)) {
-                        return "La contraseña no puede contener la letra 'ñ'.";
-                      }
-                      return true;
-                    },
-                  }}
                   render={({ field: { onChange, value } }) => (
                     <TextInput
                       className={`${Tokens.standardInput} flex-1`}
@@ -142,7 +117,7 @@ export default function Login() {
                   />
                 </TouchableOpacity>
               </View>
-              {errors.pass && <Text className="text-red-500">{errors.pass.message}</Text>}
+              {errors.pass && <Text className="text-red-500 ml-1">{errors.pass.message}</Text>}
             </View>
 
             <View className="items-center justify-between mt-9 w-[300]">
