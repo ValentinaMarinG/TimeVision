@@ -21,6 +21,8 @@ import { CustomButton } from "../atoms/CustomButton";
 import { MainIcon } from "../atoms/Icon";
 import { accessRequest } from "../../config/routers";
 import * as Tokens from "../tokens";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AccessSchema } from "../../schemas/accessSchema";
 
 type FormData = {
   email: string;
@@ -29,7 +31,7 @@ type FormData = {
 export default function Access() {
   const router = useRouter();
 
-  const { control, handleSubmit, formState: { errors } } = useForm<FormData>();
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({resolver: zodResolver(AccessSchema)});
 
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -73,13 +75,6 @@ export default function Access() {
               <LoginUserText />
               <Controller
                 control={control}
-                rules={{
-                  required: "El correo es obligatorio.",
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "El correo ingresado no es válido."
-                  }
-                }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
                     className={`${Tokens.standardInput}`}

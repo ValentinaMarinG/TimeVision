@@ -21,16 +21,16 @@ import { TextInput } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
 import { useState } from "react";
 import { CustomButton } from "../atoms/CustomButton";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
 import ImagesPicker from "../molecules/ImagesPicker";
 import { ArrowLeftIcon } from "../atoms/Icon";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
 import { createRequest } from "../../config/routers";
 import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RequestSchema } from "../../schemas/requestSchema";
 
 type FormData = {
   title: string;
@@ -49,7 +49,7 @@ export default function TicketRequest() {
     handleSubmit,
     getValues,
     formState: { errors },
-  } = useForm<FormData>();
+  } = useForm<FormData>({resolver: zodResolver(RequestSchema)});
 
   const [type, setType] = useState<string>("");
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -91,8 +91,6 @@ export default function TicketRequest() {
     { key: "6", value: "Otro" },
   ];
 
-  const sqlInjectionPattern = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
-
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-white"
@@ -122,9 +120,6 @@ export default function TicketRequest() {
               <RequestTypeText />
               <Controller
                 control={control}
-                rules={{
-                  required: "El tipo de solicitud es obligatorio.",
-                }}
                 render={({ field: { onChange, value } }) => (
                   <SelectList
                     search={false}
@@ -163,15 +158,6 @@ export default function TicketRequest() {
               <RequestTitleText />
               <Controller
                 control={control}
-                rules={{
-                  required: "El título es obligatorio.",
-                  validate: (value) => {
-                    if (sqlInjectionPattern.test(value)) {
-                      return "El título contiene caracteres no permitidos.";
-                    }
-                    return true;
-                  },
-                }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
                     className={`${Tokens.standardInput}`}
@@ -193,30 +179,6 @@ export default function TicketRequest() {
               <RequestDatesText />
               <Controller
                 control={control}
-                rules={{
-                  required: "La fecha de inicio es obligatoria.",
-                  validate: {
-                    noPastDate: (value) => {
-                      const currentDate = new Date();
-                      currentDate.setHours(0,0,0,0)
-                      value.setHours(0,0,0,0)
-                      return (
-                        value >= currentDate ||
-                        "La fecha de inicio no puede ser de un año pasado."
-                      );
-                    },
-                    notAfterEndDate: (value) => {
-                      const endDate = getValues("end_date");
-                      endDate.setHours(0,0,0,0)
-                      value.setHours(0,0,0,0)
-                      return (
-                        !endDate ||
-                        value <= endDate ||
-                        "La fecha de inicio no puede ser posterior a la fecha de fin."
-                      );
-                    },
-                  },
-                }}
                 render={({ field: { onChange, value } }) => (
                   <>
                     {showPicker && isStartDateSelected && (
@@ -260,20 +222,6 @@ export default function TicketRequest() {
 
               <Controller
                 control={control}
-                rules={{
-                  required: "La fecha de finalización es obligatoria.",
-                  validate: {
-                    noPastEndYear: (value) => {
-                      const currentDate = new Date();
-                      const endYear = value.getFullYear();
-              
-                      if (endYear < currentDate.getFullYear()) {
-                        return "La fecha final no puede ser de un año pasado.";
-                      }
-                      return true;
-                    }
-                  }               
-                }}
                 render={({ field: { onChange, value } }) => (
                   <>
                     {showPicker && !isStartDateSelected && (
@@ -320,15 +268,6 @@ export default function TicketRequest() {
               <RequestDescriptionText />
               <Controller
                 control={control}
-                rules={{
-                  required: "La descripción es obligatoria.",
-                  validate: (value) => {
-                    if (sqlInjectionPattern.test(value)) {
-                      return "La descripción contiene caracteres no permitidos.";
-                    }
-                    return true;
-                  },
-                }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
                     className={`${Tokens.standardInput} h-24`}
