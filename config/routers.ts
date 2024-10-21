@@ -1,11 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ip1 = "http://10.0.2.2";
-const ip2 = "http://192.168.0.31";
+const ip2 = "http://192.168.1.24";
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
-    const response = await fetch(`${ip1}:3001/api/v1/login`, {
+    const response = await fetch(`${ip2}:3001/api/v1/login`, {
       /* 192.168.1.75 */
       /* para emulador la ip es 10.0.2.2 */
       method: "POST",
@@ -67,7 +67,7 @@ export const createRequest = async (
       formData.append("attach", imageBlob);
     }
 
-    const response = await fetch(`${ip1}:3001/api/v1/request/`, {
+    const response = await fetch(`${ip2}:3001/api/v1/request/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -126,7 +126,7 @@ export const createRequest = async (
 
 export const accessRequest = async (email: string) => {
     try {
-      const response = await fetch(`${ip1}:3001/api/v1/request/access`, {
+      const response = await fetch(`${ip2}:3001/api/v1/request/access`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,7 +158,7 @@ export const accessRequest = async (email: string) => {
 export const getTickets = async () => {
   try {
     const token = await AsyncStorage.getItem("token");
-    const response = await fetch(`${ip1}:3001/api/v1/request/me`, {
+    const response = await fetch(`${ip2}:3001/api/v1/request/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -187,7 +187,7 @@ export const getTickets = async () => {
 export const getUserInfo = async () => {
   try {
     const token = await AsyncStorage.getItem("token");
-    const response = await fetch(`${ip1}:3001/api/v1/user/me`, {
+    const response = await fetch(`${ip2}:3001/api/v1/user/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -217,7 +217,7 @@ export const getUserInfo = async () => {
 export const getAssigments = async () => {
   try {
     const token = await AsyncStorage.getItem("token");
-    const response = await fetch(`${ip1}:3001/api/v1/assignment/me`, {
+    const response = await fetch(`${ip2}:3001/api/v1/assignment/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -273,7 +273,7 @@ export const getAssigments = async () => {
 
 export const getShiftDetails = async (id_shift: string) => {
   try {
-    const response = await fetch(`${ip1}:3001/api/v1/shift/${id_shift}`, {
+    const response = await fetch(`${ip2}:3001/api/v1/shift/${id_shift}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
