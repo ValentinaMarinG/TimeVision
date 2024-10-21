@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Modal, Alert, BackHandler } from 'react-native';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ShiftTextHome, SubTitleTextHome } from '../atoms/SubtitleText';
 import HomeCard from '../organisms/HomeInfo';
@@ -11,10 +11,12 @@ import { TitleTextHome } from "../atoms/TitleText";
 import * as Tokens from "../tokens";
 import {CustomButton} from '../atoms/CustomButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from 'expo-router';
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState({ name: "", lastname: "" });
   const [modalVisible, setModalVisible] = useState(false);
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -32,27 +34,33 @@ export default function Home() {
     };
 
     fetchUserData();
-
-    const handleBackButton = () => {
-      setModalVisible(true);
-      return true;
-    };
-
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackButton);
-
-    return () => backHandler.remove();
   }, []);
 
   const handleModalClose = () => {
     setModalVisible(false);
   };
+
   async function close() {
     await AsyncStorage.clear();
   }
+
   const handleExit = () => {
-     close();
-     BackHandler.exitApp();
+    close();
+    BackHandler.exitApp();
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const handleBackButton = () => {
+        setModalVisible(true);
+        return true; // Esto evita que la aplicación retroceda
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+
+      return () => BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    }, [])
+  );
 
   return (
     <View className="flex-1 w-full justify-between">
