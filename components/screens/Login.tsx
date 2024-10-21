@@ -11,7 +11,7 @@ import {
   Modal,
   TouchableOpacity,
 } from "react-native";
-import { MainIcon } from "../atoms/Icon";
+import { AlertIcon, MainIcon } from "../atoms/Icon";
 import { TitleTextLogin } from "../atoms/TitleText";
 import { SubTitleTextLogin } from "../atoms/SubtitleText";
 import { LoginUserText, LoginPasswordText } from "../atoms/DescriptionText";
@@ -21,7 +21,7 @@ import * as Tokens from "../tokens";
 import { useRouter } from "expo-router";
 import { loginRequest } from "../../config/routers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginSchema } from "../../schemas/loginSchema";
@@ -41,7 +41,7 @@ export default function Login() {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({resolver: zodResolver(LoginSchema)});
+  } = useForm<FormData>({ resolver: zodResolver(LoginSchema) });
 
   const handleModalClose = () => {
     setModalVisible(false);
@@ -93,7 +93,12 @@ export default function Login() {
                 )}
                 name="user"
               />
-              {errors.user && <Text className="text-red-500 ml-1">{errors.user.message}</Text>}
+              {errors.user && (
+                <View className="flex-row items-center mt-1 ml-2">
+                  <AlertIcon size={20} color={"#F44336"} />
+                  <Text className="text-red-500"> {errors.user.message}</Text>
+                </View>
+              )}
 
               <View className="flex-row items-center rounded-xl bg-gray-200 pr-2 border border-gray-300 mt-5">
                 <Controller
@@ -109,20 +114,32 @@ export default function Login() {
                   )}
                   name="pass"
                 />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                >
                   <Ionicons
-                    name={showPassword ? "eye" : "eye-off"}
+                    name={showPassword ? "eye-off" : "eye"}
                     size={24}
                     color="gray"
                   />
                 </TouchableOpacity>
               </View>
-              {errors.pass && <Text className="text-red-500 ml-1">{errors.pass.message}</Text>}
+              {errors.pass && (
+                <View className="flex-row items-center mt-1 ml-2">
+                <AlertIcon size={20} color={"#F44336"} />
+                <Text className="text-red-500"> {errors.pass.message}</Text>
+              </View>
+              )}
             </View>
 
             <View className="items-center justify-between mt-9 w-[300]">
-              <CustomButton text="Ingresar" customFun={handleSubmit(onSubmit)} />
-              <View className="justify-center items-center mx-10"><SubTitleTextRequest /></View>
+              <CustomButton
+                text="Ingresar"
+                customFun={handleSubmit(onSubmit)}
+              />
+              <View className="justify-center items-center mx-10">
+                <SubTitleTextRequest />
+              </View>
             </View>
           </View>
 
