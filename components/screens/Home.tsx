@@ -1,5 +1,4 @@
-import { View, Text, ScrollView, Modal, Alert, BackHandler } from 'react-native';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { View, Text, ScrollView, Modal, BackHandler, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ShiftTextHome, SubTitleTextHome } from '../atoms/SubtitleText';
@@ -9,14 +8,14 @@ import ShiftsList from '../organisms/ShiftsList';
 import { getUserInfo } from "../../config/routers";
 import { TitleTextHome } from "../atoms/TitleText";
 import * as Tokens from "../tokens";
-import {CustomButton} from '../atoms/CustomButton';
+import { CustomButton } from '../atoms/CustomButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState({ name: "", lastname: "" });
   const [modalVisible, setModalVisible] = useState(false);
-
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -30,6 +29,8 @@ export default function Home() {
         }
       } catch (error) {
         console.error("Error al obtener datos del usuario", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -53,7 +54,7 @@ export default function Home() {
     React.useCallback(() => {
       const handleBackButton = () => {
         setModalVisible(true);
-        return true; // Esto evita que la aplicación retroceda
+        return true; 
       };
 
       BackHandler.addEventListener('hardwareBackPress', handleBackButton);
@@ -65,26 +66,33 @@ export default function Home() {
   return (
     <View className="flex-1 w-full justify-between">
       <View className="flex-1 justify-between px-5 mt-12">
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-          <View className="mb-3">
-            <SubTitleTextHome />
-            <Text className={`${Tokens.standardTextTitleBold}`}>
-              <TitleTextHome /> {userInfo.name}
-            </Text>
-          </View>
-          <View className="mb-3">
-            <HomeCard />
-          </View>
-          <View className="mb-5">
-            <SearchInput />
-          </View>
-          <View>
-            <ShiftTextHome />
-            <View className="flex-col">
-              <ShiftsList />
+        {loading ? (
+          <View className="flex-1 justify-center items-center">
+          <ActivityIndicator className="text-blue-500" size="large" />
+          <Text className="mt-4 text-lg text-gray-700">Cargando...</Text>
+        </View>
+        ) : (
+          <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+            <View className="mb-3">
+              <SubTitleTextHome />
+              <Text className={`${Tokens.standardTextTitleBold}`}>
+                <TitleTextHome /> {userInfo.name}
+              </Text>
             </View>
-          </View>
-        </ScrollView>
+            <View className="mb-3">
+              <HomeCard />
+            </View>
+            <View className="mb-5">
+              <SearchInput />
+            </View>
+            <View>
+              <ShiftTextHome />
+              <View className="flex-col">
+                <ShiftsList />
+              </View>
+            </View>
+          </ScrollView>
+        )}
       </View>
       <BottomBar activeRoute="/home" />
 
@@ -100,7 +108,7 @@ export default function Home() {
               ¿Desea cerrar la aplicación?
             </Text>
             <View className='my-2 w-full justify-center items-center'>
-            <CustomButton text="Cancelar" customFun={handleModalClose}/>
+              <CustomButton text="Cancelar" customFun={handleModalClose}/>
             </View>
             <CustomButton text="Cerrar App" customFun={handleExit} />
           </View>

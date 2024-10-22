@@ -16,10 +16,8 @@ export const loginRequest = async (user: string, pass: string) => {
     });
 
     const data = await response.json();
-
     if (response.ok) {
       await AsyncStorage.setItem("token", data.access);
-      await AsyncStorage.setItem("userName", data.)
       return { success: true, data };
     } else {
       return {
