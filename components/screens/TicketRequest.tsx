@@ -19,7 +19,7 @@ import {
 } from "../atoms/DescriptionText";
 import { TextInput } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CustomButton } from "../atoms/CustomButton";
 import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
@@ -28,20 +28,25 @@ import { ArrowLeftIcon } from "../atoms/Icon";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
 import { createRequest } from "../../config/routers";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { RequestSchema } from "../../schemas/requestSchema";
+import * as SQLite from 'expo-sqlite'
+import tickets from "../../app/tickets";
 
-type FormData = {
-  title: string;
-  type: string;
-  description: string;
-  start_date: Date;
-  end_date: Date;
-  imageUri: string;
-};
+interface TicketData {
+  data: {
+    type: string;
+    title: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    imageUri?: string;
+    
+
+  };
+}
+
 
 export default function TicketRequest() {
+  const [tiketData, setTiketData] = useState<TicketData | null>(null);
   const router = useRouter();
 
   const {
@@ -52,7 +57,19 @@ export default function TicketRequest() {
   } = useForm<FormData>({resolver: zodResolver(RequestSchema)});
 
   const [type, setType] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
+
+  const [typeError, setTypeError] = useState<string>("");
+  const [descriptionError, setDescriptionError] = useState<string>("");
+  const [titleError, setTitleError] = useState<string>("");
+  const [startDateError, setStartDateError] = useState<string>("");
+  const [endDateError, setEndDateError] = useState<string>("");
+
+  const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [isStartDateSelected, setIsStartDateSelected] = useState(true);
 
@@ -64,23 +81,114 @@ export default function TicketRequest() {
     setShowPicker(!showPicker);
   };
 
-  const onSubmit = handleSubmit(async (data) => {
-    console.log(data)
-    const response = await createRequest(
-      data.start_date,
-      data.end_date,
-      data.type,
-      data.title,
-      data.description,
-      imageUri
-    );
-
-    if (response.success) {
-      router.push("/tickets");
+  const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (event.type === "set" && selectedDate) {
+      const currentDate = selectedDate;
+      setDate(currentDate);
+      if (isStartDateSelected) {
+        if (startDate) {
+          setStartDateError("");
+        }
+        setStartDate(currentDate);
+      } else {
+        if (endDateError) {
+          setEndDateError("");
+        }
+        setEndDate(currentDate);
+      }
+      if (Platform.OS === "android") {
+        toggleDatepicker();
+      }
     } else {
-      Alert.alert("Error", response.message);
+      toggleDatepicker();
+    }
+  };
+  useEffect(() => {
+    
+    const executeDatabaseOperations = async () => {
+
+      try {
+        const db = await SQLite.openDatabaseAsync('dataBase.db');
+        await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS tikets (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          type TEXT,
+          title TEXT,
+          description TEXT,
+          startDate TEXT,
+          endDate TEXT
+        );
+        `);
+        if (tiketData && tiketData.data && tiketData.data.type && tiketData.data.title && tiketData.data.description && tiketData.data.startDate && tiketData.data.endDate ) {
+          await db.execAsync(`
+            INSERT INTO tikets (type, title, description, startDate, endDate)
+            VALUES 
+            ('${tiketData.data.type}', '${tiketData.data.title}', '${tiketData.data.description}', '${tiketData.data.startDate}', '${tiketData.data.endDate}');
+          `);
+          console.log("Tiket creado con ", tiketData.data);
+        } else { 
+        }
+        await db.withTransactionAsync(async () => {
+          const tikets = await db.getFirstAsync('SELECT * FROM tikets');
+          console.log('TIKETS', tikets);
+        });
+
+        await db.withTransactionAsync(async () => {
+          const tikets = await db.getFirstAsync('SELECT * FROM tikets');
+          console.log('tikets', tikets);
+        });
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error ejecutando operaciones de base de datos: ", error);
+      }
+    };
+
+    executeDatabaseOperations();
+
+  }, []);
+
+  const handlePress = async () => {
+    const db = await SQLite.openDatabaseAsync('dataBase.db');
+    const newTicketData = {
+      data: {
+        type,
+        title,
+        description,
+        startDate: startDate ? format(startDate, "yyyy-MM-dd") : "",
+        endDate: endDate ? format(endDate, "yyyy-MM-dd") : ""
+      },
+    };
+    
+    setTiketData(newTicketData);
+
+    try {
+      if (validations()) {
+        if (
+          newTicketData.data.type &&
+          newTicketData.data.title &&
+          newTicketData.data.description &&
+          newTicketData.data.startDate &&
+          newTicketData.data.endDate
+        ) {
+          await db.execAsync(`
+            INSERT INTO tikets (type, title, description, startDate, endDate)
+            VALUES 
+            ('${newTicketData.data.type}', '${newTicketData.data.title}', '${newTicketData.data.description}', '${newTicketData.data.startDate}', '${newTicketData.data.endDate}');
+          `);
+          console.log("Tiket creado con ", newTicketData.data);
+  
+          router.push("/tickets");
+        } else {
+          Alert.alert("Error", "Faltan datos en la solicitud del ticket.");
+        }
+      }
+    } catch (error) {
+      console.error("Error al crear el ticket: ", error);
+      Alert.alert("Error", "Hubo un problema al guardar la solicitud");
     }
   });
+
 
   const data = [
     { key: "1", value: "Incapacidad médica" },
@@ -90,6 +198,81 @@ export default function TicketRequest() {
     { key: "5", value: "Licencia" },
     { key: "6", value: "Otro" },
   ];
+
+  const validations = () => {
+    let isValid = true;
+    const currentDate = new Date();
+    const sqlInjectionPattern = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
+
+    if (!type) {
+      setTypeError("El tipo de solicitud es obligatorio.");
+      isValid = false;
+    } else {
+      setTypeError("");
+    }
+
+    if (!title) {
+      setTitleError("El título es obligatorio.");
+      isValid = false;
+    } else if (sqlInjectionPattern.test(title)) {
+      setTitleError("El título contiene caracteres no permitidos.");
+      isValid = false;
+    } else {
+      setTitleError("");
+    }
+
+    if (!description) {
+      setDescriptionError("La descripción es obligatoria.");
+      isValid = false;
+    } else if (sqlInjectionPattern.test(description)) {
+      setDescriptionError("La descripción contiene caracteres no permitidos.");
+      isValid = false;
+    } else {
+      setDescriptionError("");
+    }
+
+    if (!startDate) {
+      setStartDateError("La fecha de inicio es obligatoria.");
+      isValid = false;
+    }
+
+    if (!endDate) {
+      setEndDateError("La fecha final es obligatoria.");
+      isValid = false;
+    }
+
+    if (startDate && endDate) {
+      const startYear = startDate.getFullYear();
+      const endYear = endDate.getFullYear();
+
+      if (startYear < currentDate.getFullYear()) {
+        setStartDateError("La fecha de inicio no puede ser de un año pasado.");
+        isValid = false;
+      }
+      if (endYear < currentDate.getFullYear()) {
+        setEndDateError("La fecha final no puede ser de un año pasado.");
+        isValid = false;
+      }
+      if (startDate > endDate) {
+        setStartDateError(
+          "La fecha de inicio no puede ser posterior a la fecha de fin."
+        );
+        isValid = false;
+      }
+    }
+
+    return isValid;
+  };
+  const [isLoading,setIsLoading] = useState(true)
+ 
+
+  if (isLoading) {
+    return (
+      <View>
+        <Text>Cargando</Text>
+      </View>
+    )
+  }
 
   return (
     <KeyboardAvoidingView
@@ -177,90 +360,16 @@ export default function TicketRequest() {
 
             <View className="flex-1 m-1">
               <RequestDatesText />
-              <Controller
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <>
-                    {showPicker && isStartDateSelected && (
-                      <DateTimePicker
-                        mode="date"
-                        display="calendar"
-                        value={value || new Date()}
-                        onChange={(event, selectedDate) => {
-                          const currentDate = selectedDate || value;
-                          setShowPicker(false);
-                          onChange(currentDate); 
-                        }}
-                      />
-                    )}
-                    <Text className="m-1">
-                      <StartDateText />
-                    </Text>
-                    <Pressable
-                      onPress={() => {
-                        setIsStartDateSelected(true);
-                        toggleDatepicker();
-                      }}
-                    >
-                      <TextInput
-                        className={`${Tokens.standardInput}`}
-                        value={value ? format(value, "dd/MM/yyyy") : ""}
-                        editable={false}
-                        placeholder="DD-MM-AAAA"
-                        placeholderTextColor={"#8696BB"}
-                      />
-                    </Pressable>
-                  </>
-                )}
-                name="start_date"
-              />
-              {errors.start_date && (
-                <Text className="text-red-500 mt-2">
-                  {errors.start_date.message}
-                </Text>
-              )}
-
-              <Controller
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <>
-                    {showPicker && !isStartDateSelected && (
-                      <DateTimePicker
-                        mode="date"
-                        display="calendar"
-                        value={value || new Date()}
-                        onChange={(event, selectedDate) => {
-                          const currentDate = selectedDate || value;
-                          setShowPicker(false);
-                          onChange(currentDate);
-                        }}
-                      />
-                    )}
-                    <Text className="m-1 mt-5">
-                      <EndDateText />
-                    </Text>
-                    <Pressable
-                      onPress={() => {
-                        setIsStartDateSelected(false);
-                        toggleDatepicker();
-                      }}
-                    >
-                      <TextInput
-                        className={`${Tokens.standardInput}`}
-                        value={value ? format(value, "dd/MM/yyyy") : ""}
-                        editable={false}
-                        placeholder="DD-MM-AAAA"
-                        placeholderTextColor={"#8696BB"}
-                      />
-                    </Pressable>
-                  </>
-                )}
-                name="end_date"
-              />
-              {errors.end_date && (
-                <Text className="text-red-500 mt-2">
-                  {errors.end_date.message}
-                </Text>
+              {showPicker && (
+                <DateTimePicker
+                  mode="date"
+                  display="calendar"
+                  positiveButton={{ label: "ACEPTAR" }}
+                  negativeButton={{ label: "CANCELAR" }}
+                  value={date}
+                  onChange={onChange}
+                /* minimumDate={new Date("2024-01-01")} */
+                />
               )}
             </View>
 
