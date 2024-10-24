@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ip1 = "http://10.0.2.2";
-const ip2 = "http://192.168.1.24";
+const ip2 = "http://192.168.1.75";
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
