@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AddButton } from "../atoms/CustomButton";
 import { useRouter } from "expo-router";
@@ -24,61 +24,109 @@ export default function Tickets() {
     router.push("/ticketrequest");
   };
 
+  const initializeDatabase = async () => {
+    try {
+      const db = await SQLite.openDatabaseAsync("dataBase.db");
+      if (db) {
+        console.log("Base de datos inicializada correctamente");
+      }
+      return db;
+    } catch (error) {
+      console.error("Error al inicializar la base de datos:", error);
+      return null;
+    }
+  };
+
+  const insertRequestSQLite = async (data: Ticket[]) => {
+    try {
+      const db = await initializeDatabase();
+
+      if (!db) {
+        Alert.alert("Error", "No se pudo acceder a la base de datos local.");
+        return;
+      }
+
+      const insertPromises = data.map(async (item) => {
+        await db.runAsync(
+          `
+          INSERT INTO requests (type, title, start_date, end_date, description)
+          VALUES (?, ?, ?, ?, ?);
+        `,
+          [
+            item.type,
+            item.title,
+            item.start_date.toISOString(),
+            item.end_date.toISOString(),
+            item.description,
+          ]
+        );
+      });
+
+      await Promise.all(insertPromises);
+      console.log("Nuevos ticket creados!");
+
+    } catch (error) {
+      console.log(
+        "Error al llamar la base de datos local en la creación de tickets:",
+        error
+      );
+    }
+  };
+
   useEffect(() => {
     const fetchTickets = async () => {
       const response = await getTickets();
       if (response?.success) {
-        setTicketLocal();
-        setTickets(response?.data);
+        const data = response?.data;
+        /* await insertRequestSQLite(data); */
+        setTickets(data);
+        syncTicketsToMongo();
       } else {
-        getTicketLocal();
+        getTicketLocal(); 
       }
     };
     fetchTickets();
-    
-    console.log("LOCAL INFO",ticketslocal);
-  });
+  },[]);
+  
 
   const getTicketLocal = async () => {
     try {
-      const db = await SQLite.openDatabaseAsync("dataBase.db");
-      const results = await db.getAllAsync<Ticket>("SELECT * FROM tickets;");
-      setTicketslocal(results || []);
-      setTickets(results || []);
-      console.log("Esto está para el card", tickets);
-      
+      const db = await initializeDatabase();
+      if (!db) return;
+      const results = await db.getAllAsync<Ticket>("SELECT * FROM requests;");
+      setTickets(results || []); 
     } catch (error) {
-      console.error("Error al obtener tickets:", error);
+      console.error("Error al obtener tickets locales:", error);
     }
   };
+  
 
-  const setTicketLocal = async () => {
+  const syncTicketsToMongo = async () => {
     try {
-      let response;
-      for (const data of ticketslocal) {
-        console.log("Entra");
-        const startDate = new Date(data.start_date);
-        const endDate = new Date(data.end_date);
-        response = await createRequest(
-          startDate,
-          endDate,
-          data.type,
-          data.title,
-          data.description,
+      const db = await initializeDatabase();
+      if (!db) return;
+  
+      const localTickets = await db.getAllAsync<Ticket>("SELECT * FROM requests;");
+      for (const ticket of localTickets) {
+        const response = await createRequest(
+          new Date(ticket.start_date),
+          new Date(ticket.end_date),
+          ticket.type,
+          ticket.title,
+          ticket.description,
           imageUri
         );
+        
         if (response.success) {
-          console.log("ESTEE ES EL ESTADO OJITO:", response.message);
-          const db = await SQLite.openDatabaseAsync("dataBase.db");
-          await db.runAsync(`
-            DELETE FROM tickets WHERE _id = ?;`,[data._id]);
+          await db.runAsync(`DELETE FROM requests WHERE _id = ?`, [ticket._id]);
+          console.log(`Ticket ${ticket._id} sincronizado y eliminado de SQLite.`);
         }
       }
     } catch (error) {
       console.error("Error al sincronizar los tickets:", error);
     }
   };
-
+  
 
   const toggleExpandTicket = (ticketId: string) => {
     setExpandedTicketId(expandedTicketId === ticketId ? null : ticketId);

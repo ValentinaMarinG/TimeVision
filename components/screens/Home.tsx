@@ -1,28 +1,55 @@
-import { View, Text, ScrollView, Modal, BackHandler, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  Modal,
+  BackHandler,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import BottomBar from "../organisms/BottomBar";
-import { ShiftTextHome, SubTitleTextHome } from '../atoms/SubtitleText';
-import HomeCard from '../organisms/HomeInfo';
-import { SearchInput } from '../organisms/SearchInput';
-import ShiftsList from '../organisms/ShiftsList';
+import { ShiftTextHome, SubTitleTextHome } from "../atoms/SubtitleText";
+import HomeCard from "../organisms/HomeInfo";
+import { SearchInput } from "../organisms/SearchInput";
+import ShiftsList from "../organisms/ShiftsList";
 import { getUserInfo } from "../../config/routers";
 import { TitleTextHome } from "../atoms/TitleText";
 import * as Tokens from "../tokens";
-import { CustomButton } from '../atoms/CustomButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from 'expo-router';
-import * as SQLite from 'expo-sqlite';
+import { CustomButton } from "../atoms/CustomButton";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "expo-router";
+import * as SQLite from "expo-sqlite";
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState({ name: "", lastname: "" });
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const createDataBase = async () =>{
+  const initializeDatabase = async () => {
     try {
-      const db = await SQLite.openDatabaseAsync('dataBase.db');
+      const db = await SQLite.openDatabaseAsync("dataBase.db");
+      if (db) {
+        console.log("Base de datos inicializada correctamente");
+      }
+      return db;
+    } catch (error) {
+      console.error("Error al inicializar la base de datos:", error);
+      return null;
+    }
+  };
+  
+  const createDataBase = async () => {
+    try {
+      const db = await initializeDatabase();
+
+      if (!db) {
+        console.log("Error", "No se pudo acceder a la base de datos local.");
+        return;
+      }
+
       await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS tickets (
+      CREATE TABLE IF NOT EXISTS requests (
         _id INTEGER PRIMARY KEY AUTOINCREMENT,
         type TEXT,
         title TEXT,
@@ -43,12 +70,16 @@ export default function Home() {
           id_department TEXT
         );
         `);
-    console.log("Base de datos local creada");
-    
-  }catch(error){
-    console.log("Error al crear la base de datos local");
-  }
-};
+
+      /* VERIFICAR CREACIÓN DE TABLAS REQUEST Y USERS */
+      const result = await db.getAllAsync(
+        "SELECT name FROM sqlite_master WHERE type='table';"
+      );
+      console.log("Tablas en la base de datos local:", result);
+    } catch (error) {
+      console.error("Error al crear la base de datos local:", error);
+    }
+  };
 
   useEffect(() => {
     createDataBase();
@@ -88,12 +119,13 @@ export default function Home() {
     React.useCallback(() => {
       const handleBackButton = () => {
         setModalVisible(true);
-        return true; 
+        return true;
       };
 
-      BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+      BackHandler.addEventListener("hardwareBackPress", handleBackButton);
 
-      return () => BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+      return () =>
+        BackHandler.removeEventListener("hardwareBackPress", handleBackButton);
     }, [])
   );
 
@@ -102,11 +134,14 @@ export default function Home() {
       <View className="flex-1 justify-between px-5 mt-12">
         {loading ? (
           <View className="flex-1 justify-center items-center">
-          <ActivityIndicator className="text-blue-500" size="large" />
-          <Text className="mt-4 text-lg text-gray-700">Cargando...</Text>
-        </View>
+            <ActivityIndicator className="text-blue-500" size="large" />
+            <Text className="mt-4 text-lg text-gray-700">Cargando...</Text>
+          </View>
         ) : (
-          <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+          >
             <View className="mb-3">
               <SubTitleTextHome />
               <Text className={`${Tokens.standardTextTitleBold}`}>
@@ -141,8 +176,8 @@ export default function Home() {
             <Text className="text-center text-lg text-[#858585] my-5">
               ¿Desea cerrar la aplicación?
             </Text>
-            <View className='my-2 w-full justify-center items-center'>
-              <CustomButton text="Cancelar" customFun={handleModalClose}/>
+            <View className="my-2 w-full justify-center items-center">
+              <CustomButton text="Cancelar" customFun={handleModalClose} />
             </View>
             <CustomButton text="Cerrar App" customFun={handleExit} />
           </View>
