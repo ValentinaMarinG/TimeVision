@@ -19,7 +19,7 @@ import {
 } from "../atoms/DescriptionText";
 import { TextInput } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CustomButton } from "../atoms/CustomButton";
 import { Link, useRouter } from "expo-router";
 import * as Tokens from "../tokens";
@@ -30,8 +30,25 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
 import { createRequest } from "../../config/routers";
+import * as SQLite from 'expo-sqlite'
+import tickets from "../../app/tickets";
+
+interface TicketData {
+  data: {
+    type: string;
+    title: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    imageUri?: string;
+    
+
+  };
+}
+
 
 export default function TicketRequest() {
+  const [tiketData, setTiketData] = useState<TicketData | null>(null);
   const router = useRouter();
 
   const [type, setType] = useState<string>("");
@@ -39,7 +56,7 @@ export default function TicketRequest() {
   const [title, setTitle] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [imageUri, setImageUri] = useState<string | null>(null);  
+  const [imageUri, setImageUri] = useState<string | null>(null);
 
   const [typeError, setTypeError] = useState<string>("");
   const [descriptionError, setDescriptionError] = useState<string>("");
@@ -82,24 +99,92 @@ export default function TicketRequest() {
       toggleDatepicker();
     }
   };
+  useEffect(() => {
+    
+    const executeDatabaseOperations = async () => {
+
+      try {
+        const db = await SQLite.openDatabaseAsync('dataBase.db');
+        await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS tikets (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          type TEXT,
+          title TEXT,
+          description TEXT,
+          startDate TEXT,
+          endDate TEXT
+        );
+        `);
+        if (tiketData && tiketData.data && tiketData.data.type && tiketData.data.title && tiketData.data.description && tiketData.data.startDate && tiketData.data.endDate ) {
+          await db.execAsync(`
+            INSERT INTO tikets (type, title, description, startDate, endDate)
+            VALUES 
+            ('${tiketData.data.type}', '${tiketData.data.title}', '${tiketData.data.description}', '${tiketData.data.startDate}', '${tiketData.data.endDate}');
+          `);
+          console.log("Tiket creado con ", tiketData.data);
+        } else { 
+        }
+        await db.withTransactionAsync(async () => {
+          const tikets = await db.getFirstAsync('SELECT * FROM tikets');
+          console.log('TIKETS', tikets);
+        });
+
+        await db.withTransactionAsync(async () => {
+          const tikets = await db.getFirstAsync('SELECT * FROM tikets');
+          console.log('tikets', tikets);
+        });
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error ejecutando operaciones de base de datos: ", error);
+      }
+    };
+
+    executeDatabaseOperations();
+
+  }, []);
 
   const handlePress = async () => {
-    if (validations()) {
-      const response = await createRequest(
-        startDate,
-        endDate,
+    const db = await SQLite.openDatabaseAsync('dataBase.db');
+    const newTicketData = {
+      data: {
         type,
         title,
         description,
-        imageUri
-      );
-      if (response.success) {
-        router.push("/tickets");
-      } else {
-        Alert.alert("Error", response.message);
+        startDate: startDate ? format(startDate, "yyyy-MM-dd") : "",
+        endDate: endDate ? format(endDate, "yyyy-MM-dd") : ""
+      },
+    };
+    
+    setTiketData(newTicketData);
+
+    try {
+      if (validations()) {
+        if (
+          newTicketData.data.type &&
+          newTicketData.data.title &&
+          newTicketData.data.description &&
+          newTicketData.data.startDate &&
+          newTicketData.data.endDate
+        ) {
+          await db.execAsync(`
+            INSERT INTO tikets (type, title, description, startDate, endDate)
+            VALUES 
+            ('${newTicketData.data.type}', '${newTicketData.data.title}', '${newTicketData.data.description}', '${newTicketData.data.startDate}', '${newTicketData.data.endDate}');
+          `);
+          console.log("Tiket creado con ", newTicketData.data);
+  
+          router.push("/tickets");
+        } else {
+          Alert.alert("Error", "Faltan datos en la solicitud del ticket.");
+        }
       }
+    } catch (error) {
+      console.error("Error al crear el ticket: ", error);
+      Alert.alert("Error", "Hubo un problema al guardar la solicitud");
     }
   };
+
 
   const data = [
     { key: "1", value: "Incapacidad médica" },
@@ -131,7 +216,7 @@ export default function TicketRequest() {
     } else {
       setTitleError("");
     }
-  
+
     if (!description) {
       setDescriptionError("La descripción es obligatoria.");
       isValid = false;
@@ -155,7 +240,7 @@ export default function TicketRequest() {
     if (startDate && endDate) {
       const startYear = startDate.getFullYear();
       const endYear = endDate.getFullYear();
-  
+
       if (startYear < currentDate.getFullYear()) {
         setStartDateError("La fecha de inicio no puede ser de un año pasado.");
         isValid = false;
@@ -174,6 +259,16 @@ export default function TicketRequest() {
 
     return isValid;
   };
+  const [isLoading,setIsLoading] = useState(true)
+ 
+
+  if (isLoading) {
+    return (
+      <View>
+        <Text>Cargando</Text>
+      </View>
+    )
+  }
 
   return (
     <KeyboardAvoidingView
@@ -264,7 +359,7 @@ export default function TicketRequest() {
                   negativeButton={{ label: "CANCELAR" }}
                   value={date}
                   onChange={onChange}
-                  /* minimumDate={new Date("2024-01-01")} */
+                /* minimumDate={new Date("2024-01-01")} */
                 />
               )}
               <Text className="m-1">
