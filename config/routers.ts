@@ -85,7 +85,7 @@ export const createRequest = async (
 
     if (response.ok) {
       console.log(data);
-      return { success: true, data };
+      return { success: true, data};
     } else {
       switch (response.status) {
         case 400:

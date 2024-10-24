@@ -11,13 +11,47 @@ import * as Tokens from "../tokens";
 import { CustomButton } from '../atoms/CustomButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
+import * as SQLite from 'expo-sqlite';
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState({ name: "", lastname: "" });
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const createDataBase = async () =>{
+    try {
+      const db = await SQLite.openDatabaseAsync('dataBase.db');
+      await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS tickets (
+        _id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT,
+        title TEXT,
+        description TEXT,
+        start_date TEXT,
+        end_date TEXT
+      );
+      `);
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT,
+          lastname TEXT,
+          type_doc TEXT,
+          num_doc TEXT,
+          email TEXT,
+          position TEXT,
+          id_department TEXT
+        );
+        `);
+    console.log("Base de datos local creada");
+    
+  }catch(error){
+    console.log("Error al crear la base de datos local");
+  }
+};
+
   useEffect(() => {
+    createDataBase();
     const fetchUserData = async () => {
       try {
         const userResponse = await getUserInfo();
