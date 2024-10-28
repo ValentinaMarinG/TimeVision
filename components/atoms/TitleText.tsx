@@ -13,6 +13,10 @@ export const TitleTextTickets = () => {
   return <Text className={`${Tokens.standardTextTitleBold}`}>SOLICITUDES</Text>;
 };
 
+export const TitleTextCalendar = () => {
+  return <Text className={`${Tokens.standardTextTitleBold}`}>TURNOS</Text>;
+};
+
 export const TitleTextTicketsRequest = () => {
   return <Text className={`${Tokens.standardTextTitleBold} text-center`}>CREAR TICKET</Text>;
 };

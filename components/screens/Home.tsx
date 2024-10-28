@@ -5,17 +5,19 @@ import { ShiftTextHome, SubTitleTextHome } from '../atoms/SubtitleText';
 import HomeCard from '../organisms/HomeInfo';
 import { SearchInput } from '../organisms/SearchInput';
 import ShiftsList from '../organisms/ShiftsList';
-import { getUserInfo } from "../../config/routers";
+import { getAssigments, getUserInfo } from "../../config/routers";
 import { TitleTextHome } from "../atoms/TitleText";
 import * as Tokens from "../tokens";
 import { CustomButton } from '../atoms/CustomButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
+import { Shift } from '../../types/types';
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState({ name: "", lastname: "" });
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [shifts, setShifts] = useState<Shift[]>([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -29,12 +31,29 @@ export default function Home() {
         }
       } catch (error) {
         console.error("Error al obtener datos del usuario", error);
+      }
+    };
+    const fetchTickets = async () => {
+      try {
+        const response = await getAssigments();
+      if (response?.success) {
+        setShifts(response.data ?? []);
+        await AsyncStorage.setItem('shifts', JSON.stringify(response.data));
+        setLoading(false);
+      } else {
+        console.error(response?.message);
+      }
+
+      } catch (error) {
+        console.error("Error al obtener los turnos del usuario", error);
       } finally {
         setLoading(false);
       }
+      
     };
 
     fetchUserData();
+    fetchTickets();
   }, []);
 
   const handleModalClose = () => {
@@ -87,8 +106,8 @@ export default function Home() {
             </View>
             <View>
               <ShiftTextHome />
-              <View className="flex-col">
-                <ShiftsList />
+              <View className="flex-col"> 
+                <ShiftsList shifts={shifts}/>
               </View>
             </View>
           </ScrollView>
