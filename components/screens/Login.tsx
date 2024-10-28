@@ -7,154 +7,147 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
-  Alert,
   Text,
   Modal,
-  TouchableOpacity, // Importa TouchableOpacity para el icono
+  TouchableOpacity,
 } from "react-native";
-import { MainIcon } from "../atoms/Icon";
+import { AlertIcon, MainIcon } from "../atoms/Icon";
 import { TitleTextLogin } from "../atoms/TitleText";
 import { SubTitleTextLogin } from "../atoms/SubtitleText";
-import {
-  LoginUserText,
-  LoginPasswordText,
-  AccessModal,
-} from "../atoms/DescriptionText";
+import { LoginUserText, LoginPasswordText } from "../atoms/DescriptionText";
 import { CustomButton } from "../atoms/CustomButton";
 import { SubTitleTextRequest } from "../atoms/SubtitleText";
 import * as Tokens from "../tokens";
 import { useRouter } from "expo-router";
 import { loginRequest } from "../../config/routers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from '@expo/vector-icons'; // Asegúrate de tener esta librería instalada
+import { Ionicons } from "@expo/vector-icons";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LoginSchema } from "../../schemas/loginSchema";
+
+type FormData = {
+  user: string;
+  pass: string;
+};
 
 export default function Login() {
-  const [user, setUser] = useState<string>("");
-  const [pass, setPass] = useState<string>("");
-  const [userError, setUserError] = useState<string>("");
-  const [passError, setPassError] = useState<string>("");
-  const [loginError, setLoginError] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [loginError, setLoginError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
   const router = useRouter();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({ resolver: zodResolver(LoginSchema) });
 
   const handleModalClose = () => {
     setModalVisible(false);
   };
 
-  const handlePress = async () => {
-    let valid = true;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    /* const invalidCharRegex = /ñ/; */
-    const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
-
-    setUserError("");
-    setPassError("");
-    setLoginError("");
-
-    if (!user) {
-      setUserError("El correo es requerido");
-      valid = false;
-    } else if (!emailRegex.test(user)) {
-      setUserError("Ingresa un correo valido");
-      valid = false;
-    } else if (sqlInjectionRegex.test(user)) {
-      setUserError("El correo contiene caracteres no permitidos.");
-      valid = false;
-    }
-
-    if (!pass) {
-      setPassError("La contraseña es requerida");
-      valid = false;
-    } else if (sqlInjectionRegex.test(pass)) {
-      setUserError("La contraseña contiene caracteres no permitidos.");
-      valid = false;
-    } /* else if (invalidCharRegex.test(pass)) {
-      setPassError("La contraseña no puede contener la letra 'ñ'");
-      valid = false;
-    } */
-
-    if (valid) {
-      const result = await loginRequest(user, pass);
-      if (result?.success) {
-        const token = await AsyncStorage.getItem("token");
-        if (token) {
-          router.push("/home");
-        }
-      } else {
-        setModalVisible(true);
-        setLoginError(result?.message || "Error desconocido");
+  const onSubmit = async (data: FormData) => {
+    const result = await loginRequest(data.user, data.pass);
+    if (result?.success) {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        router.push("/home");
       }
+    } else {
+      setModalVisible(true);
+      setLoginError(result?.message || "Error desconocido");
     }
   };
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white mt-8"
+      className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={100}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="flex-1 flex-grow mt-[90] bg-white">
-            <View className="justify-center items-center mx-5">
-              <TitleTextLogin />
-              <MainIcon
-                size={Tokens.logoSizeIcon}
-                source={require("../../assets/LogoGrey.png")}
-              />
-              <SubTitleTextLogin />
-            </View>
-            <View className="items-center mt-5">
-              <View className="w-72 flex-1">
-                <LoginUserText />
-                <TextInput
-                  className={`${Tokens.standardInput} mb-4`}
-                  onChangeText={setUser}
-                  value={user ?? ""}
-                />
-                {userError ? (
-                  <Text className="text-red-500">{userError}</Text>
-                ) : null}
-                <LoginPasswordText />
-                <View className="flex-row items-center rounded-xl bg-gray-200 pr-2">
+          <View className="flex-1 mt-36 items-center">
+            <TitleTextLogin />
+            <MainIcon
+              size={Tokens.logoSizeIcon}
+              source={require("../../assets/LogoGrey.png")}
+            />
+            <SubTitleTextLogin />
+            <View className="w-72 mt-10">
+              <Controller
+                control={control}
+                render={({ field: { onChange, value } }) => (
                   <TextInput
-                    className={`${Tokens.standardInput} flex-1`}
-                    onChangeText={setPass}
-                    value={pass ?? ""}
-                    secureTextEntry={!showPassword}
+                    className={`${Tokens.standardInput} border border-gray-300`}
+                    onChangeText={onChange}
+                    value={value}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    placeholder="Correo empresarial"
                   />
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                    <Ionicons
-                      name={showPassword ? "eye" : "eye-off"}
-                      size={24}
-                      color="gray"
-                    />
-                  </TouchableOpacity>
+                )}
+                name="user"
+              />
+              {errors.user && (
+                <View className="flex-row items-center mt-1 ml-2">
+                  <AlertIcon size={20} color={"#F44336"} />
+                  <Text className="text-red-500"> {errors.user.message}</Text>
                 </View>
-                {passError ? (
-                  <Text className="text-red-500">{passError}</Text>
-                ) : null}
+              )}
+
+              <View className="flex-row items-center rounded-xl bg-gray-200 pr-2 border border-gray-300 mt-5">
+                <Controller
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <TextInput
+                      className={`${Tokens.standardInput} flex-1`}
+                      onChangeText={onChange}
+                      value={value}
+                      secureTextEntry={!showPassword}
+                      placeholder="Contraseña"
+                    />
+                  )}
+                  name="pass"
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off" : "eye"}
+                    size={24}
+                    color="gray"
+                  />
+                </TouchableOpacity>
               </View>
+              {errors.pass && (
+                <View className="flex-row items-center mt-1 ml-2">
+                <AlertIcon size={20} color={"#F44336"} />
+                <Text className="text-red-500"> {errors.pass.message}</Text>
+              </View>
+              )}
             </View>
-            <View className="justify-center items-center mx-10">
-              <View className="w-full items-center justify-between mt-9">
-                <CustomButton text="Ingresar" customFun={handlePress} />
+
+            <View className="items-center justify-between mt-9 w-[300]">
+              <CustomButton
+                text="Ingresar"
+                customFun={handleSubmit(onSubmit)}
+              />
+              <View className="justify-center items-center mx-10">
+                <SubTitleTextRequest />
               </View>
-              <SubTitleTextRequest />
             </View>
           </View>
+
           <Modal
             animationType="fade"
             transparent={true}
             visible={modalVisible}
-            onRequestClose={() => {
-              setModalVisible(!modalVisible);
-            }}
+            onRequestClose={handleModalClose}
           >
             <View className="flex-1 justify-center items-center bg-[#858585] opacity-90">
               <View className="bg-white p-6 rounded-lg w-3/4 items-center">
@@ -165,9 +158,6 @@ export default function Login() {
               </View>
             </View>
           </Modal>
-
-
-
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

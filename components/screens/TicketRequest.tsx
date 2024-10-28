@@ -21,36 +21,40 @@ import { TextInput } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
 import { useState } from "react";
 import { CustomButton } from "../atoms/CustomButton";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
 import ImagesPicker from "../molecules/ImagesPicker";
 import { ArrowLeftIcon } from "../atoms/Icon";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
 import { createRequest } from "../../config/routers";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RequestSchema } from "../../schemas/requestSchema";
+
+type FormData = {
+  title: string;
+  type: string;
+  description: string;
+  start_date: Date;
+  end_date: Date;
+  imageUri: string;
+};
 
 export default function TicketRequest() {
   const router = useRouter();
 
+  const {
+    control,
+    handleSubmit,
+    getValues,
+    formState: { errors },
+  } = useForm<FormData>({resolver: zodResolver(RequestSchema)});
+
   const [type, setType] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [title, setTitle] = useState<string>("");
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [imageUri, setImageUri] = useState<string | null>(null);  
-
-  const [typeError, setTypeError] = useState<string>("");
-  const [descriptionError, setDescriptionError] = useState<string>("");
-  const [titleError, setTitleError] = useState<string>("");
-  const [startDateError, setStartDateError] = useState<string>("");
-  const [endDateError, setEndDateError] = useState<string>("");
-
-  const [date, setDate] = useState(new Date());
+  const [imageUri, setImageUri] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [isStartDateSelected, setIsStartDateSelected] = useState(true);
-
 
   const handleNavigation = (routeName: string) => {
     router.push(routeName);
@@ -60,46 +64,23 @@ export default function TicketRequest() {
     setShowPicker(!showPicker);
   };
 
-  const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (event.type === "set" && selectedDate) {
-      const currentDate = selectedDate;
-      setDate(currentDate);
-      if (isStartDateSelected) {
-        if (startDate) {
-          setStartDateError("");
-        }
-        setStartDate(currentDate);
-      } else {
-        if (endDateError) {
-          setEndDateError("");
-        }
-        setEndDate(currentDate);
-      }
-      if (Platform.OS === "android") {
-        toggleDatepicker();
-      }
-    } else {
-      toggleDatepicker();
-    }
-  };
+  const onSubmit = handleSubmit(async (data) => {
+    console.log(data)
+    const response = await createRequest(
+      data.start_date,
+      data.end_date,
+      data.type,
+      data.title,
+      data.description,
+      imageUri
+    );
 
-  const handlePress = async () => {
-    if (validations()) {
-      const response = await createRequest(
-        startDate,
-        endDate,
-        type,
-        title,
-        description,
-        imageUri
-      );
-      if (response.success) {
-        router.push("/tickets");
-      } else {
-        Alert.alert("Error", response.message);
-      }
+    if (response.success) {
+      router.push("/tickets");
+    } else {
+      Alert.alert("Error", response.message);
     }
-  };
+  });
 
   const data = [
     { key: "1", value: "Incapacidad médica" },
@@ -109,71 +90,6 @@ export default function TicketRequest() {
     { key: "5", value: "Licencia" },
     { key: "6", value: "Otro" },
   ];
-
-  const validations = () => {
-    let isValid = true;
-    const currentDate = new Date();
-    const sqlInjectionPattern = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
-
-    if (!type) {
-      setTypeError("El tipo de solicitud es obligatorio.");
-      isValid = false;
-    } else {
-      setTypeError("");
-    }
-
-    if (!title) {
-      setTitleError("El título es obligatorio.");
-      isValid = false;
-    } else if (sqlInjectionPattern.test(title)) {
-      setTitleError("El título contiene caracteres no permitidos.");
-      isValid = false;
-    } else {
-      setTitleError("");
-    }
-  
-    if (!description) {
-      setDescriptionError("La descripción es obligatoria.");
-      isValid = false;
-    } else if (sqlInjectionPattern.test(description)) {
-      setDescriptionError("La descripción contiene caracteres no permitidos.");
-      isValid = false;
-    } else {
-      setDescriptionError("");
-    }
-
-    if (!startDate) {
-      setStartDateError("La fecha de inicio es obligatoria.");
-      isValid = false;
-    }
-
-    if (!endDate) {
-      setEndDateError("La fecha final es obligatoria.");
-      isValid = false;
-    }
-
-    if (startDate && endDate) {
-      const startYear = startDate.getFullYear();
-      const endYear = endDate.getFullYear();
-  
-      if (startYear < currentDate.getFullYear()) {
-        setStartDateError("La fecha de inicio no puede ser de un año pasado.");
-        isValid = false;
-      }
-      if (endYear < currentDate.getFullYear()) {
-        setEndDateError("La fecha final no puede ser de un año pasado.");
-        isValid = false;
-      }
-      if (startDate > endDate) {
-        setStartDateError(
-          "La fecha de inicio no puede ser posterior a la fecha de fin."
-        );
-        isValid = false;
-      }
-    }
-
-    return isValid;
-  };
 
   return (
     <KeyboardAvoidingView
@@ -202,132 +118,175 @@ export default function TicketRequest() {
           <View className="w-5/6 h-full flex flex-col">
             <View className="flex-1 m-1">
               <RequestTypeText />
-              <SelectList
-                search={false}
-                setSelected={(item: string) => {
-                  setType(item);
-                  if (typeError) {
-                    setTypeError("");
-                  }
-                }}
-                data={data}
-                save="value"
-                placeholder="Seleccionar opción"
-                maxHeight={100}
-                boxStyles={{
-                  backgroundColor: "#E5E7EB",
-                  borderColor: "transparent",
-                }}
-                inputStyles={{
-                  fontSize: 12,
-                  color: type ? "#000000" : "#8696BB",
-                }}
-                dropdownStyles={{
-                  backgroundColor: "#E5E7EB",
-                  borderColor: "transparent",
-                }}
-                dropdownTextStyles={{
-                  fontSize: 12,
-                  color: "#8696BB",
-                }}
-                dropdownShown={type !== ""}
+              <Controller
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <SelectList
+                    search={false}
+                    setSelected={(item: string) => onChange(item)}
+                    data={data}
+                    save="value"
+                    placeholder="Seleccionar opción"
+                    maxHeight={100}
+                    boxStyles={{
+                      backgroundColor: "#E5E7EB",
+                      borderColor: "transparent",
+                    }}
+                    inputStyles={{
+                      fontSize: 12,
+                      color: type ? "#000000" : "#8696BB",
+                    }}
+                    dropdownStyles={{
+                      backgroundColor: "#E5E7EB",
+                      borderColor: "transparent",
+                    }}
+                    dropdownTextStyles={{
+                      fontSize: 12,
+                      color: "#8696BB",
+                    }}
+                    dropdownShown={type !== ""}
+                  />
+                )}
+                name="type"
               />
-              {typeError ? (
-                <Text className="text-red-500 mt-2">{typeError}</Text>
-              ) : null}
+              {errors.type && (
+                <Text className="text-red-500 mt-2">{errors.type.message}</Text>
+              )}
             </View>
 
             <View className="flex-1 m-1">
               <RequestTitleText />
-              <TextInput
-                className={`${Tokens.standardInput}`}
-                onChangeText={(text) => {
-                  setTitle(text);
-                  if (titleError) {
-                    setTitleError("");
-                  }
-                }}
-                value={title}
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    className={`${Tokens.standardInput}`}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                )}
+                name="title"
               />
-              {titleError ? (
-                <Text className="text-red-500 mt-2">{titleError}</Text>
-              ) : null}
+              {errors.title && (
+                <Text className="text-red-500 mt-2">
+                  {errors.title.message}
+                </Text>
+              )}
             </View>
 
             <View className="flex-1 m-1">
               <RequestDatesText />
-              {showPicker && (
-                <DateTimePicker
-                  mode="date"
-                  display="calendar"
-                  positiveButton={{ label: "ACEPTAR" }}
-                  negativeButton={{ label: "CANCELAR" }}
-                  value={date}
-                  onChange={onChange}
-                  /* minimumDate={new Date("2024-01-01")} */
-                />
+              <Controller
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    {showPicker && isStartDateSelected && (
+                      <DateTimePicker
+                        mode="date"
+                        display="calendar"
+                        value={value || new Date()}
+                        onChange={(event, selectedDate) => {
+                          const currentDate = selectedDate || value;
+                          setShowPicker(false);
+                          onChange(currentDate); 
+                        }}
+                      />
+                    )}
+                    <Text className="m-1">
+                      <StartDateText />
+                    </Text>
+                    <Pressable
+                      onPress={() => {
+                        setIsStartDateSelected(true);
+                        toggleDatepicker();
+                      }}
+                    >
+                      <TextInput
+                        className={`${Tokens.standardInput}`}
+                        value={value ? format(value, "dd/MM/yyyy") : ""}
+                        editable={false}
+                        placeholder="DD-MM-AAAA"
+                        placeholderTextColor={"#8696BB"}
+                      />
+                    </Pressable>
+                  </>
+                )}
+                name="start_date"
+              />
+              {errors.start_date && (
+                <Text className="text-red-500 mt-2">
+                  {errors.start_date.message}
+                </Text>
               )}
-              <Text className="m-1">
-                <StartDateText />
-              </Text>
-              <Pressable
-                onPress={() => {
-                  setIsStartDateSelected(true);
-                  toggleDatepicker();
-                }}
-              >
-                <TextInput
-                  className={`${Tokens.standardInput}`}
-                  value={startDate ? format(startDate, "dd/MM/yyyy") : ""}
-                  editable={false}
-                  placeholder="DD-MM-AAAA"
-                  placeholderTextColor={"#8696BB"}
-                />
-                {startDateError ? (
-                  <Text className="text-red-500 mt-2">{startDateError}</Text>
-                ) : null}
-              </Pressable>
-              <Text className="m-1 mt-5">
-                <EndDateText />
-              </Text>
-              <Pressable
-                onPress={() => {
-                  setIsStartDateSelected(false);
-                  toggleDatepicker();
-                }}
-              >
-                <TextInput
-                  className={`${Tokens.standardInput}`}
-                  value={endDate ? format(endDate, "dd/MM/yyyy") : ""}
-                  editable={false}
-                  placeholder="DD-MM-AAAA"
-                  placeholderTextColor={"#8696BB"}
-                />
-                {endDateError ? (
-                  <Text className="text-red-500 mt-2">{endDateError}</Text>
-                ) : null}
-              </Pressable>
+
+              <Controller
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    {showPicker && !isStartDateSelected && (
+                      <DateTimePicker
+                        mode="date"
+                        display="calendar"
+                        value={value || new Date()}
+                        onChange={(event, selectedDate) => {
+                          const currentDate = selectedDate || value;
+                          setShowPicker(false);
+                          onChange(currentDate);
+                        }}
+                      />
+                    )}
+                    <Text className="m-1 mt-5">
+                      <EndDateText />
+                    </Text>
+                    <Pressable
+                      onPress={() => {
+                        setIsStartDateSelected(false);
+                        toggleDatepicker();
+                      }}
+                    >
+                      <TextInput
+                        className={`${Tokens.standardInput}`}
+                        value={value ? format(value, "dd/MM/yyyy") : ""}
+                        editable={false}
+                        placeholder="DD-MM-AAAA"
+                        placeholderTextColor={"#8696BB"}
+                      />
+                    </Pressable>
+                  </>
+                )}
+                name="end_date"
+              />
+              {errors.end_date && (
+                <Text className="text-red-500 mt-2">
+                  {errors.end_date.message}
+                </Text>
+              )}
             </View>
 
             <View className="flex-1 m-1">
               <RequestDescriptionText />
-              <TextInput
-                className={`${Tokens.standardInput} h-24`}
-                multiline={true}
-                maxLength={500}
-                numberOfLines={13}
-                textAlignVertical="top"
-                onChangeText={(text) => {
-                  setDescription(text);
-                  if (descriptionError) {
-                    setDescriptionError("");
-                  }
-                }}
-                value={description}
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    className={`${Tokens.standardInput} h-24`}
+                    multiline={true}
+                    maxLength={500}
+                    numberOfLines={13}
+                    textAlignVertical="top"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                )}
+                name="description"
               />
-              {descriptionError ? (
-                <Text className="text-red-500 mt-2">{descriptionError}</Text>
-              ) : null}
+              {errors.description && (
+                <Text className="text-red-500 mt-2">
+                  {errors.description.message}
+                </Text>
+              )}
             </View>
 
             {type === "Incapacidad médica" && (
@@ -337,7 +296,7 @@ export default function TicketRequest() {
             )}
 
             <View className="w-full my-5 items-center">
-              <CustomButton text="Crear solicitud" customFun={handlePress} />
+              <CustomButton text="Crear solicitud" customFun={onSubmit} />
             </View>
           </View>
         </View>

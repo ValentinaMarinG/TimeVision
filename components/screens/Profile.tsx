@@ -23,6 +23,7 @@ import BottomBar from "../organisms/BottomBar";
 import { ProfilePhotoScreen } from "../atoms/ProfilePhoto";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserInfo } from "../../config/routers";
+import ChangePasswordModal from "../organisms/ChangePassword";
 
 
 export default function Profile() {
@@ -30,10 +31,9 @@ export default function Profile() {
   const insets = useSafeAreaInsets();
   const [account, SetAccount] = useState({
     name: "",
-    lastname:"",
+    lastname: "",
     documentType: "",
     document: "",
-    employeeNumber: "",
     position: "",
     departament: "",
     email: "",
@@ -43,10 +43,9 @@ export default function Profile() {
   useEffect(() => {
     SetAccount({
       name: "",
-      lastname:"",
+      lastname: "",
       documentType: "",
       document: "",
-      employeeNumber: "",
       position: "",
       departament: "",
       email: "",
@@ -59,7 +58,6 @@ export default function Profile() {
           lastname: response?.data.lastname,
           documentType: response?.data.type_doc,
           document: response?.data.num_doc,
-          employeeNumber: "1234",
           position: response?.data.position,
           departament: response?.data.id_department,
           email: response?.data.email,
@@ -94,6 +92,7 @@ export default function Profile() {
 
   const handleCloseModal = () => {
     setModalVisible(false);
+
   };
 
   return (
@@ -131,12 +130,6 @@ export default function Profile() {
             </Text>
           </View>
           <View className={Tokens.textSubtitleContainer}>
-            <SubTitleProfileNumeroEmpleado />
-            <Text className={Tokens.standardTextProfileRight}>
-              {account.employeeNumber}
-            </Text>
-          </View>
-          <View className={Tokens.textSubtitleContainer}>
             <SubTitleProfileCargo />
             <Text className={Tokens.standardTextProfileRight}>
               {account.position}
@@ -152,10 +145,11 @@ export default function Profile() {
         <View className="w-full flex items-center justify-center">
           <View className="w-3/4 justify-center items-center mt-3">
             <CustomButton
-              text="Actualizar Contraseña"
-              customFun={handlePassword}
+              text="Actualizar contraseña"
+              customFun={handleOpenModal}
             />
           </View>
+          <ChangePasswordModal visible={modalVisible} onClose={handleCloseModal} />
           <View className="w-3/4 justify-center items-center mt-5">
             <CustomButton text="Cerrar sesión" customFun={handleLogout} />
           </View>

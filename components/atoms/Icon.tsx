@@ -1,5 +1,6 @@
 import { Image } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 type IconLogo = {
   size: number;
@@ -8,7 +9,7 @@ type IconLogo = {
 
 type IconsProps = {
   size: number;
-  color: "#63B4FF" | "#8696BB" | "#B0B0B0" | "#FFFFFF" | "#858585" | "#FEB052" | "#4894FE" | "#595A69" |"#d9dee0";
+  color: "#63B4FF" | "#8696BB" | "#B0B0B0" | "#FFFFFF" | "#858585" | "#FEB052" | "#4894FE" | "#595A69" |"#d9dee0" | "#F44336";
 };
 
 export const MainIcon = ({ size, source }: IconLogo) => (
@@ -61,4 +62,8 @@ export const CloseIcon = ({ size, color }: IconsProps) => (
 
 export const EditIcon = ({ size, color }: IconsProps) => (
   <AntDesign name="camerao" size={size} color={color} />
+);
+
+export const AlertIcon = ({ size, color }: IconsProps) => (
+  <Ionicons name="alert-circle-outline" size={size} color={color}/>
 );

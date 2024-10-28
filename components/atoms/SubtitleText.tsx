@@ -1,6 +1,10 @@
 import { StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
+import moment from "moment";
+import "moment/locale/es"; 
+
+moment.locale("es");
 
 export const SubTitleTextLogin = () => {
   return (
@@ -49,9 +53,21 @@ export const ShiftTextHome = () => {
   return <Text className={`${Tokens.ShiftsSubtitleHome}`}>Turnos</Text>;
 };
 
-export const ShiftDay = () => {
-  return <Text className={`${Tokens.ShiftsDay}`}>Jueves</Text>;
+interface ShiftDayProps {
+  date: string; 
+}
+
+export const ShiftDay: React.FC<ShiftDayProps> = ({ date }) => {
+  
+  const dayOfWeek = moment(date).format("dddd"); 
+
+  return (
+    <Text className={`${Tokens.ShiftsDay}`}>
+      {dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)}
+    </Text>
+  );
 };
+
 export const SubTitleProfileName = () => {
   return <Text className={`${Tokens.standardSubtitleLogin}`}>Nombre</Text>;
 };
