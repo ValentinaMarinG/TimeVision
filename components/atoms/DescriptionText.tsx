@@ -48,6 +48,12 @@ export const StartDateText = () => {
   );
 };
 
+export const DateText = () => {
+  return (
+    <Text className={`${Tokens.standardFormDescriptionText}`}>Fecha</Text>
+  );
+};
+
 export const EndDateText = () => {
   return (
     <Text className={`${Tokens.standardFormDescriptionText}`}>Hasta</Text>
