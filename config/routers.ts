@@ -254,6 +254,7 @@ export const getAssigments = async () => {
           ...assignment,
           ...shiftDetails.data,
         });
+        
       } else {
         console.error(`Error obteniendo detalles del turno ${assignment.id_shift}:`, shiftDetails.message);
       }

@@ -8,7 +8,7 @@ import BottomBar from "../organisms/BottomBar";
 
 import * as Tokens from "../tokens";
 import { getTickets } from "../../config/routers";
-import { Ticket } from "../../types/games";
+import { Ticket } from "../../types/types";
 
 export default function Tickets() {
   const insets = useSafeAreaInsets();
