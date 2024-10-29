@@ -4,30 +4,14 @@ import { CalendarIcon, Time } from "../atoms/Icon";
 import { useEffect, useState } from "react";
 import * as Tokens from "../tokens";
 import { getAssigments } from "../../config/routers";
-import { Shift } from "../../types/games";
+import { Shift } from "../../types/types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function ShiftsList() {
-  const [shifts, setShifts] = useState<Shift[]>([]);
-  const [loading, setLoading] = useState(true);
+interface ShiftsListProps {
+  shifts: Shift[]; 
+}
 
-  useEffect(() => {
-    const fetchTickets = async () => {
-      const response = await getAssigments();
-      if (response?.success) {
-        setShifts(response.data ?? []);
-        setLoading(false);
-      } else {
-        console.error(response?.message);
-      }
-    };
-
-    fetchTickets();
-  }, []);
-
-  if (loading) {
-    return <Text className="text-base text-grayText mt-2">Cargando turnos...</Text>;
-  }
-
+export default function ShiftsList({ shifts }: ShiftsListProps) {
   return (
     <View>
       {shifts.length === 0 ? (

@@ -18,7 +18,7 @@ import { TitleTextAccess } from "../atoms/TitleText";
 import { SubTitleTextAccess } from "../atoms/SubtitleText";
 import { AccessModal, LoginUserText } from "../atoms/DescriptionText";
 import { CustomButton } from "../atoms/CustomButton";
-import { MainIcon } from "../atoms/Icon";
+import { AlertIcon, MainIcon } from "../atoms/Icon";
 import { accessRequest } from "../../config/routers";
 import * as Tokens from "../tokens";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -86,7 +86,12 @@ export default function Access() {
                 )}
                 name="email"
               />
-              {errors.email && <Text className="text-red-500 mt-2">{errors.email.message}</Text>}
+              {errors.email && (
+                <View className="flex-row items-center mt-1 ml-1">
+                <AlertIcon size={20} color={"#F44336"} />
+                <Text className="text-red-500"> {errors.email.message}</Text>
+              </View>
+              )}
               <View className="my-5 items-center justify-center">
                 <CustomButton
                   text="Realizar solicitud"

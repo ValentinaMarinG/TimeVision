@@ -8,7 +8,7 @@ import BottomBar from "../organisms/BottomBar";
 
 import * as Tokens from "../tokens";
 import { createRequest, getTickets } from "../../config/routers";
-import { Ticket } from "../../types/games";
+import { Ticket } from "../../types/types";
 import * as SQLite from "expo-sqlite/next";
 
 export default function Tickets() {

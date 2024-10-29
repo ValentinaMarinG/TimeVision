@@ -94,7 +94,7 @@ export default function Login() {
                 name="user"
               />
               {errors.user && (
-                <View className="flex-row items-center mt-1 ml-2">
+                <View className="flex-row w-[85%] items-center mt-1 ml-1">
                   <AlertIcon size={20} color={"#F44336"} />
                   <Text className="text-red-500"> {errors.user.message}</Text>
                 </View>
@@ -125,7 +125,7 @@ export default function Login() {
                 </TouchableOpacity>
               </View>
               {errors.pass && (
-                <View className="flex-row items-center mt-1 ml-2">
+                <View className="flex-row w-[85%] items-center mt-1 ml-1">
                 <AlertIcon size={20} color={"#F44336"} />
                 <Text className="text-red-500"> {errors.pass.message}</Text>
               </View>

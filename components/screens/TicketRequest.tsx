@@ -16,6 +16,7 @@ import {
   RequestTypeText,
   StartDateText,
   EndDateText,
+  DateText,
 } from "../atoms/DescriptionText";
 import { TextInput } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
@@ -24,7 +25,7 @@ import { CustomButton } from "../atoms/CustomButton";
 import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
 import ImagesPicker from "../molecules/ImagesPicker";
-import { ArrowLeftIcon } from "../atoms/Icon";
+import { AlertIcon, ArrowLeftIcon } from "../atoms/Icon";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
 import { createRequest, getTickets } from "../../config/routers";
@@ -48,7 +49,6 @@ export default function TicketRequest() {
   const {
     control,
     handleSubmit,
-    getValues,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(RequestSchema) });
 
@@ -85,7 +85,6 @@ export default function TicketRequest() {
 
     checkLocalServer();
   },[]); 
-
 
   const initializeDatabase = async () => {
     try {
@@ -218,7 +217,10 @@ export default function TicketRequest() {
                 render={({ field: { onChange, value } }) => (
                   <SelectList
                     search={false}
-                    setSelected={(item: string) => onChange(item)}
+                    setSelected={(item: string) => {
+                      onChange(item);
+                      setType(item);
+                    }}
                     data={data}
                     save="value"
                     placeholder="Seleccionar opción"
@@ -245,7 +247,10 @@ export default function TicketRequest() {
                 name="type"
               />
               {errors.type && (
-                <Text className="text-red-500 mt-2">{errors.type.message}</Text>
+                <View className="flex-row w-[85%] items-center mt-1 ml-1">
+                  <AlertIcon size={20} color={"#F44336"} />
+                  <Text className="text-red-500"> {errors.type.message}</Text>
+                </View>
               )}
             </View>
 
@@ -264,15 +269,18 @@ export default function TicketRequest() {
                 name="title"
               />
               {errors.title && (
-                <Text className="text-red-500 mt-2">
-                  {errors.title.message}
-                </Text>
+                <View className="flex-row w-[85%] items-center mt-1 ml-1">
+                  <AlertIcon size={20} color={"#F44336"} />
+                  <Text className="text-red-500"> {errors.title.message}</Text>
+                </View>
               )}
             </View>
 
             <View className="flex-1 m-1">
-              <RequestDatesText />
-              <Controller
+              {type !== "Cambio de turno" ? (
+                <>
+                <RequestDatesText /> 
+                <Controller
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <>
@@ -310,16 +318,68 @@ export default function TicketRequest() {
                 name="start_date"
               />
               {errors.start_date && (
-                <Text className="text-red-500 mt-2">
-                  {errors.start_date.message}
-                </Text>
+                <View className="flex-row w-[85%] items-center mt-1 ml-1">
+                  <AlertIcon size={20} color={"#F44336"} />
+                  <Text className="text-red-500">
+                    {" "}
+                    {errors.start_date.message}
+                  </Text>
+                </View>
               )}
-
-              <Controller
+                  <Controller
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <>
+                        {showPicker && !isStartDateSelected && (
+                          <DateTimePicker
+                            mode="date"
+                            display="calendar"
+                            value={value || new Date()}
+                            onChange={(event, selectedDate) => {
+                              const currentDate = selectedDate || value;
+                              setShowPicker(false);
+                              onChange(currentDate);
+                            }}
+                          />
+                        )}
+                        <Text className="m-1 mt-3">
+                          <EndDateText />
+                        </Text>
+                        <Pressable
+                          onPress={() => {
+                            setIsStartDateSelected(false);
+                            toggleDatepicker();
+                          }}
+                        >
+                          <TextInput
+                            className={`${Tokens.standardInput}`}
+                            value={value ? format(value, "dd/MM/yyyy") : ""}
+                            editable={false}
+                            placeholder="DD-MM-AAAA"
+                            placeholderTextColor={"#8696BB"}
+                          />
+                        </Pressable>
+                      </>
+                    )}
+                    name="end_date"
+                  />
+                  {errors.end_date && (
+                    <View className="flex-row w-[85%] items-center mt-1 ml-1">
+                      <AlertIcon size={20} color={"#F44336"} />
+                      <Text className="text-red-500">
+                        {" "}
+                        {errors.end_date.message}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              ):(
+                <>
+                <Controller
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <>
-                    {showPicker && !isStartDateSelected && (
+                    {showPicker && isStartDateSelected && (
                       <DateTimePicker
                         mode="date"
                         display="calendar"
@@ -331,12 +391,12 @@ export default function TicketRequest() {
                         }}
                       />
                     )}
-                    <Text className="m-1 mt-5">
-                      <EndDateText />
+                    <Text className="m-1">
+                      <DateText />
                     </Text>
                     <Pressable
                       onPress={() => {
-                        setIsStartDateSelected(false);
+                        setIsStartDateSelected(true);
                         toggleDatepicker();
                       }}
                     >
@@ -350,12 +410,18 @@ export default function TicketRequest() {
                     </Pressable>
                   </>
                 )}
-                name="end_date"
+                name="start_date"
               />
-              {errors.end_date && (
-                <Text className="text-red-500 mt-2">
-                  {errors.end_date.message}
-                </Text>
+              {errors.start_date && (
+                <View className="flex-row w-[85%] items-center mt-1 ml-1">
+                  <AlertIcon size={20} color={"#F44336"} />
+                  <Text className="text-red-500">
+                    {" "}
+                    {errors.start_date.message}
+                  </Text>
+                </View>
+              )}
+                </>
               )}
             </View>
 
@@ -378,9 +444,13 @@ export default function TicketRequest() {
                 name="description"
               />
               {errors.description && (
-                <Text className="text-red-500 mt-2">
-                  {errors.description.message}
-                </Text>
+                <View className="flex-row w-[85%] items-center mt-1 ml-1">
+                  <AlertIcon size={20} color={"#F44336"} />
+                  <Text className="text-red-500">
+                    {" "}
+                    {errors.description.message}
+                  </Text>
+                </View>
               )}
             </View>
 
