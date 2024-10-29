@@ -20,7 +20,7 @@ import {
 } from "../atoms/DescriptionText";
 import { TextInput } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CustomButton } from "../atoms/CustomButton";
 import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
@@ -28,10 +28,11 @@ import ImagesPicker from "../molecules/ImagesPicker";
 import { AlertIcon, ArrowLeftIcon } from "../atoms/Icon";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
-import { createRequest } from "../../config/routers";
+import { createRequest, getTickets } from "../../config/routers";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RequestSchema } from "../../schemas/requestSchema";
+import * as SQLite from "expo-sqlite";
 
 type FormData = {
   title: string;
@@ -55,6 +56,7 @@ export default function TicketRequest() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [isStartDateSelected, setIsStartDateSelected] = useState(true);
+  const [isConnectedToServer, setIsConnectedToServer] = useState(false);
 
   const handleNavigation = (routeName: string) => {
     router.push(routeName);
@@ -64,29 +66,113 @@ export default function TicketRequest() {
     setShowPicker(!showPicker);
   };
 
-  const onSubmit = handleSubmit(async (data) => {
-    console.log(data);
+  useEffect(() => {
+    const checkLocalServer = async () => {
+      try {
+        const response = await getTickets();
+        if (!response?.success) {
+          console.error("Servidor respondió con un error:", response?.success);
+          setIsConnectedToServer(false);
+        } else {
+          console.log("Servidor accesible");
+          setIsConnectedToServer(true);
+        }
+      } catch (error) {
+        console.error("No se pudo conectar con el servidor:", error);
+        setIsConnectedToServer(false);
+      }
+    };
 
-    let endDate;
-    if (type === "Cambio de turno") {
-      endDate = data.start_date;
-    }else{
-      endDate = data.end_date
+    checkLocalServer();
+  },[]); 
+
+  const initializeDatabase = async () => {
+    try {
+      const db = await SQLite.openDatabaseAsync("dataBase.db");
+      if (db) {
+        console.log("Base de datos inicializada correctamente");
+      }
+      return db;
+    } catch (error) {
+      console.error("Error al inicializar la base de datos:", error);
+      return null;
     }
+  };
 
-    const response = await createRequest(
-      data.start_date,
-      endDate,
-      data.type,
-      data.title,
-      data.description,
-      imageUri
-    );
+  const insertRequestSQLite = async (data: FormData) => {
+    try {
+      const db = await initializeDatabase();
 
-    if (response.success) {
+      if (!db) {
+        Alert.alert("Error", "No se pudo acceder a la base de datos local.");
+        return;
+      }
+
+      await db.runAsync(
+        `
+        INSERT INTO requests (type, title, start_date, end_date, description)
+        VALUES (?, ?, ?, ?, ?);
+      `,
+        [
+          data.type,
+          data.title,
+          data.start_date.toISOString(),
+          data.end_date.toISOString(),
+          data.description,
+        ]
+      );
+
+      console.log("Nuevo ticket creado!");
+      verifyTickets();
       router.push("/tickets");
+    } catch (error) {
+      console.log(
+        "Error al llamar la base de datos local en la creación de tickets:",
+        error
+      );
+    }
+  };
+
+  const verifyTickets = async () => {
+    try {
+      const db = await initializeDatabase();
+
+      if (!db) {
+        Alert.alert("Error", "No se pudo acceder a la base de datos local.");
+        return;
+      }
+
+      const results = await db.getAllAsync("SELECT * FROM requests;");
+      console.log("Tickets en la base de datos*:", results);
+    } catch (error) {
+      console.error("Error al verificar los tickets:", error);
+    }
+  };
+
+  const onSubmit = handleSubmit(async (data) => {
+    if (isConnectedToServer) {
+      try {
+        const response = await createRequest(
+          data.start_date,
+          data.end_date,
+          data.type,
+          data.title,
+          data.description,
+          imageUri
+        );
+        if (response.success) {
+          Alert.alert("Solicitud creada exitosamente en el servidor");
+          router.push("/tickets");
+        } else {
+          insertRequestSQLite(data);
+          Alert.alert("Verifique su conexión, la solicitud se cargará pronto.");
+        }
+      } catch (error) {
+        console.log("Error al enviar la solicitud:", error);
+      }
     } else {
-      Alert.alert("Error", response.message);
+      Alert.alert("No hay conexión al servidor", "Guardando localmente...");
+      insertRequestSQLite(data);
     }
   });
 

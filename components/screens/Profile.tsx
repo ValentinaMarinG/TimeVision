@@ -2,6 +2,7 @@ import {
   View,
   Text,
   ScrollView,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -24,7 +25,8 @@ import { ProfilePhotoScreen } from "../atoms/ProfilePhoto";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserInfo } from "../../config/routers";
 import ChangePasswordModal from "../organisms/ChangePassword";
-
+import * as SQLite from "expo-sqlite";
+import { User } from "../../types/types";
 
 export default function Profile() {
 
@@ -40,8 +42,22 @@ export default function Profile() {
   });
 
 
+  const initializeDatabase = async () => {
+    try {
+      /* await SQLite.deleteDatabaseAsync("dataBase.db"); */
+      const db = await SQLite.openDatabaseAsync("dataBase.db");
+      if (db) {
+        console.log("Base de datos inicializada correctamente");
+      }
+      return db;
+    } catch (error) {
+      console.error("Error al inicializar la base de datos:", error);
+      return null;
+    }
+  };
+
   useEffect(() => {
-    SetAccount({
+   /*  SetAccount({
       name: "",
       lastname: "",
       documentType: "",
@@ -65,8 +81,43 @@ export default function Profile() {
       } else {
         console.error(response?.message);
       }
+    }; */
+
+    const getUserSQLite = async () => {
+      try {
+        const db = await initializeDatabase();
+        if (!db) {
+          Alert.alert("Error", "No se pudo acceder a la base de datos local.");
+          return null;
+        }
+    
+        const results = await db.getAllAsync<User>("SELECT * FROM users;");
+        console.log("Usuario en bd local", results);
+    
+        if (results.length > 0) {
+          SetAccount({
+            name: results[0].name,
+            lastname: results[0].lastname,
+            documentType: results[0].type_doc,
+            document: results[0].num_doc,
+            position: results[0].position,
+            departament: results[0].id_department,
+            email: results[0].email,
+          });
+          return results[0];
+        } else {
+          console.warn("No se encontró ningún usuario en la base de datos local.");
+          return null;
+        }
+      } catch (error) {
+        console.error(
+          "Error al llamar la base de datos local en la inserción de usuario:",
+          error
+        );
+        return null;
+      }
     };
-    fetchUser();
+    getUserSQLite();
   }, []);
 
   const [modalVisible, setModalVisible] = useState(false);

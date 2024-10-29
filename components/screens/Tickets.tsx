@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AddButton } from "../atoms/CustomButton";
 import { useRouter } from "expo-router";
@@ -7,13 +7,16 @@ import { TitleTextTickets } from "../atoms/TitleText";
 import BottomBar from "../organisms/BottomBar";
 
 import * as Tokens from "../tokens";
-import { getTickets } from "../../config/routers";
+import { createRequest, getTickets } from "../../config/routers";
 import { Ticket } from "../../types/types";
+import * as SQLite from "expo-sqlite/next";
 
 export default function Tickets() {
   const insets = useSafeAreaInsets();
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [ticketslocal, setTicketslocal] = useState<Ticket[]>([]);
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
+  const [imageUri, setImageUri] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -21,18 +24,135 @@ export default function Tickets() {
     router.push("/ticketrequest");
   };
 
+  const initializeDatabase = async () => {
+    try {
+      const db = await SQLite.openDatabaseAsync("dataBase.db");
+      if (db) {
+        console.log("Base de datos inicializada correctamente");
+      }
+      return db;
+    } catch (error) {
+      console.error("Error al inicializar la base de datos:", error);
+      return null;
+    }
+  };
+
+  const insertRequestSQLite = async (data: Ticket[]) => {
+    try {
+      const db = await initializeDatabase();
+
+      if (!db) {
+        Alert.alert("Error", "No se pudo acceder a la base de datos local.");
+        return;
+      }
+
+      const insertPromises = data.map(async (item) => {
+        const startDate = new Date(item.start_date);
+        const endDate = new Date(item.end_date);
+
+        const existingTicket = await db.getAllAsync(
+          "SELECT * FROM requests WHERE idMongo = ?",
+          [item._id]
+        );
+
+        if (existingTicket.length > 0) {
+          console.log(
+            `Ticket con idMongo ${item._id} ya existe. No se insertará.`
+          );
+          const results = await db.getAllAsync<Ticket>(
+            "SELECT * FROM requests;"
+          );
+          console.log("Tickets en bd local", results);
+        } else {
+          await db.runAsync(
+            `INSERT INTO requests (idMongo, type, title, start_date, end_date, description, state)
+            VALUES (?, ?, ?, ?, ?, ?, ?);`,
+            [
+              item._id,
+              item.type,
+              item.title,
+              startDate.toISOString(),
+              endDate.toISOString(),
+              item.description,
+              item.state,
+            ]
+          );
+          console.log(`Ticket con idMongo ${item._id} insertado.`);
+        }
+      });
+
+      await Promise.all(insertPromises);
+    } catch (error) {
+      console.log(
+        "Error al llamar la base de datos local en la insercion de tickets:",
+        error
+      );
+    }
+  };
+
   useEffect(() => {
     const fetchTickets = async () => {
-      const response = await getTickets();
-      if (response?.success) {
-        setTickets(response?.data);
-      } else {
-        console.error(response?.message);
+      try {
+        const response = await getTickets();
+        if (response?.success) {
+          const data = response.data;
+          insertRequestSQLite(data);
+          setTickets(data);
+          syncTicketsToMongo();
+        } else {
+          throw new Error("No data from server");
+        }
+      } catch (error) {
+        console.warn(
+          "Fallo en la conexión o en la carga de datos. Cargando desde SQLite."
+        );
+        getTicketLocal();
       }
     };
-
     fetchTickets();
   }, []);
+
+  const getTicketLocal = async () => {
+    try {
+      const db = await initializeDatabase();
+      if (!db) return;
+      const results = await db.getAllAsync<Ticket>("SELECT * FROM requests;");
+      console.log("AQUIIIIIII SIN CONEXION LOCAL:", results);
+      setTickets(results || []);
+    } catch (error) {
+      console.error("Error al obtener tickets locales:", error);
+    }
+  };
+
+  const syncTicketsToMongo = async () => {
+    try {
+      const db = await initializeDatabase();
+      if (!db) return;
+
+      const localTickets = await db.getAllAsync<Ticket>(
+        "SELECT * FROM requests WHERE idMongo IS NULL;"
+      );
+      for (const ticket of localTickets) {
+        const response = await createRequest(
+          new Date(ticket.start_date),
+          new Date(ticket.end_date),
+          ticket.type,
+          ticket.title,
+          ticket.description,
+          imageUri
+        );
+
+        if (response.success) {
+          await db.runAsync(`DELETE FROM requests WHERE _id = ?`, [ticket._id]);
+          console.log(
+            `Ticket ${ticket._id} sincronizado y eliminado de SQLite.`
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error al sincronizar los tickets:", error);
+    }
+  };
 
   const toggleExpandTicket = (ticketId: string) => {
     setExpandedTicketId(expandedTicketId === ticketId ? null : ticketId);
@@ -55,17 +175,18 @@ export default function Tickets() {
             tickets.map((ticketMap) => (
               <View key={ticketMap._id}>
                 <View className="left-80 top-8 z-10">
-                    <View
-                      className={`w-[17] h-[17] rounded-full  ${ticketMap.state === "aprobado"
+                  <View
+                    className={`w-[17] h-[17] rounded-full  ${
+                      ticketMap.state === "aprobado"
                         ? "bg-green-500"
                         : ticketMap.state === "pendiente"
-                          ? "bg-orange-500"
-                          : ticketMap.state === "rechazado"
-                            ? "bg-red-500"
-                            : "bg-gray-500"
-                        }`}
-                    ></View>
-                  </View>
+                        ? "bg-orange-500"
+                        : ticketMap.state === "rechazado"
+                        ? "bg-red-500"
+                        : "bg-gray-500"
+                    }`}
+                  ></View>
+                </View>
                 <TouchableOpacity
                   onPress={() => toggleExpandTicket(ticketMap._id)}
                   className="mb-2 w-[350] h-auto p-2 flex-row items-center rounded-lg bg-gray-200"
@@ -99,27 +220,21 @@ export default function Tickets() {
                     {expandedTicketId === ticketMap._id && (
                       <View>
                         <Text className="font-bold text-lg">
-                          Descripción: {" "}
+                          Descripción:{" "}
                           <Text className="font-normal text-md">
-                            {
-                              ticketMap.description
-                            }
+                            {ticketMap.description}
                           </Text>
                         </Text>
                         <Text className="font-bold text-lg">
-                          Estado: {" "}
+                          Estado:{" "}
                           <Text className="font-normal text-md">
-                            {
-                              ticketMap.state
-                            }
+                            {ticketMap.state}
                           </Text>
                         </Text>
                       </View>
                     )}
                   </View>
-                  
                 </TouchableOpacity>
-                
               </View>
             ))
           ) : (
