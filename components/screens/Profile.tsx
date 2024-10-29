@@ -14,22 +14,33 @@ import {
   SubTitleProfileDocument,
   SubTitleProfileDepartament,
   SubTitleProfileDocumentType,
-  SubTitleProfileNumeroEmpleado,
 } from "../atoms/SubtitleText";
 import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
 import { useEffect, useState } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ProfilePhotoScreen } from "../atoms/ProfilePhoto";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getUserInfo } from "../../config/routers";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getUserInfo, updateProfilePhoto } from "../../config/routers";
 import ChangePasswordModal from "../organisms/ChangePassword";
+import * as ImagePicker from "expo-image-picker";
 
+type AccountType = {
+  id: string;
+  name: string;
+  lastname: string;
+  documentType: string;
+  document: string;
+  position: string;
+  departament: string;
+  email: string;
+  telephone: string;
+};
 
 export default function Profile() {
-
   const insets = useSafeAreaInsets();
-  const [account, SetAccount] = useState({
+  const [account, setAccount] = useState<AccountType>({
+    id: "",
     name: "",
     lastname: "",
     documentType: "",
@@ -37,31 +48,28 @@ export default function Profile() {
     position: "",
     departament: "",
     email: "",
+    telephone: "",
   });
-
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    SetAccount({
-      name: "",
-      lastname: "",
-      documentType: "",
-      document: "",
-      position: "",
-      departament: "",
-      email: "",
-    });
     const fetchUser = async () => {
       const response = await getUserInfo();
       if (response?.success) {
-        SetAccount({
-          name: response?.data.name,
-          lastname: response?.data.lastname,
-          documentType: response?.data.type_doc,
-          document: response?.data.num_doc,
-          position: response?.data.position,
-          departament: response?.data.id_department,
-          email: response?.data.email,
+        setAccount({
+          id: response.data.id,
+          name: response.data.name,
+          lastname: response.data.lastname,
+          documentType: response.data.type_doc,
+          document: response.data.num_doc,
+          position: response.data.position,
+          departament: response.data.id_department,
+          email: response.data.email,
+          telephone: response.data.phone,
         });
+        setProfilePhoto(response.data.photo);
       } else {
         console.error(response?.message);
       }
@@ -69,21 +77,54 @@ export default function Profile() {
     fetchUser();
   }, []);
 
-  const [modalVisible, setModalVisible] = useState(false);
+  const handlePhotoUpdate = async (uri: string) => {
+    const formData = new FormData();
+    if (!uri) {
+      alert("No se ha seleccionado ninguna imagen.");
+      return;
+    }
 
-  const router = useRouter();
+    const file = {
+      uri,
+      name: "profile_photo.jpg",
+      type: "image/jpeg",
+    };
+
+    formData.append("photo", file as any);
+
+    try {
+      const updatedPhotoUrl = await updateProfilePhoto(formData);
+      alert("Foto de perfil actualizada con éxito.");
+      setProfilePhoto(updatedPhotoUrl);
+    } catch (error) {
+      const message = (error as { message: string }).message || 'Error desconocido';
+      alert("Error al actualizar la foto: " + message);
+    }
+  };
+
+  const handlePress = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("¡Se requiere permiso para acceder a la galería!");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      handlePhotoUpdate(uri);
+    }
+  };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem("token");
     router.push("/login");
-  };
-
-  const handlePress = () => {
-    console.log("Cambio de foto de perfil");
-  };
-
-  const handlePassword = () => {
-    console.log("Cambiar contraseña");
   };
 
   const handleOpenModal = () => {
@@ -92,7 +133,6 @@ export default function Profile() {
 
   const handleCloseModal = () => {
     setModalVisible(false);
-
   };
 
   return (
@@ -101,19 +141,18 @@ export default function Profile() {
       className="flex-1 bg-white"
       showsVerticalScrollIndicator={false}
     >
-      <View
-        className="flex-1 w-full mt-9"
-        style={{ paddingBottom: insets.bottom }}
-      >
+      <View className="flex-1 w-full mt-9" style={{ paddingBottom: insets.bottom }}>
         <View className="justify-center items-center border-b border-slate-200">
           <TitleProfile />
         </View>
         <View className="w-full flex justify-center items-center mt-9">
-          <ProfilePhotoScreen />
+          <ProfilePhotoScreen source={profilePhoto ? { uri: profilePhoto } : undefined} />
           <View className="flex relative -top-8 left-10">
             <EditProfileButton text="" customFun={handlePress} />
           </View>
-          <Text className="text-xl font-bold text-CText">{account.name} {account.lastname}</Text>
+          <Text className="text-xl font-bold text-CText">
+            {account.name} {account.lastname}
+          </Text>
           <Text className="text-sm text-blueText">{account.email}</Text>
         </View>
         <View className="w-full justify-center items-center my-5">
@@ -144,10 +183,7 @@ export default function Profile() {
         </View>
         <View className="w-full flex items-center justify-center">
           <View className="w-3/4 justify-center items-center mt-3">
-            <CustomButton
-              text="Actualizar contraseña"
-              customFun={handleOpenModal}
-            />
+            <CustomButton text="Actualizar contraseña" customFun={handleOpenModal} />
           </View>
           <ChangePasswordModal visible={modalVisible} onClose={handleCloseModal} />
           <View className="w-3/4 justify-center items-center mt-5">
@@ -155,22 +191,6 @@ export default function Profile() {
           </View>
         </View>
       </View>
-
-      {/* <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={handleCloseModal}
-      >
-        <View className={Tokens.modalContainer}>
-          <View className={Tokens.modalContent}>
-            <Text>Cargar Foto</Text>
-            <TouchableOpacity onPress={handleCloseModal}>
-              <ButtonProfile text="Cerrar" customFun={handleCloseModal} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal> */}
       <BottomBar activeRoute="/profile" />
     </ScrollView>
   );
