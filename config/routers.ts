@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ip1 = "http://10.0.2.2";
-const ip2 = "http://192.168.0.31";
+const ip2 = "http://192.168.0.14";
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
@@ -62,30 +62,42 @@ export const createRequest = async (
     formData.append("description", description);
 
     if (imageUri) {
-      const imageBlob = await getBlobFromUri(imageUri);
-      formData.append("attach", imageBlob);
+      const extension = imageUri.split('.').pop() || 'jpg';
+      
+      const currentDate = new Date();
+      const formattedDate = currentDate.toISOString().split('T')[0]; 
+      const fileName = `incapacidad_medica_${formattedDate}.${extension}`;
+      
+      const mimeTypes: { [key: string]: string } = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'pdf': 'application/pdf'
+      };
+      const type = mimeTypes[extension.toLowerCase()] || 'image/jpeg';
+      
+      formData.append("attach", {
+        uri: imageUri,
+        name: fileName,
+        type,
+      } as any);
     }
 
     const response = await fetch(`${ip2}:3001/api/v1/request/`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        Accept: 'application/json',
+        'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        start_date: start_date,
-        end_date: end_date,
-        type: type,
-        title: title,
-        description: description
-      }),
+      body: formData,
     });
 
     const data = await response.json();
 
     if (response.ok) {
-      console.log(data);
-      return { success: true, data};
+      console.log('Solicitud creada exitosamente:', data);
+      return { success: true, data };
     } else {
       switch (response.status) {
         case 400:
@@ -116,6 +128,7 @@ export const createRequest = async (
       }
     }
   } catch (error) {
+    console.error('Error en createRequest:', error);
     return {
       success: false,
       message: "Error de red. Verifica tu conexión.",
@@ -212,6 +225,27 @@ export const getUserInfo = async () => {
     return { success: false, message: "Error de red. Verifica tu conexión." };
   }
 };
+
+export const updateProfilePhoto = async (formData: FormData) => {
+  const token = await AsyncStorage.getItem("token");
+  
+  const response = await fetch(`${ip2}:3001/api/v1/user/photo`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`, 
+    },
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Error: ${response.status} ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  return data.photoUrl; 
+};
+
 
 export const getAssigments = async () => {
   try {

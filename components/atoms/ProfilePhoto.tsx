@@ -1,17 +1,31 @@
-import { Image, View } from "react-native";
-import images from "../../assets/index";
+import { Image, ImageSourcePropType } from "react-native";
 
 type ProfilePhotoProps = {
-  uri: string;
+  source?: ImageSourcePropType;
 };
 
-export const ProfilePhotoHome = ({ uri }: ProfilePhotoProps) => {
-  return <Image source={{ uri }} className="w-[55px] h-[55px] rounded-full" />;
+export const ProfilePhotoHome = ({ source }: ProfilePhotoProps) => {
+  return (
+    <Image
+      source={
+        source || { uri: 'https://images.pexels.com/photos/2876486/pexels-photo-2876486.png?auto=compress&cs=tinysrgb&dpr=1&w=500' }
+      }
+      className="w-[55] h-[55] rounded-full"
+    />
+  );
 };
 
-export const ProfilePhotoScreen = ({ uri }: ProfilePhotoProps) => {
-  return <Image source={{ uri }} className="w-[150] h-[150] rounded-full" />;
-};
+export const ProfilePhotoScreen = ({ source }: ProfilePhotoProps) => {
+  return (
+    <Image
+      source={
+        source || { uri: 'https://images.pexels.com/photos/2876486/pexels-photo-2876486.png?auto=compress&cs=tinysrgb&dpr=1&w=500' }
+      }
+      className="w-[150] h-[150] rounded-full"
+    />
+    
+  );
+}
 
 export const ProfilePhotoOffline = () => {
   return (
@@ -28,5 +42,5 @@ export const ProfilePhotoOfflineHome = () => {
       source={require('../../assets/userProfileOffline.png')}
       className="w-[55] h-[55] rounded-full"
     />
-  );
+  )
 };

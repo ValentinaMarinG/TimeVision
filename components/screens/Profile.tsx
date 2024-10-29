@@ -14,16 +14,19 @@ import { useEffect, useState } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ProfilePhotoOffline, ProfilePhotoScreen } from "../atoms/ProfilePhoto";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getUserInfo } from "../../config/routers";
 import ChangePasswordModal from "../organisms/ChangePassword";
 import * as SQLite from "expo-sqlite";
 import { User } from "../../types/types";
 import NetInfo from "@react-native-community/netinfo";
 import images from '../../assets/index';
+import { getUserInfo, updateProfilePhoto } from "../../config/routers";
+import * as ImagePicker from "expo-image-picker";
+
 
 export default function Profile() {
   const insets = useSafeAreaInsets();
-  const [account, SetAccount] = useState({
+  const [account, setAccount] = useState({
+    id: "",
     name: "",
     lastname: "",
     documentType: "",
@@ -31,8 +34,12 @@ export default function Profile() {
     position: "",
     departament: "",
     email: "",
-    photo: ""
+    photo: "",
   });
+
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
 
   const [isOnline, setIsOnline] = useState<Boolean | null>(true);
 
@@ -72,7 +79,8 @@ export default function Profile() {
         console.log("Usuario en bd local", results);
 
         if (results.length > 0) {
-          SetAccount({
+          setAccount({
+            id:results[0]._id,
             name: results[0].name,
             lastname: results[0].lastname,
             documentType: results[0].type_doc,
@@ -82,6 +90,7 @@ export default function Profile() {
             email: results[0].email,
             photo: results[0].photo || ""
           });
+          setProfilePhoto(results[0].photo || "");
           return results[0];
         } else {
           console.warn(
@@ -96,26 +105,58 @@ export default function Profile() {
         );
         return null;
       }
+      getUserSQLite();
+  }},[]);
+
+  const handlePhotoUpdate = async (uri: string) => {
+    const formData = new FormData();
+    if (!uri) {
+      alert("No se ha seleccionado ninguna imagen.");
+      return;
+    }
+
+    const file = {
+      uri,
+      name: "profile_photo.jpg",
+      type: "image/jpeg",
     };
-    getUserSQLite();
-  }, []);
 
-  const [modalVisible, setModalVisible] = useState(false);
+    formData.append("photo", file as any);
 
-  const router = useRouter();
+    try {
+      const updatedPhotoUrl = await updateProfilePhoto(formData);
+      alert("Foto de perfil actualizada con éxito.");
+      setProfilePhoto(updatedPhotoUrl);
+    } catch (error) {
+      const message = (error as { message: string }).message || 'Error desconocido';
+      alert("Error al actualizar la foto: " + message);
+    }
+  };
+
+  const handlePress = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("¡Se requiere permiso para acceder a la galería!");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      handlePhotoUpdate(uri);
+    }
+  };
 
   const handleLogout = async () => {
     await AsyncStorage.removeItem("token");
     await AsyncStorage.removeItem("lodingStatus");
     router.push("/login");
-  };
-
-  const handlePress = () => {
-    console.log("Cambio de foto de perfil");
-  };
-
-  const handlePassword = () => {
-    console.log("Cambiar contraseña");
   };
 
   const handleOpenModal = () => {
@@ -132,19 +173,17 @@ export default function Profile() {
       className="flex-1 bg-white"
       showsVerticalScrollIndicator={false}
     >
-      <View
-        className="flex-1 w-full mt-9"
-        style={{ paddingBottom: insets.bottom }}
-      >
+      <View className="flex-1 w-full mt-9" style={{ paddingBottom: insets.bottom }}>
         <View className="justify-center items-center border-b border-slate-200">
           <TitleProfile />
         </View>
         <View className="w-full flex justify-center items-center mt-9">
           {isOnline ? (
-            <ProfilePhotoScreen uri={account.photo || images.userProfileOffline} />
+            <ProfilePhotoScreen source={profilePhoto ? { uri: profilePhoto } : undefined} />
           ) : (
             <ProfilePhotoOffline />
           )}
+          
           <View className="flex relative -top-8 left-10">
             <EditProfileButton text="" customFun={handlePress} />
           </View>
@@ -181,10 +220,7 @@ export default function Profile() {
         </View>
         <View className="w-full flex items-center justify-center">
           <View className="w-3/4 justify-center items-center mt-3">
-            <CustomButton
-              text="Actualizar contraseña"
-              customFun={handleOpenModal}
-            />
+            <CustomButton text="Actualizar contraseña" customFun={handleOpenModal} />
           </View>
           <ChangePasswordModal
             visible={modalVisible}
@@ -195,22 +231,6 @@ export default function Profile() {
           </View>
         </View>
       </View>
-
-      {/* <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={handleCloseModal}
-      >
-        <View className={Tokens.modalContainer}>
-          <View className={Tokens.modalContent}>
-            <Text>Cargar Foto</Text>
-            <TouchableOpacity onPress={handleCloseModal}>
-              <ButtonProfile text="Cerrar" customFun={handleCloseModal} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal> */}
       <BottomBar activeRoute="/profile" />
     </ScrollView>
   );
