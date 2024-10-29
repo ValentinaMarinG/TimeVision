@@ -5,7 +5,6 @@ import {
     TextInput,
     Modal,
     TouchableOpacity,
-    Alert,
 } from "react-native";
 import { CustomButtonPass } from "../atoms/CustomButton";
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +12,7 @@ import { updatePasswordRequest } from '../../config/routers';
 import SuccessModal from './SuccessModal';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
+import { createChangePasswordSchema } from "../../schemas/changePasswordSchema"; // Importa el esquema dinámico de zod
 
 export default function ChangePasswordModal({ visible, onClose }) {
     const [currentPassword, setCurrentPassword] = useState("");
@@ -27,36 +27,7 @@ export default function ChangePasswordModal({ visible, onClose }) {
     const [ErrorModalVisible, setErrorModalVisible] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
 
-    const validatePassword = (password) => {
-        const minLength = 8;
-        const invalidCharRegex = /ñ/;
-        const numberRegex = /\d/;
-        const uppercaseRegex = /[A-Z]/;
-        const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
-
-        if (password.length < minLength) {
-            return `La contraseña debe tener al menos ${minLength} caracteres.`;
-        }
-        if (password==currentPassword) {
-            return "Contraseña usada recientemente.";
-        }
-        if (invalidCharRegex.test(password)) {
-            return "La contraseña no puede contener la letra 'ñ'.";
-        }
-        if (!numberRegex.test(password)) {
-            return "La contraseña debe contener al menos un número.";
-        }
-        if (!uppercaseRegex.test(password)) {
-            return "La contraseña debe contener al menos una letra mayúscula.";
-        }
-        if (!specialCharRegex.test(password)) {
-            return "La contraseña debe contener al menos un carácter especial.";
-        }
-        return "";
-    };
-
     const handleChangePassword = async () => {
-
         if (!currentPassword) {
             setCurrentError("La contraseña actual es requerida.");
             return;
@@ -64,17 +35,23 @@ export default function ChangePasswordModal({ visible, onClose }) {
             setCurrentError("");
         }
 
-        const newPasswordError = validatePassword(newPassword);
-        if (newPasswordError) {
-            setNewError(newPasswordError);
-            return;
-        } else {
+        const schema = createChangePasswordSchema(currentPassword);
+
+        try {
+            schema.parse({ password: newPassword });
             setNewError("");
+        } catch (e) {
+            if (e.errors?.length) {
+                setNewError(e.errors[0].message);
+                return;
+            }
         }
 
         if (newPassword !== confirmPassword) {
             setError("Las contraseñas no coinciden.");
             return;
+        } else {
+            setError("");
         }
 
         const response = await updatePasswordRequest(currentPassword, newPassword);
@@ -104,6 +81,7 @@ export default function ChangePasswordModal({ visible, onClose }) {
             router.push("/login");
         }
     }
+
     return (
         <Modal
             animationType="fade"
@@ -133,6 +111,7 @@ export default function ChangePasswordModal({ visible, onClose }) {
                         </TouchableOpacity>
                     </View>
                     {currentError ? <Text className="text-red-500">{currentError}</Text> : null}
+
                     <View className="flex-row items-center rounded-xl bg-gray-200 pr-2 border mt-4 border-gray-300">
                         <TextInput
                             className="flex-1 rounded-lg p-2"
@@ -151,6 +130,7 @@ export default function ChangePasswordModal({ visible, onClose }) {
                         </TouchableOpacity>
                     </View>
                     {newError ? <Text className="text-red-500">{newError}</Text> : null}
+
                     <TextInput
                         className="border border-gray-300 rounded-lg p-2 w-full mb-4 bg-gray-200 mt-4"
                         placeholder="Confirmar contraseña"
@@ -165,10 +145,9 @@ export default function ChangePasswordModal({ visible, onClose }) {
                         <CustomButtonPass text="Cancelar" customFun={handleCancelButton} />
                         <CustomButtonPass text="Guardar" customFun={handleChangePassword} />
                     </View>
-
                 </View>
-
             </View>
+
             <SuccessModal
                 visible={successModalVisible}
                 message={modalMessage}

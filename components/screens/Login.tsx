@@ -49,6 +49,7 @@ export default function Login() {
 
   const onSubmit = async (data: FormData) => {
     const result = await loginRequest(data.user, data.pass);
+    await AsyncStorage.setItem('lodingStatus','false');
     if (result?.success) {
       const token = await AsyncStorage.getItem("token");
       if (token) {
@@ -118,7 +119,7 @@ export default function Login() {
                   onPress={() => setShowPassword(!showPassword)}
                 >
                   <Ionicons
-                    name={showPassword ? "eye-off" : "eye"}
+                    name={showPassword ? "eye" : "eye-off"}
                     size={24}
                     color="gray"
                   />
