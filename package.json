@@ -42,6 +42,7 @@
     "react-native-bcrypt": "^2.4.0",
     "react-native-calendars": "^1.1307.0",
     "react-native-date-picker": "^5.0.7",
+    "react-native-date-ranges": "^2.5.0",
     "react-native-dropdown-select-list": "^2.0.5",
     "react-native-loading-spinner-overlay": "^3.0.1",
     "react-native-modal-datetime-picker": "^18.0.0",
