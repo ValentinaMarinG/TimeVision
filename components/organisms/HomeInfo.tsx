@@ -11,7 +11,6 @@ import { CompanyHomeCard, ProfileHomeCard } from "../atoms/DescriptionText";
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import NetInfo from "@react-native-community/netinfo";
-import images from "../../assets/index";
 
 interface HomeCardProps {
   name: string;
@@ -36,9 +35,9 @@ export default function HomeCard({ name, lastname, photo }: HomeCardProps) {
     <View className="bg-cardColor w-full rounded-2xl p-5">
       <View className="flex-row items-center">
         {isOnline ? (
-          <ProfilePhotoHome uri={photo || images.userProfileOffline} />
+          <ProfilePhotoHome source={photo ? { uri: photo } : undefined} />
         ) : (
-          <ProfilePhotoOfflineHome />
+          <ProfilePhotoOfflineHome source={require("../../assets/userProfileOffline.png")} />
         )}
         <View className="flex-1 justify-between ml-5">
           <Text className="text-xl text-white">

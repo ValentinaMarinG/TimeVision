@@ -33,6 +33,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RequestSchema } from "../../schemas/requestSchema";
 import * as SQLite from "expo-sqlite";
+import NetInfo from "@react-native-community/netinfo";
 
 type FormData = {
   title: string;
@@ -56,7 +57,7 @@ export default function TicketRequest() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [isStartDateSelected, setIsStartDateSelected] = useState(true);
-  const [isConnectedToServer, setIsConnectedToServer] = useState(false);
+  const [isConnectedToInternet, setIsConnectedToInternet] = useState<Boolean | null>(true);
 
   const handleNavigation = (routeName: string) => {
     router.push(routeName);
@@ -67,23 +68,12 @@ export default function TicketRequest() {
   };
 
   useEffect(() => {
-    const checkLocalServer = async () => {
-      try {
-        const response = await getTickets();
-        if (!response?.success) {
-          console.error("Servidor respondió con un error:", response?.success);
-          setIsConnectedToServer(false);
-        } else {
-          console.log("Servidor accesible");
-          setIsConnectedToServer(true);
-        }
-      } catch (error) {
-        console.error("No se pudo conectar con el servidor:", error);
-        setIsConnectedToServer(false);
-      }
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnectedToInternet(state.isConnected);
+    });
+    return () => {
+      unsubscribe();
     };
-
-    checkLocalServer();
   },[]); 
 
   const initializeDatabase = async () => {
@@ -150,7 +140,7 @@ export default function TicketRequest() {
   };
 
   const onSubmit = handleSubmit(async (data) => {
-    if (isConnectedToServer) {
+    if (isConnectedToInternet) {
       try {
         const response = await createRequest(
           data.start_date,
@@ -172,6 +162,9 @@ export default function TicketRequest() {
       }
     } else {
       Alert.alert("No hay conexión al servidor", "Guardando localmente...");
+      if(imageUri != null){
+        return Alert.alert("Para enviar archivo debe de tener conexión a internet");
+      }
       insertRequestSQLite(data);
     }
   });

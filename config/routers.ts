@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ip1 = "http://10.0.2.2";
-const ip2 = "http://192.168.0.14";
+const ip2 = "http://192.168.0.31";
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
@@ -243,7 +243,7 @@ export const updateProfilePhoto = async (formData: FormData) => {
   }
   
   const data = await response.json();
-  return data.photoUrl; 
+  return data.photo; 
 };
 
 
