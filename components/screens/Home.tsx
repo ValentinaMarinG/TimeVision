@@ -20,6 +20,7 @@ import { CustomButton } from "../atoms/CustomButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "expo-router";
 import * as SQLite from "expo-sqlite";
+import { User } from "../../types/games";
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState({ name: "", lastname: "" });
@@ -28,6 +29,7 @@ export default function Home() {
 
   const initializeDatabase = async () => {
     try {
+      /* await SQLite.deleteDatabaseAsync("dataBase.db"); */
       const db = await SQLite.openDatabaseAsync("dataBase.db");
       if (db) {
         console.log("Base de datos inicializada correctamente");
@@ -38,7 +40,7 @@ export default function Home() {
       return null;
     }
   };
-  
+
   const createDataBase = async () => {
     try {
       const db = await initializeDatabase();
@@ -48,16 +50,21 @@ export default function Home() {
         return;
       }
 
+      /* await db.execAsync(`DROP TABLE IF EXISTS requests;`) */
+
       await db.execAsync(`
       CREATE TABLE IF NOT EXISTS requests (
         _id INTEGER PRIMARY KEY AUTOINCREMENT,
+        idMongo TEXT,
         type TEXT,
         title TEXT,
         description TEXT,
         start_date TEXT,
-        end_date TEXT
+        end_date TEXT,
+        state TEXT
       );
       `);
+      /* await db.execAsync(`DROP TABLE IF EXISTS users;`) */
       await db.execAsync(`
         CREATE TABLE IF NOT EXISTS users (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,6 +88,67 @@ export default function Home() {
     }
   };
 
+  const getUserSQLite = async () => {
+    try {
+      const db = await initializeDatabase();
+      if (!db) {
+        Alert.alert("Error", "No se pudo acceder a la base de datos local.");
+        return null;
+      }
+  
+      const results = await db.getAllAsync<User>("SELECT * FROM users;");
+      console.log("Usuario en bd local", results);
+  
+      if (results.length > 0) {
+        const { name, lastname } = results[0];
+        setUserInfo({ name, lastname });
+        return { name, lastname };
+      } else {
+        console.warn("No se encontró ningún usuario en la base de datos local.");
+        return { name: "Desconocido", lastname: "Desconocido" };  // Valores predeterminados
+      }
+    } catch (error) {
+      console.error("Error al llamar la base de datos local en la inserción de usuario:", error);
+      return { name: "Desconocido", lastname: "Desconocido" };  // Valores predeterminados
+    }
+  };
+  
+  const insertUserSQLite = async (data: User) => {
+    try {
+      const db = await initializeDatabase();
+  
+      if (!db) {
+        Alert.alert("Error", "No se pudo acceder a la base de datos local.");
+        return;
+      }
+  
+      const existingUser = await db.getAllAsync(
+        "SELECT * FROM users WHERE email = ?",
+        [data.email]
+      );
+  
+      if (existingUser.length > 0) {
+        console.log("El usuario ya se registró en la base de datos local");
+      } else {
+        await db.runAsync(
+          `INSERT INTO users (name, lastname, type_doc, num_doc, email, position, id_department)
+          VALUES (?, ?, ?, ?, ?, ?, ?);`,
+          [
+            data.name,
+            data.lastname,
+            data.type_doc,
+            data.num_doc.toString(),
+            data.email,
+            data.position,
+            data.id_department.toString(),
+          ]
+        );
+      }
+    } catch (error) {
+      console.log("Error al llamar la base de datos local en la inserción de usuario:", error);
+    }
+  };
+  
   useEffect(() => {
     createDataBase();
     const fetchUserData = async () => {
@@ -89,18 +157,24 @@ export default function Home() {
         if (userResponse?.success) {
           const { name, lastname } = userResponse.data;
           setUserInfo({ name, lastname });
+          insertUserSQLite(userResponse.data); 
         } else {
-          console.error(userResponse?.message);
+          throw new Error("No data from server");
         }
       } catch (error) {
-        console.error("Error al obtener datos del usuario", error);
+        console.warn("Fallo en la conexión o en la carga de datos. Cargando desde SQLite.");
+        const localUser = await getUserSQLite();
+        if (localUser) {
+          setUserInfo(localUser);
+        }
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchUserData();
-  }, []);
+  }, []);  
+  
 
   const handleModalClose = () => {
     setModalVisible(false);
@@ -149,7 +223,7 @@ export default function Home() {
               </Text>
             </View>
             <View className="mb-3">
-              <HomeCard />
+              <HomeCard name={userInfo.name} lastname={userInfo.lastname} />
             </View>
             <View className="mb-5">
               <SearchInput />

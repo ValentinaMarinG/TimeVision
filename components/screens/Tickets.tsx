@@ -47,27 +47,44 @@ export default function Tickets() {
       }
 
       const insertPromises = data.map(async (item) => {
-        await db.runAsync(
-          `
-          INSERT INTO requests (type, title, start_date, end_date, description)
-          VALUES (?, ?, ?, ?, ?);
-        `,
-          [
-            item.type,
-            item.title,
-            item.start_date.toISOString(),
-            item.end_date.toISOString(),
-            item.description,
-          ]
+        const startDate = new Date(item.start_date);
+        const endDate = new Date(item.end_date);
+
+        const existingTicket = await db.getAllAsync(
+          "SELECT * FROM requests WHERE idMongo = ?",
+          [item._id]
         );
+
+        if (existingTicket.length > 0) {
+          console.log(
+            `Ticket con idMongo ${item._id} ya existe. No se insertará.`
+          );
+          const results = await db.getAllAsync<Ticket>(
+            "SELECT * FROM requests;"
+          );
+          console.log("Tickets en bd local", results);
+        } else {
+          await db.runAsync(
+            `INSERT INTO requests (idMongo, type, title, start_date, end_date, description, state)
+            VALUES (?, ?, ?, ?, ?, ?, ?);`,
+            [
+              item._id,
+              item.type,
+              item.title,
+              startDate.toISOString(),
+              endDate.toISOString(),
+              item.description,
+              item.state,
+            ]
+          );
+          console.log(`Ticket con idMongo ${item._id} insertado.`);
+        }
       });
 
       await Promise.all(insertPromises);
-      console.log("Nuevos ticket creados!");
-
     } catch (error) {
       console.log(
-        "Error al llamar la base de datos local en la creación de tickets:",
+        "Error al llamar la base de datos local en la insercion de tickets:",
         error
       );
     }
@@ -75,38 +92,46 @@ export default function Tickets() {
 
   useEffect(() => {
     const fetchTickets = async () => {
-      const response = await getTickets();
-      if (response?.success) {
-        const data = response?.data;
-        /* await insertRequestSQLite(data); */
-        setTickets(data);
-        syncTicketsToMongo();
-      } else {
-        getTicketLocal(); 
+      try {
+        const response = await getTickets();
+        if (response?.success) {
+          const data = response.data;
+          insertRequestSQLite(data);
+          setTickets(data);
+          syncTicketsToMongo();
+        } else {
+          throw new Error("No data from server");
+        }
+      } catch (error) {
+        console.warn(
+          "Fallo en la conexión o en la carga de datos. Cargando desde SQLite."
+        );
+        getTicketLocal();
       }
     };
     fetchTickets();
-  },[]);
-  
+  }, []);
 
   const getTicketLocal = async () => {
     try {
       const db = await initializeDatabase();
       if (!db) return;
       const results = await db.getAllAsync<Ticket>("SELECT * FROM requests;");
-      setTickets(results || []); 
+      console.log("AQUIIIIIII SIN CONEXION LOCAL:", results);
+      setTickets(results || []);
     } catch (error) {
       console.error("Error al obtener tickets locales:", error);
     }
   };
-  
 
   const syncTicketsToMongo = async () => {
     try {
       const db = await initializeDatabase();
       if (!db) return;
-  
-      const localTickets = await db.getAllAsync<Ticket>("SELECT * FROM requests;");
+
+      const localTickets = await db.getAllAsync<Ticket>(
+        "SELECT * FROM requests WHERE idMongo IS NULL;"
+      );
       for (const ticket of localTickets) {
         const response = await createRequest(
           new Date(ticket.start_date),
@@ -116,17 +141,18 @@ export default function Tickets() {
           ticket.description,
           imageUri
         );
-        
+
         if (response.success) {
           await db.runAsync(`DELETE FROM requests WHERE _id = ?`, [ticket._id]);
-          console.log(`Ticket ${ticket._id} sincronizado y eliminado de SQLite.`);
+          console.log(
+            `Ticket ${ticket._id} sincronizado y eliminado de SQLite.`
+          );
         }
       }
     } catch (error) {
       console.error("Error al sincronizar los tickets:", error);
     }
   };
-  
 
   const toggleExpandTicket = (ticketId: string) => {
     setExpandedTicketId(expandedTicketId === ticketId ? null : ticketId);
