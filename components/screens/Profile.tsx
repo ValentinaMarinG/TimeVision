@@ -22,58 +22,59 @@ import { useEffect, useState } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ProfilePhotoScreen } from "../atoms/ProfilePhoto";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getUserInfo } from "../../config/routers";
+import * as SQLite from 'expo-sqlite';
 
+// Define la interfaz de usuario
+interface UserInfo {
+  name: string;
+  lastname: string;
+  type_doc: string;
+  num_doc: string;
+  employeeNumber: string;
+  position: string;
+  id_department: string;
+  email: string;
+}
+
+// Función para obtener la información del usuario desde SQLite
+const getUserInfoFromSQLite = async (): Promise<UserInfo | undefined> => {
+  try {
+    const db = await SQLite.openDatabaseAsync('dataBase.db');
+    const user = await db.getFirstAsync('SELECT * FROM user ORDER BY id DESC LIMIT 1');
+    return user ? user as UserInfo : undefined;
+  } catch (error) {
+    console.error("Error al obtener datos del usuario desde SQLite:", error);
+    return undefined;
+  }
+};
 
 export default function Profile() {
-
   const insets = useSafeAreaInsets();
-  const [account, SetAccount] = useState({
+  const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const [account, setAccount] = useState<UserInfo>({
     name: "",
-    lastname:"",
-    documentType: "",
-    document: "",
+    lastname: "",
+    type_doc: "",
+    num_doc: "",
     employeeNumber: "",
     position: "",
-    departament: "",
+    id_department: "",
     email: "",
   });
 
-
   useEffect(() => {
-    SetAccount({
-      name: "",
-      lastname:"",
-      documentType: "",
-      document: "",
-      employeeNumber: "",
-      position: "",
-      departament: "",
-      email: "",
-    });
     const fetchUser = async () => {
-      const response = await getUserInfo();
-      if (response?.success) {
-        SetAccount({
-          name: response?.data.name,
-          lastname: response?.data.lastname,
-          documentType: response?.data.type_doc,
-          document: response?.data.num_doc,
-          employeeNumber: "1234",
-          position: response?.data.position,
-          departament: response?.data.id_department,
-          email: response?.data.email,
-        });
+      const localData = await getUserInfoFromSQLite();
+      if (localData) {
+        setAccount(localData);
       } else {
-        console.error(response?.message);
+        console.warn("No se encontraron datos locales en SQLite.");
       }
     };
     fetchUser();
   }, []);
-
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const router = useRouter();
 
   const handleLogout = async () => {
     await AsyncStorage.removeItem('token');
@@ -114,20 +115,22 @@ export default function Profile() {
           <View className="flex relative -top-8 left-10">
             <EditProfileButton text="" customFun={handlePress} />
           </View>
-          <Text className="text-xl font-bold text-CText">{account.name} {account.lastname}</Text>
+          <Text className="text-xl font-bold text-CText">
+            {account.name} {account.lastname}
+          </Text>
           <Text className="text-sm text-blueText">{account.email}</Text>
         </View>
         <View className="w-full justify-center items-center my-5">
           <View className={Tokens.textSubtitleContainer}>
             <SubTitleProfileDocumentType />
             <Text className={Tokens.standardTextProfileRight}>
-              {account.documentType}
+              {account.type_doc}
             </Text>
           </View>
           <View className={Tokens.textSubtitleContainer}>
             <SubTitleProfileDocument />
             <Text className={Tokens.standardTextProfileRight}>
-              {account.document}
+              {account.num_doc}
             </Text>
           </View>
           <View className={Tokens.textSubtitleContainer}>
@@ -145,7 +148,7 @@ export default function Profile() {
           <View className={Tokens.textSubtitleContainer}>
             <SubTitleProfileDepartament />
             <Text className={Tokens.standardTextProfileRight}>
-              {account.departament}
+              {account.id_department}
             </Text>
           </View>
         </View>
@@ -162,21 +165,6 @@ export default function Profile() {
         </View>
       </View>
 
-      {/* <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={handleCloseModal}
-      >
-        <View className={Tokens.modalContainer}>
-          <View className={Tokens.modalContent}>
-            <Text>Cargar Foto</Text>
-            <TouchableOpacity onPress={handleCloseModal}>
-              <ButtonProfile text="Cerrar" customFun={handleCloseModal} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal> */}
       <BottomBar activeRoute="/profile" />
     </ScrollView>
   );

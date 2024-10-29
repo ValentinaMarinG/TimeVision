@@ -41,12 +41,8 @@ interface TicketData {
     startDate: string;
     endDate: string;
     imageUri?: string;
-    
-
   };
 }
-
-
 export default function TicketRequest() {
   const [tiketData, setTiketData] = useState<TicketData | null>(null);
   const router = useRouter();
@@ -134,6 +130,7 @@ export default function TicketRequest() {
           console.log('tikets', tikets);
         });
 
+        
         setIsLoading(false);
       } catch (error) {
         console.error("Error ejecutando operaciones de base de datos: ", error);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -7,11 +7,12 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
-  Alert,
   Text,
   Modal,
-  TouchableOpacity, // Importa TouchableOpacity para el icono
+  TouchableOpacity,
 } from "react-native";
+import NetInfo from '@react-native-community/netinfo'
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MainIcon } from "../atoms/Icon";
 import { TitleTextLogin } from "../atoms/TitleText";
 import { SubTitleTextLogin } from "../atoms/SubtitleText";
@@ -25,8 +26,18 @@ import { SubTitleTextRequest } from "../atoms/SubtitleText";
 import * as Tokens from "../tokens";
 import { useRouter } from "expo-router";
 import { loginRequest } from "../../config/routers";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from '@expo/vector-icons'; // Asegúrate de tener esta librería instalada
+import { Ionicons } from '@expo/vector-icons';
+
+// Interface para las credenciales
+interface StoredCredentials {
+  user: string;
+  pass: string;
+  lastLoginTime: number;
+}
+
+const CREDENTIALS_KEY = '@app_credentials';
+const OFFLINE_TOKEN_KEY = '@offline_token';
+const OFFLINE_EXPIRY_DAYS = 7;
 
 export default function Login() {
   const [user, setUser] = useState<string>("");
@@ -36,8 +47,75 @@ export default function Login() {
   const [loginError, setLoginError] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
 
   const router = useRouter();
+
+  // Monitorear el estado de la conexión
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsOffline(!state.isConnected);
+    });
+    checkStoredCredentials();
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const checkStoredCredentials = async () => {
+    try {
+      const storedCredentialsJson = await AsyncStorage.getItem(CREDENTIALS_KEY);
+      if (storedCredentialsJson) {
+        const storedCredentials: StoredCredentials = JSON.parse(storedCredentialsJson);
+        const expiryTime = storedCredentials.lastLoginTime + (OFFLINE_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+        
+        if (new Date().getTime() < expiryTime) {
+          setUser(storedCredentials.user);
+          setPass(storedCredentials.pass);
+        } else {
+          await AsyncStorage.multiRemove([CREDENTIALS_KEY, OFFLINE_TOKEN_KEY]);
+        }
+      }
+    } catch (error) {
+      console.error('Error al recuperar credenciales:', error);
+    }
+  };
+
+  const storeCredentials = async (user: string, pass: string) => {
+    try {
+      const credentials: StoredCredentials = {
+        user,
+        pass,
+        lastLoginTime: new Date().getTime()
+      };
+      await AsyncStorage.setItem(CREDENTIALS_KEY, JSON.stringify(credentials));
+    } catch (error) {
+      console.error('Error al guardar credenciales:', error);
+    }
+  };
+
+  const validateOfflineCredentials = async () => {
+    try {
+      const storedCredentialsJson = await AsyncStorage.getItem(CREDENTIALS_KEY);
+      const offlineToken = await AsyncStorage.getItem(OFFLINE_TOKEN_KEY);
+      
+      if (storedCredentialsJson && offlineToken) {
+        const storedCredentials: StoredCredentials = JSON.parse(storedCredentialsJson);
+        const expiryTime = storedCredentials.lastLoginTime + (OFFLINE_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+        
+        if (new Date().getTime() < expiryTime &&
+            user === storedCredentials.user &&
+            pass === storedCredentials.pass) {
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error('Error al validar credenciales offline:', error);
+      return false;
+    }
+  };
 
   const handleModalClose = () => {
     setModalVisible(false);
@@ -46,18 +124,18 @@ export default function Login() {
   const handlePress = async () => {
     let valid = true;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    /* const invalidCharRegex = /ñ/; */
     const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|EXEC|UNION|;|--)\b)/i;
 
     setUserError("");
     setPassError("");
     setLoginError("");
 
+    // Validaciones
     if (!user) {
       setUserError("El correo es requerido");
       valid = false;
     } else if (!emailRegex.test(user)) {
-      setUserError("Ingresa un correo valido");
+      setUserError("Ingresa un correo válido");
       valid = false;
     } else if (sqlInjectionRegex.test(user)) {
       setUserError("El correo contiene caracteres no permitidos.");
@@ -68,23 +146,35 @@ export default function Login() {
       setPassError("La contraseña es requerida");
       valid = false;
     } else if (sqlInjectionRegex.test(pass)) {
-      setUserError("La contraseña contiene caracteres no permitidos.");
+      setPassError("La contraseña contiene caracteres no permitidos.");
       valid = false;
-    } /* else if (invalidCharRegex.test(pass)) {
-      setPassError("La contraseña no puede contener la letra 'ñ'");
-      valid = false;
-    } */
+    }
 
     if (valid) {
-      const result = await loginRequest(user, pass);
-      if (result?.success) {
-        const token = await AsyncStorage.getItem("token");
-        if (token) {
+      if (isOffline) {
+        // Modo offline
+        const isValidOffline = await validateOfflineCredentials();
+        if (isValidOffline) {
           router.push("/home");
+        } else {
+          setModalVisible(true);
+          setLoginError("No se pueden validar las credenciales sin conexión");
         }
       } else {
-        setModalVisible(true);
-        setLoginError(result?.message || "Error desconocido");
+        
+        const result = await loginRequest(user, pass);
+        if (result?.success) {
+          // Guardar credenciales y token para uso offline
+          await storeCredentials(user, pass);
+          const token = await AsyncStorage.getItem("token");
+          if (token) {
+            await AsyncStorage.setItem(OFFLINE_TOKEN_KEY, token);
+            router.push("/home");
+          }
+        } else {
+          setModalVisible(true);
+          setLoginError(result?.message || "Error desconocido");
+        }
       }
     }
   };
@@ -101,6 +191,13 @@ export default function Login() {
           showsVerticalScrollIndicator={false}
         >
           <View className="flex-1 flex-grow mt-[90] bg-white">
+            {isOffline && (
+              <View className="bg-yellow-100 p-2">
+                <Text className="text-center text-yellow-800">
+                  Modo sin conexión
+                </Text>
+              </View>
+            )}
             <View className="justify-center items-center mx-5">
               <TitleTextLogin />
               <MainIcon
@@ -143,7 +240,10 @@ export default function Login() {
             </View>
             <View className="justify-center items-center mx-10">
               <View className="w-full items-center justify-between mt-9">
-                <CustomButton text="Ingresar" customFun={handlePress} />
+                <CustomButton 
+                  text={isOffline ? "Ingresar (Modo offline)" : "Ingresar"} 
+                  customFun={handlePress} 
+                />
               </View>
               <SubTitleTextRequest />
             </View>
@@ -165,9 +265,6 @@ export default function Login() {
               </View>
             </View>
           </Modal>
-
-
-
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
