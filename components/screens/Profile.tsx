@@ -92,8 +92,8 @@ export default function Profile() {
           Alert.alert("Error", "No se pudo acceder a la base de datos local.");
           return null;
         }
-
-        const results = await db.getAllAsync<User>("SELECT * FROM users;");
+        const email = await AsyncStorage.getItem('user_email')
+        const results = await db.getAllAsync<User>(`SELECT * FROM users WHERE email = ?;`, email);
         console.log("Usuario en bd local", results);
 
         if (results.length > 0) {
@@ -180,6 +180,7 @@ export default function Profile() {
   const handleLogout = async () => {
     await AsyncStorage.removeItem("token");
     await AsyncStorage.removeItem("lodingStatus");
+    await AsyncStorage.removeItem("user_email");
     router.push("/login");
   };
 

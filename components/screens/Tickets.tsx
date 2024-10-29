@@ -11,6 +11,7 @@ import { createRequest, getTickets } from "../../config/routers";
 import { Ticket } from "../../types/types";
 import * as SQLite from "expo-sqlite/next";
 import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 export default function Tickets() {
@@ -62,9 +63,10 @@ export default function Tickets() {
             `Ticket con idMongo ${item._id} ya existe. No se insertará.`
           );
         } else {
+          const email = await AsyncStorage.getItem('user_email')
           await db.runAsync(
-            `INSERT INTO requests (idMongo, type, title, start_date, end_date, description, state)
-            VALUES (?, ?, ?, ?, ?, ?, ?);`,
+            `INSERT INTO requests (idMongo, type, title, start_date, end_date, description, state, user_email)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
             [
               item._id,
               item.type,
@@ -73,6 +75,7 @@ export default function Tickets() {
               endDate.toISOString(),
               item.description,
               item.state,
+              email
             ]
           );
           console.log(`Ticket con idMongo ${item._id} insertado.`);
@@ -120,7 +123,9 @@ export default function Tickets() {
     try {
       const db = await initializeDatabase();
       if (!db) return;
-      const results = await db.getAllAsync<Ticket>("SELECT * FROM requests;");
+      const email = await AsyncStorage.getItem("user_email")
+
+      const results = await db.getAllAsync<Ticket>(`SELECT * FROM requests WHERE user_email = ?;`,[email]);
       setTickets(results || []);
     } catch (error) {
       console.error("Error al obtener tickets locales:", error);

@@ -25,7 +25,7 @@ import { User } from "../../types/types";
 import NetInfo from "@react-native-community/netinfo";
 
 export default function Home() {
-  const [userInfo, setUserInfo] = useState<{ name: string; lastname: string; photo: string | undefined }>({ name: "", lastname: "", photo: "" });
+  const [userInfo, setUserInfo] = useState<{ name: string; lastname: string; photo: string | undefined; email: string;}>({ name: "", lastname: "", photo: "", email:"" });
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -63,7 +63,8 @@ export default function Home() {
         description TEXT,
         start_date TEXT,
         end_date TEXT,
-        state TEXT
+        state TEXT,
+        user_email TEXT
       );
       `);
 
@@ -82,7 +83,7 @@ export default function Home() {
         );
         `);
 
-     /*  await db.execAsync(`DROP TABLE IF EXISTS shifts;`); */
+      /* await db.execAsync(`DROP TABLE IF EXISTS shifts;`); */
       await db.execAsync(`
         CREATE TABLE IF NOT EXISTS shifts (
           _id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,7 +92,8 @@ export default function Home() {
           start_date TEXT,
           name_shift TEXT,
           time_end TEXT,
-          time_start TEXT
+          time_start TEXT,
+          user_email TEXT
         );
         `);
 
@@ -112,25 +114,25 @@ export default function Home() {
         Alert.alert("Error", "No se pudo acceder a la base de datos local.");
         return null;
       }
-
-      const results = await db.getAllAsync<User>("SELECT * FROM users;");
+      const email = await AsyncStorage.getItem("user_email");
+      const results = await db.getAllAsync<User>(`SELECT * FROM users WHERE email = ?;`,[email]);
 
       if (results.length > 0) {
-        const { name, lastname, photo } = results[0];
-        setUserInfo({ name, lastname, photo });
-        return { name, lastname, photo };
+        const { name, lastname, photo, email } = results[0];
+        setUserInfo({ name, lastname, photo, email });
+        return { name, lastname, photo, email };
       } else {
         console.warn(
           "No se encontró ningún usuario en la base de datos local."
         );
-        return { name: "", lastname: "", photo:"" };
+        return { name: "", lastname: "", photo:"", email:"" };
       }
     } catch (error) {
       console.error(
         "Error al llamar la base de datos local encontrar usuario:",
         error
       );
-      return { name: "", lastname: "", photo:"" };
+      return { name: "", lastname: "", photo:"", email:"" };
     }
   };
 
@@ -138,7 +140,8 @@ export default function Home() {
     try {
       const db = await initializeDatabase();
       if (!db) return;
-      const results = await db.getAllAsync<Shift>("SELECT * FROM shifts;");
+      const email = await AsyncStorage.getItem("user_email")
+      const results = await db.getAllAsync<Shift>(`SELECT * FROM shifts WHERE user_email = ?;`,[userInfo.email]);
       setShifts(results || []);
     } catch (error) {
       console.error("Error al obtener shifts locales:", error);
@@ -200,6 +203,7 @@ export default function Home() {
           const endDate = new Date(item.end_date);
           const startTime = new Date(item.time_start);
           const endTime = new Date(item.time_end);
+          const user_email = await AsyncStorage.getItem("user_email");  
 
           const existingShift = await db.getAllAsync(
             "SELECT * FROM shifts WHERE idMongo = ?",
@@ -212,8 +216,8 @@ export default function Home() {
             );
           } else {
             await db.runAsync(
-              `INSERT INTO shifts (idMongo, end_date, start_date, name_shift, time_end, time_start)
-              VALUES (?, ?, ?, ?, ?, ?);`,
+              `INSERT INTO shifts (idMongo, end_date, start_date, name_shift, time_end, time_start, user_email)
+              VALUES (?, ?, ?, ?, ?, ?, ?);`,
               [
                 item._id,
                 endDate.toISOString(),
@@ -221,6 +225,7 @@ export default function Home() {
                 item.name_shift,
                 endTime.toISOString(),
                 startTime.toISOString(),
+                user_email
               ]
             );
             console.log(`shifts con idMongo ${item._id} insertado.`);
@@ -255,8 +260,9 @@ export default function Home() {
         try {
           const userResponse = await getUserInfo();
           if (userResponse?.success) {
-            const { name, lastname, photo } = userResponse.data;
-            setUserInfo({ name, lastname, photo });
+            const { name, lastname, photo, email } = userResponse.data;
+            await AsyncStorage.setItem('user_email', email);
+            setUserInfo({ name, lastname, photo, email });
             insertUserSQLite(userResponse.data);
           } else {
             throw new Error("No data from server");

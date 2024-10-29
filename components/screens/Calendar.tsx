@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Shift } from "../../types/types";
 import * as SQLite from "expo-sqlite";
 import dayjs from "dayjs";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
@@ -69,8 +70,11 @@ export default function CalendarScreen() {
       try {
         const db = await initializeDatabase();
         if (!db) return;
-        const results = await db.getAllAsync<Shift>("SELECT * FROM shifts;");
+        const email = await AsyncStorage.getItem("user_email");
+        console.log("MI CORREO",email);
+        const results = await db.getAllAsync<Shift>(`SELECT * FROM shifts WHERE user_email = ?;`,[email]);
         setShifts(results || []);
+        console.log(results);
       } catch (error) {
         console.error("Error al obtener shifts locales:", error);
       }
