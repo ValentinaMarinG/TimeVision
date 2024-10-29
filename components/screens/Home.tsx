@@ -16,10 +16,18 @@ import { Shift } from '../../types/types';
 export default function Home() {
   const [userInfo, setUserInfo] = useState({ name: "", lastname: "" });
   const [modalVisible, setModalVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [shifts, setShifts] = useState<Shift[]>([]);
 
   useEffect(() => {
+    const loadingCheck = async () =>{
+      const loadingStatus = await AsyncStorage.getItem("lodingStatus");
+      if (loadingStatus == 'false'){
+        setLoading(true);
+        await AsyncStorage.setItem('lodingStatus','true');
+      }
+    }
+    
     const fetchUserData = async () => {
       try {
         const userResponse = await getUserInfo();
@@ -43,15 +51,12 @@ export default function Home() {
       } else {
         console.error(response?.message);
       }
-
       } catch (error) {
         console.error("Error al obtener los turnos del usuario", error);
-      } finally {
-        setLoading(false);
       }
       
     };
-
+    loadingCheck();
     fetchUserData();
     fetchTickets();
   }, []);
@@ -86,9 +91,10 @@ export default function Home() {
     <View className="flex-1 w-full justify-between">
       <View className="flex-1 justify-between px-5 mt-12">
         {loading ? (
-          <View className="flex-1 justify-center items-center">
-          <ActivityIndicator className="text-blue-500" size="large" />
-          <Text className="mt-4 text-lg text-gray-700">Cargando...</Text>
+          <View className="flex-1 justify-center items-center bg-transparent">
+          <View className="p-4 rounded-full bg-transparent border border-[#00d4ff]/50 shadow-md shadow-[#00d4ff]/30">
+            <ActivityIndicator size="large" color="#00d4ff" className="scale-110" />
+          </View>
         </View>
         ) : (
           <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>

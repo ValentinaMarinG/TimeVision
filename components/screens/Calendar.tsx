@@ -7,13 +7,14 @@ import ShiftsList from "../organisms/ShiftsList";
 import { useEffect, useState } from "react";
 import { Shift } from "../../types/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import dayjs from "dayjs";
 
 export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
 
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
+    dayjs().format("YYYY-MM-DD")
   );
   const [filteredShifts, setFilteredShifts] = useState<Shift[]>([]);
 

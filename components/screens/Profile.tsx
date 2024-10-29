@@ -75,6 +75,7 @@ export default function Profile() {
 
   const handleLogout = async () => {
     await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('lodingStatus');
     router.push("/login");
   };
 
