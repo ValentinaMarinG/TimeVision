@@ -1,35 +1,27 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Alert,
-} from "react-native";
+import { View, Text, ScrollView, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  CustomButton,
-  EditProfileButton,
-} from "../atoms/CustomButton";
+import { CustomButton, EditProfileButton } from "../atoms/CustomButton";
 import { TitleProfile } from "../atoms/TitleText";
 import {
   SubTitleProfileCargo,
   SubTitleProfileDocument,
   SubTitleProfileDepartament,
   SubTitleProfileDocumentType,
-  SubTitleProfileNumeroEmpleado,
 } from "../atoms/SubtitleText";
 import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
 import { useEffect, useState } from "react";
 import BottomBar from "../organisms/BottomBar";
-import { ProfilePhotoScreen } from "../atoms/ProfilePhoto";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ProfilePhotoOffline, ProfilePhotoScreen } from "../atoms/ProfilePhoto";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUserInfo } from "../../config/routers";
 import ChangePasswordModal from "../organisms/ChangePassword";
 import * as SQLite from "expo-sqlite";
 import { User } from "../../types/types";
+import NetInfo from "@react-native-community/netinfo";
+import images from '../../assets/index';
 
 export default function Profile() {
-
   const insets = useSafeAreaInsets();
   const [account, SetAccount] = useState({
     name: "",
@@ -39,12 +31,23 @@ export default function Profile() {
     position: "",
     departament: "",
     email: "",
+    photo: ""
   });
 
+  const [isOnline, setIsOnline] = useState<Boolean | null>(true);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsOnline(state.isConnected);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const initializeDatabase = async () => {
     try {
-      /* await SQLite.deleteDatabaseAsync("dataBase.db"); */
       const db = await SQLite.openDatabaseAsync("dataBase.db");
       if (db) {
         console.log("Base de datos inicializada correctamente");
@@ -57,32 +60,6 @@ export default function Profile() {
   };
 
   useEffect(() => {
-   /*  SetAccount({
-      name: "",
-      lastname: "",
-      documentType: "",
-      document: "",
-      position: "",
-      departament: "",
-      email: "",
-    });
-    const fetchUser = async () => {
-      const response = await getUserInfo();
-      if (response?.success) {
-        SetAccount({
-          name: response?.data.name,
-          lastname: response?.data.lastname,
-          documentType: response?.data.type_doc,
-          document: response?.data.num_doc,
-          position: response?.data.position,
-          departament: response?.data.id_department,
-          email: response?.data.email,
-        });
-      } else {
-        console.error(response?.message);
-      }
-    }; */
-
     const getUserSQLite = async () => {
       try {
         const db = await initializeDatabase();
@@ -90,10 +67,10 @@ export default function Profile() {
           Alert.alert("Error", "No se pudo acceder a la base de datos local.");
           return null;
         }
-    
+
         const results = await db.getAllAsync<User>("SELECT * FROM users;");
         console.log("Usuario en bd local", results);
-    
+
         if (results.length > 0) {
           SetAccount({
             name: results[0].name,
@@ -103,10 +80,13 @@ export default function Profile() {
             position: results[0].position,
             departament: results[0].id_department,
             email: results[0].email,
+            photo: results[0].photo || ""
           });
           return results[0];
         } else {
-          console.warn("No se encontró ningún usuario en la base de datos local.");
+          console.warn(
+            "No se encontró ningún usuario en la base de datos local."
+          );
           return null;
         }
       } catch (error) {
@@ -125,8 +105,8 @@ export default function Profile() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('lodingStatus');
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("lodingStatus");
     router.push("/login");
   };
 
@@ -144,7 +124,6 @@ export default function Profile() {
 
   const handleCloseModal = () => {
     setModalVisible(false);
-
   };
 
   return (
@@ -161,11 +140,17 @@ export default function Profile() {
           <TitleProfile />
         </View>
         <View className="w-full flex justify-center items-center mt-9">
-          <ProfilePhotoScreen />
+          {isOnline ? (
+            <ProfilePhotoScreen uri={account.photo || images.userProfileOffline} />
+          ) : (
+            <ProfilePhotoOffline />
+          )}
           <View className="flex relative -top-8 left-10">
             <EditProfileButton text="" customFun={handlePress} />
           </View>
-          <Text className="text-xl font-bold text-CText">{account.name} {account.lastname}</Text>
+          <Text className="text-xl font-bold text-CText">
+            {account.name} {account.lastname}
+          </Text>
           <Text className="text-sm text-blueText">{account.email}</Text>
         </View>
         <View className="w-full justify-center items-center my-5">
@@ -201,7 +186,10 @@ export default function Profile() {
               customFun={handleOpenModal}
             />
           </View>
-          <ChangePasswordModal visible={modalVisible} onClose={handleCloseModal} />
+          <ChangePasswordModal
+            visible={modalVisible}
+            onClose={handleCloseModal}
+          />
           <View className="w-3/4 justify-center items-center mt-5">
             <CustomButton text="Cerrar sesión" customFun={handleLogout} />
           </View>

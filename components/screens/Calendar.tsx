@@ -6,7 +6,6 @@ import { Calendar, LocaleConfig } from "react-native-calendars";
 import ShiftsList from "../organisms/ShiftsList";
 import { useEffect, useState } from "react";
 import { Shift } from "../../types/types";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SQLite from "expo-sqlite";
 import dayjs from "dayjs";
 
@@ -14,9 +13,6 @@ export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
 
   const todayDate = new Date().toISOString().split("T")[0];
-  console.log("TODAY", todayDate);
-  console.log("YAAAAA", new Date());
-  
 
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -57,7 +53,6 @@ export default function CalendarScreen() {
 
   const initializeDatabase = async () => {
     try {
-      /* await SQLite.deleteDatabaseAsync("dataBase.db"); */
       const db = await SQLite.openDatabaseAsync("dataBase.db");
       if (db) {
         console.log("Base de datos inicializada correctamente");
@@ -69,14 +64,12 @@ export default function CalendarScreen() {
     }
   };
 
-
   useEffect(() => {
     const getShiftLocal = async () => {
       try {
         const db = await initializeDatabase();
         if (!db) return;
         const results = await db.getAllAsync<Shift>("SELECT * FROM shifts;");
-        console.log("AQUIIIIIII SIN CONEXION LOCAL shifts:", results);
         setShifts(results || []);
       } catch (error) {
         console.error("Error al obtener shifts locales:", error);
@@ -85,8 +78,6 @@ export default function CalendarScreen() {
 
     getShiftLocal(); 
   }, []);
-
-  
 
   const onDayPress = (day: { dateString: string }) => {
     setSelectedDate(day.dateString);

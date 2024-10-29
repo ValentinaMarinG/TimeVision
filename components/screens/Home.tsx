@@ -22,9 +22,10 @@ import { useFocusEffect } from "expo-router";
 import { Shift } from "../../types/types";
 import * as SQLite from "expo-sqlite";
 import { User } from "../../types/types";
+import NetInfo from "@react-native-community/netinfo";
 
 export default function Home() {
-  const [userInfo, setUserInfo] = useState({ name: "", lastname: "" });
+  const [userInfo, setUserInfo] = useState<{ name: string; lastname: string; photo: string | undefined }>({ name: "", lastname: "", photo: "" });
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -53,7 +54,6 @@ export default function Home() {
       }
 
       /* await db.execAsync(`DROP TABLE IF EXISTS requests;`) */
-
       await db.execAsync(`
       CREATE TABLE IF NOT EXISTS requests (
         _id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,6 +66,7 @@ export default function Home() {
         state TEXT
       );
       `);
+
       /* await db.execAsync(`DROP TABLE IF EXISTS users;`) */
       await db.execAsync(`
         CREATE TABLE IF NOT EXISTS users (
@@ -76,9 +77,11 @@ export default function Home() {
           num_doc TEXT,
           email TEXT,
           position TEXT,
-          id_department TEXT
+          id_department TEXT,
+          photo TEXT
         );
         `);
+
      /*  await db.execAsync(`DROP TABLE IF EXISTS shifts;`); */
       await db.execAsync(`
         CREATE TABLE IF NOT EXISTS shifts (
@@ -111,24 +114,23 @@ export default function Home() {
       }
 
       const results = await db.getAllAsync<User>("SELECT * FROM users;");
-      console.log("Usuario en bd local", results);
 
       if (results.length > 0) {
-        const { name, lastname } = results[0];
-        setUserInfo({ name, lastname });
-        return { name, lastname };
+        const { name, lastname, photo } = results[0];
+        setUserInfo({ name, lastname, photo });
+        return { name, lastname, photo };
       } else {
         console.warn(
           "No se encontró ningún usuario en la base de datos local."
         );
-        return { name: "", lastname: "" };
+        return { name: "", lastname: "", photo:"" };
       }
     } catch (error) {
       console.error(
-        "Error al llamar la base de datos local en la inserción de usuario:",
+        "Error al llamar la base de datos local encontrar usuario:",
         error
       );
-      return { name: "", lastname: "" };
+      return { name: "", lastname: "", photo:"" };
     }
   };
 
@@ -137,7 +139,6 @@ export default function Home() {
       const db = await initializeDatabase();
       if (!db) return;
       const results = await db.getAllAsync<Shift>("SELECT * FROM shifts;");
-      console.log("AQUIIIIIII SIN CONEXION LOCAL shifts:", results);
       setShifts(results || []);
     } catch (error) {
       console.error("Error al obtener shifts locales:", error);
@@ -162,8 +163,8 @@ export default function Home() {
         console.log("El usuario ya se registró en la base de datos local");
       } else {
         await db.runAsync(
-          `INSERT INTO users (name, lastname, type_doc, num_doc, email, position, id_department)
-          VALUES (?, ?, ?, ?, ?, ?, ?);`,
+          `INSERT INTO users (name, lastname, type_doc, num_doc, email, position, id_department, photo)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
           [
             data.name,
             data.lastname,
@@ -172,12 +173,13 @@ export default function Home() {
             data.email,
             data.position,
             data.id_department.toString(),
+            data.photo || ""
           ]
         );
       }
     } catch (error) {
       console.log(
-        "Error al llamar la base de datos local en la inserción de usuario:",
+        "Error al llamar la base de datos local para insertar usuario:",
         error
       );
     }
@@ -231,7 +233,7 @@ export default function Home() {
       }
     } catch (error) {
       console.log(
-        "Error al llamar la base de datos local en la insercion de shifts:",
+        "Error al llamar la base de datos local para insertar un shift:",
         error
       );
     }
@@ -239,55 +241,68 @@ export default function Home() {
 
   useEffect(() => {
     createDataBase();
-    const loadingCheck = async () =>{
-      const loadingStatus = await AsyncStorage.getItem("lodingStatus");
-      if (loadingStatus == 'false'){
+    const loadingCheck = async () => {
+      const loadingStatus = await AsyncStorage.getItem("loadingStatus");
+      if (loadingStatus === 'false') {
         setLoading(true);
-        await AsyncStorage.setItem('lodingStatus','true');
+        await AsyncStorage.setItem('loadingStatus', 'true');
       }
-    }
-    
+    };
+
     const fetchUserData = async () => {
-      try {
-        const userResponse = await getUserInfo();
-        if (userResponse?.success) {
-          const { name, lastname } = userResponse.data;
-          setUserInfo({ name, lastname });
-          insertUserSQLite(userResponse.data);
-        } else {
-          throw new Error("No data from server");
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+        try {
+          const userResponse = await getUserInfo();
+          if (userResponse?.success) {
+            const { name, lastname, photo } = userResponse.data;
+            setUserInfo({ name, lastname, photo });
+            insertUserSQLite(userResponse.data);
+          } else {
+            throw new Error("No data from server");
+          }
+        } catch (error) {
+          console.warn("Error al obtener datos del usuario del backend. Cargando desde SQLite.");
+          const localUser = await getUserSQLite();
+          if (localUser) {
+            setUserInfo(localUser);
+          }
+          console.error("Error al obtener datos del usuario", error);
         }
-      } catch (error) {
-        console.warn(
-          "Fallo en la conexión o en la carga de datos. Cargando desde SQLite."
-        );
+      } else {
+        console.warn("Sin conexión a Internet. Cargando datos desde SQLite.");
         const localUser = await getUserSQLite();
         if (localUser) {
           setUserInfo(localUser);
         }
-        console.error("Error al obtener datos del usuario", error);
       }
     };
+
     const fetchTickets = async () => {
-      try {
-        const response = await getAssigments();
-        if (response?.success) {
-          const data = response.data;
-          setShifts(data ?? []);
-          insertShiftsSQLite(data ?? []);
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+        try {
+          const response = await getAssigments();
+          if (response?.success) {
+            const data = response.data;
+            setShifts(data ?? []);
+            insertShiftsSQLite(data ?? []);
+            setLoading(false);
+          } else {
+            throw new Error("No data from server");
+          }
+        } catch (error) {
+          console.warn("Error al obtener datos del backend. Cargando desde SQLite.");
+          getShiftLocal();
+        } finally {
           setLoading(false);
-        } else {
-          throw new Error("No data from server");
         }
-      } catch (error) {
-        console.warn(
-          "Fallo en la conexión o en la carga de datos. Cargando desde SQLite."
-        );
+      } else {
+        console.warn("Sin conexión a Internet. Cargando datos desde SQLite.");
         getShiftLocal();
-      } finally {
-        setLoading(false);
       }
     };
+
     loadingCheck();
     fetchUserData();
     fetchTickets();
@@ -341,7 +356,7 @@ export default function Home() {
               </Text>
             </View>
             <View className="mb-3">
-              <HomeCard name={userInfo.name} lastname={userInfo.lastname} />
+              <HomeCard name={userInfo.name} lastname={userInfo.lastname} photo={userInfo.photo || ""}/>
             </View>
             <View className="mb-5">
               <SearchInput />

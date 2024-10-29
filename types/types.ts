@@ -25,5 +25,6 @@ export type User = {
   num_doc: string,
   position: string,
   id_department: string,
-  email: string
+  email: string,
+  photo: string | undefined
 }

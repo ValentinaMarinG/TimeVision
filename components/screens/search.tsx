@@ -12,8 +12,8 @@ import * as Tokens from "../tokens";
 import { ArrowLeftIcon, Search } from "../atoms/Icon";
 import { Link, router } from "expo-router";
 import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";  // Importa el plugin
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";  // Importa el plugin
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";  
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";  
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Shift } from "../../types/types";
 import ShiftsList from "../organisms/ShiftsList";
@@ -24,8 +24,8 @@ dayjs.extend(isSameOrBefore);
 export default function SearchScreen() {
   const [searchText, setSearchText] = useState("");
   const [isCalendarVisible, setCalendarVisibility] = useState(false);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
   const [markedDates, setMarkedDates] = useState({});
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [filteredShifts, setFilteredShifts] = useState<Shift[]>([]);
@@ -45,7 +45,7 @@ export default function SearchScreen() {
     loadShifts();
   }, []);
 
-  const onDayPress = (day) => {
+  const onDayPress = (day: { dateString: string }) => {
     if (!startDate || (startDate && endDate)) {
       setStartDate(day.dateString);
       setEndDate(null);
@@ -63,8 +63,8 @@ export default function SearchScreen() {
     }
   };
 
-  const getDateRange = (start, end) => {
-    let range = {};
+  const getDateRange = (start: string, end: string) => {
+    let range: Record<string, { color: string; textColor: string; startingDay?: boolean; endingDay?: boolean }> = {};
     let current = dayjs(start);
     let endDate = dayjs(end);
 
@@ -85,7 +85,7 @@ export default function SearchScreen() {
     return range;
   };
 
-  const filterShiftsByDateRange = (start, end) => {
+  const filterShiftsByDateRange = (start: string, end: string) => {
     const startDate = dayjs(start);
     const endDate = dayjs(end);
 
@@ -145,11 +145,11 @@ export default function SearchScreen() {
         
           <View className="mt-5">
             {filteredShifts.length > 0 ? (
-                  <ShiftsList shifts={filteredShifts} />
+              <ShiftsList shifts={filteredShifts} />
             ) : (
               <Text className={`${Tokens.standardSubtitleLogin} mt-5 border-t-2 pt-2 border-gray-200`}>
-              No tienes turnos asignados en las fechas seleccionadas
-            </Text>
+                No tienes turnos asignados en las fechas seleccionadas
+              </Text>
             )}
           </View>
 
