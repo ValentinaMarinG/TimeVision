@@ -158,19 +158,21 @@ export default function TicketRequest() {
           router.push("/tickets");
         } else {
           insertRequestSQLite(data);
-          Alert.alert("Verifique su conexión, la solicitud se cargará pronto.");
+          Alert.alert("Verifique su conexión, la solicitud se cargará pronto.")
         }
       } catch (error) {
         console.log("Error al enviar la solicitud:", error);
       }
     } else {
       Alert.alert("No hay conexión al servidor", "Guardando localmente...");
+      
       if(imageUri != null){
-        return Alert.alert("Para enviar archivo debe de tener conexión a internet");
+        Alert.alert("Para enviar archivo debe de tener conexión a internet");
       }else{
         insertRequestSQLite(data);
+        
       }
-      
+      router.push("/tickets");
     }
   });
 
