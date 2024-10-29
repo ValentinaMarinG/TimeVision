@@ -34,6 +34,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { RequestSchema } from "../../schemas/requestSchema";
 import * as SQLite from "expo-sqlite";
 import NetInfo from "@react-native-community/netinfo";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type FormData = {
   title: string;
@@ -97,11 +98,12 @@ export default function TicketRequest() {
         Alert.alert("Error", "No se pudo acceder a la base de datos local.");
         return;
       }
+      const email = await AsyncStorage.getItem("user_email");
 
       await db.runAsync(
         `
-        INSERT INTO requests (type, title, start_date, end_date, description)
-        VALUES (?, ?, ?, ?, ?);
+        INSERT INTO requests (type, title, start_date, end_date, description, user_email)
+        VALUES (?, ?, ?, ?, ?, ?);
       `,
         [
           data.type,
@@ -109,6 +111,7 @@ export default function TicketRequest() {
           data.start_date.toISOString(),
           data.end_date.toISOString(),
           data.description,
+          email
         ]
       );
 
@@ -164,18 +167,20 @@ export default function TicketRequest() {
       Alert.alert("No hay conexión al servidor", "Guardando localmente...");
       if(imageUri != null){
         return Alert.alert("Para enviar archivo debe de tener conexión a internet");
+      }else{
+        insertRequestSQLite(data);
       }
-      insertRequestSQLite(data);
+      
     }
   });
 
   const data = [
     { key: "1", value: "Incapacidad médica" },
     { key: "2", value: "Enfermedad" },
-    { key: "3", value: "Cambio de turno" },
-    { key: "4", value: "Vacaciones" },
-    { key: "5", value: "Licencia" },
-    { key: "6", value: "Otro" },
+   /*  { key: "3", value: "Cambio de turno" }, */
+    { key: "3", value: "Vacaciones" },
+    { key: "4", value: "Licencia" },
+    { key: "5", value: "Otro" },
   ];
 
   return (

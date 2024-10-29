@@ -141,7 +141,7 @@ export default function Home() {
       const db = await initializeDatabase();
       if (!db) return;
       const email = await AsyncStorage.getItem("user_email")
-      const results = await db.getAllAsync<Shift>(`SELECT * FROM shifts WHERE user_email = ?;`,[userInfo.email]);
+      const results = await db.getAllAsync<Shift>(`SELECT * FROM shifts WHERE user_email = ?;`,[email]);
       setShifts(results || []);
     } catch (error) {
       console.error("Error al obtener shifts locales:", error);
@@ -298,7 +298,6 @@ export default function Home() {
             throw new Error("No data from server");
           }
         } catch (error) {
-          console.warn("Error al obtener datos del backend. Cargando desde SQLite.");
           getShiftLocal();
         } finally {
           setLoading(false);

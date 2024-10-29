@@ -17,6 +17,7 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Shift } from "../../types/types";
 import ShiftsList from "../organisms/ShiftsList";
+import * as SQLite from "expo-sqlite";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -30,20 +31,37 @@ export default function SearchScreen() {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [filteredShifts, setFilteredShifts] = useState<Shift[]>([]);
 
+  const initializeDatabase = async () => {
+    try {
+      const db = await SQLite.openDatabaseAsync("dataBase.db");
+      if (db) {
+        console.log("Base de datos inicializada correctamente");
+      }
+      return db;
+    } catch (error) {
+      console.error("Error al inicializar la base de datos:", error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     const loadShifts = async () => {
       try {
-        const storedShifts = await AsyncStorage.getItem("shifts");
-        if (storedShifts) {
-          const parsedShifts = JSON.parse(storedShifts);
-          setShifts(parsedShifts);        
-        }
+        const db = await initializeDatabase();
+        if (!db) return;
+        const email = await AsyncStorage.getItem("user_email");
+        console.log("MI CORREO",email);
+        const results = await db.getAllAsync<Shift>(`SELECT * FROM shifts WHERE user_email = ?;`,[email]);
+        setShifts(results || []);
+        console.log(results);
       } catch (error) {
-        console.error("Error al cargar turnos:", error);
+        console.error("Error al obtener shifts locales:", error);
       }
     };
-    loadShifts();
+
+    loadShifts(); 
   }, []);
+
 
   const onDayPress = (day: { dateString: string }) => {
     if (!startDate || (startDate && endDate)) {
