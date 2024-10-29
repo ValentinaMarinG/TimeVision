@@ -9,19 +9,19 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import BottomBar from "../organisms/BottomBar";
-import { ShiftTextHome, SubTitleTextHome } from '../atoms/SubtitleText';
-import HomeCard from '../organisms/HomeInfo';
-import { SearchInput } from '../organisms/SearchInput';
-import ShiftsList from '../organisms/ShiftsList';
+import { ShiftTextHome, SubTitleTextHome } from "../atoms/SubtitleText";
+import HomeCard from "../organisms/HomeInfo";
+import { SearchInput } from "../organisms/SearchInput";
+import ShiftsList from "../organisms/ShiftsList";
 import { getAssigments, getUserInfo } from "../../config/routers";
 import { TitleTextHome } from "../atoms/TitleText";
 import * as Tokens from "../tokens";
-import { CustomButton } from '../atoms/CustomButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from 'expo-router';
-import { Shift } from '../../types/types';
+import { CustomButton } from "../atoms/CustomButton";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "expo-router";
+import { Shift } from "../../types/types";
 import * as SQLite from "expo-sqlite";
-import { User } from "../../types/games";
+import { User } from "../../types/types";
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState({ name: "", lastname: "" });
@@ -79,6 +79,18 @@ export default function Home() {
           id_department TEXT
         );
         `);
+     /*  await db.execAsync(`DROP TABLE IF EXISTS shifts;`); */
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS shifts (
+          _id INTEGER PRIMARY KEY AUTOINCREMENT,
+          idMongo TEXT,
+          end_date TEXT,
+          start_date TEXT,
+          name_shift TEXT,
+          time_end TEXT,
+          time_start TEXT
+        );
+        `);
 
       /* VERIFICAR CREACIÓN DE TABLAS REQUEST Y USERS */
       const result = await db.getAllAsync(
@@ -97,38 +109,55 @@ export default function Home() {
         Alert.alert("Error", "No se pudo acceder a la base de datos local.");
         return null;
       }
-  
+
       const results = await db.getAllAsync<User>("SELECT * FROM users;");
       console.log("Usuario en bd local", results);
-  
+
       if (results.length > 0) {
         const { name, lastname } = results[0];
         setUserInfo({ name, lastname });
         return { name, lastname };
       } else {
-        console.warn("No se encontró ningún usuario en la base de datos local.");
-        return { name: "Desconocido", lastname: "Desconocido" };  // Valores predeterminados
+        console.warn(
+          "No se encontró ningún usuario en la base de datos local."
+        );
+        return { name: "", lastname: "" };
       }
     } catch (error) {
-      console.error("Error al llamar la base de datos local en la inserción de usuario:", error);
-      return { name: "Desconocido", lastname: "Desconocido" };  // Valores predeterminados
+      console.error(
+        "Error al llamar la base de datos local en la inserción de usuario:",
+        error
+      );
+      return { name: "", lastname: "" };
     }
   };
-  
+
+  const getShiftLocal = async () => {
+    try {
+      const db = await initializeDatabase();
+      if (!db) return;
+      const results = await db.getAllAsync<Shift>("SELECT * FROM shifts;");
+      console.log("AQUIIIIIII SIN CONEXION LOCAL shifts:", results);
+      setShifts(results || []);
+    } catch (error) {
+      console.error("Error al obtener shifts locales:", error);
+    }
+  };
+
   const insertUserSQLite = async (data: User) => {
     try {
       const db = await initializeDatabase();
-  
+
       if (!db) {
         Alert.alert("Error", "No se pudo acceder a la base de datos local.");
         return;
       }
-  
+
       const existingUser = await db.getAllAsync(
         "SELECT * FROM users WHERE email = ?",
         [data.email]
       );
-  
+
       if (existingUser.length > 0) {
         console.log("El usuario ya se registró en la base de datos local");
       } else {
@@ -147,10 +176,67 @@ export default function Home() {
         );
       }
     } catch (error) {
-      console.log("Error al llamar la base de datos local en la inserción de usuario:", error);
+      console.log(
+        "Error al llamar la base de datos local en la inserción de usuario:",
+        error
+      );
     }
   };
-  
+
+  const insertShiftsSQLite = async (data: Shift[]) => {
+    try {
+      const db = await initializeDatabase();
+
+      if (!db) {
+        Alert.alert("Error", "No se pudo acceder a la base de datos local.");
+        return;
+      }
+
+      if (data.length > 0) {
+        const insertPromises = data.map(async (item) => {
+          const startDate = new Date(item.start_date);
+          const endDate = new Date(item.end_date);
+          const startTime = new Date(item.time_start);
+          const endTime = new Date(item.time_end);
+
+          const existingShift = await db.getAllAsync(
+            "SELECT * FROM shifts WHERE idMongo = ?",
+            [item._id]
+          );
+
+          if (existingShift.length > 0) {
+            console.log(
+              `Shift con idMongo ${item._id} ya existe. No se insertará.`
+            );
+          } else {
+            await db.runAsync(
+              `INSERT INTO shifts (idMongo, end_date, start_date, name_shift, time_end, time_start)
+              VALUES (?, ?, ?, ?, ?, ?);`,
+              [
+                item._id,
+                endDate.toISOString(),
+                startDate.toISOString(),
+                item.name_shift,
+                endTime.toISOString(),
+                startTime.toISOString(),
+              ]
+            );
+            console.log(`shifts con idMongo ${item._id} insertado.`);
+          }
+        });
+
+        await Promise.all(insertPromises);
+      } else {
+        console.log("No hay turnos para guardar en la base de datos");
+      }
+    } catch (error) {
+      console.log(
+        "Error al llamar la base de datos local en la insercion de shifts:",
+        error
+      );
+    }
+  };
+
   useEffect(() => {
     createDataBase();
     const fetchUserData = async () => {
@@ -159,12 +245,14 @@ export default function Home() {
         if (userResponse?.success) {
           const { name, lastname } = userResponse.data;
           setUserInfo({ name, lastname });
-          insertUserSQLite(userResponse.data); 
+          insertUserSQLite(userResponse.data);
         } else {
           throw new Error("No data from server");
         }
       } catch (error) {
-        console.warn("Fallo en la conexión o en la carga de datos. Cargando desde SQLite.");
+        console.warn(
+          "Fallo en la conexión o en la carga de datos. Cargando desde SQLite."
+        );
         const localUser = await getUserSQLite();
         if (localUser) {
           setUserInfo(localUser);
@@ -175,26 +263,27 @@ export default function Home() {
     const fetchTickets = async () => {
       try {
         const response = await getAssigments();
-      if (response?.success) {
-        setShifts(response.data ?? []);
-        await AsyncStorage.setItem('shifts', JSON.stringify(response.data));
-        setLoading(false);
-      } else {
-        console.error(response?.message);
-      }
-
+        if (response?.success) {
+          const data = response.data;
+          setShifts(data ?? []);
+          insertShiftsSQLite(data ?? []);
+          setLoading(false);
+        } else {
+          throw new Error("No data from server");
+        }
       } catch (error) {
-        console.error("Error al obtener los turnos del usuario", error);
+        console.warn(
+          "Fallo en la conexión o en la carga de datos. Cargando desde SQLite."
+        );
+        getShiftLocal();
       } finally {
         setLoading(false);
       }
-      
     };
-  
+
     fetchUserData();
     fetchTickets();
-  }, []);  
-  
+  }, []);
 
   const handleModalClose = () => {
     setModalVisible(false);
@@ -250,8 +339,8 @@ export default function Home() {
             </View>
             <View>
               <ShiftTextHome />
-              <View className="flex-col"> 
-                <ShiftsList shifts={shifts}/>
+              <View className="flex-col">
+                <ShiftsList shifts={shifts} />
               </View>
             </View>
           </ScrollView>

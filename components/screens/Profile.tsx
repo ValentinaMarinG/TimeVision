@@ -26,7 +26,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserInfo } from "../../config/routers";
 import ChangePasswordModal from "../organisms/ChangePassword";
 import * as SQLite from "expo-sqlite";
-import { User } from "../../types/games";
+import { User } from "../../types/types";
 
 export default function Profile() {
 

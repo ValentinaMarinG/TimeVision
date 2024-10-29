@@ -7,14 +7,18 @@ import ShiftsList from "../organisms/ShiftsList";
 import { useEffect, useState } from "react";
 import { Shift } from "../../types/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SQLite from "expo-sqlite";
 
 export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
 
+  const todayDate = new Date().toISOString().split("T")[0];
+  console.log("TODAY", todayDate);
+  console.log("YAAAAA", new Date());
+  
+
   const [shifts, setShifts] = useState<Shift[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
-  );
+  const [selectedDate, setSelectedDate] = useState<string>(todayDate);
   const [filteredShifts, setFilteredShifts] = useState<Shift[]>([]);
 
 
@@ -48,23 +52,38 @@ export default function CalendarScreen() {
 
   LocaleConfig.defaultLocale = "LAA";
 
+  const initializeDatabase = async () => {
+    try {
+      /* await SQLite.deleteDatabaseAsync("dataBase.db"); */
+      const db = await SQLite.openDatabaseAsync("dataBase.db");
+      if (db) {
+        console.log("Base de datos inicializada correctamente");
+      }
+      return db;
+    } catch (error) {
+      console.error("Error al inicializar la base de datos:", error);
+      return null;
+    }
+  };
+
+
   useEffect(() => {
-    const loadShifts = async () => {
+    const getShiftLocal = async () => {
       try {
-        const storedShifts = await AsyncStorage.getItem("shifts");
-        if (storedShifts) {
-          const parsedShifts = JSON.parse(storedShifts);
-          setShifts(parsedShifts); 
-        }
+        const db = await initializeDatabase();
+        if (!db) return;
+        const results = await db.getAllAsync<Shift>("SELECT * FROM shifts;");
+        console.log("AQUIIIIIII SIN CONEXION LOCAL shifts:", results);
+        setShifts(results || []);
       } catch (error) {
-        console.error("Error al cargar shifts desde AsyncStorage:", error);
+        console.error("Error al obtener shifts locales:", error);
       }
     };
 
-    loadShifts(); 
+    getShiftLocal(); 
   }, []);
 
-  const todayDate = new Date().toISOString().split("T")[0];
+  
 
   const onDayPress = (day: { dateString: string }) => {
     setSelectedDate(day.dateString);
