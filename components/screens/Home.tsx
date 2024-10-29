@@ -16,10 +16,18 @@ import { Shift } from '../../types/types';
 export default function Home() {
   const [userInfo, setUserInfo] = useState({ name: "", lastname: "" });
   const [modalVisible, setModalVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [shifts, setShifts] = useState<Shift[]>([]);
 
   useEffect(() => {
+    const loadingCheck = async () =>{
+      const loadingStatus = await AsyncStorage.getItem("lodingStatus");
+      if (loadingStatus == 'false'){
+        setLoading(true);
+        await AsyncStorage.setItem('lodingStatus','true');
+      }
+    }
+    
     const fetchUserData = async () => {
       try {
         const userResponse = await getUserInfo();
@@ -43,15 +51,12 @@ export default function Home() {
       } else {
         console.error(response?.message);
       }
-
       } catch (error) {
         console.error("Error al obtener los turnos del usuario", error);
-      } finally {
-        setLoading(false);
       }
       
     };
-
+    loadingCheck();
     fetchUserData();
     fetchTickets();
   }, []);
