@@ -2,9 +2,9 @@
   "expo": {
     "name": "TimeVision",
     "slug": "TimeVision",
-    "version": "1.0.0",
+    "version": "1.0.4",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/LogoGrey.png",
     "userInterfaceStyle": "light",
     "scheme": "proc",
     "splash": {
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/LogoGrey.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -37,6 +37,11 @@
           "cameraPermission": "The app accesses your photos."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1b029766-2664-4c77-8a51-7ba2423a5563"
+      }
+    }
   }
 }
