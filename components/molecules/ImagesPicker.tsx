@@ -3,6 +3,7 @@ import { Button, Image, View, StyleSheet, Text } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { CancelButton, UploadButton } from "../atoms/CustomButton";
 import { RequestImageText } from "../atoms/DescriptionText";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface ImagesPickerProps {
   onImageSelected: (uri: string | null) => void; 
@@ -33,6 +34,7 @@ export default function ImagesPicker({ onImageSelected }: ImagesPickerProps) {
     onImageSelected(null);
   };
 
+  
   return (
     <View className="flex items-center justify-center w-full">
       <View className="flex justify-around w-full">
@@ -64,3 +66,4 @@ const styles = StyleSheet.create({
     height: 200
   },
 });
+

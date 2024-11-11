@@ -36,96 +36,35 @@ export default function Profile() {
     photo: "",
   });
 
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const router = useRouter();
-
-  const [isOnline, setIsOnline] = useState<Boolean | null>(true);
-
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((state) => {
-      setIsOnline(state.isConnected);
+  SetAccount({
+      name: "",
+      lastname: "",
+      documentType: "",
+      document: "",
+      position: "",
+      departament: "",
+      email: "",
     });
-
-    return () => {
-      unsubscribe();
+    const fetchUser = async () => {
+      const response = await getUserInfo();
+      if (response?.success) {
+        SetAccount({
+          name: response?.data.name,
+          lastname: response?.data.lastname,
+          documentType: response?.data.type_doc,
+          document: response?.data.num_doc,
+          position: response?.data.position,
+          departament: response?.data.id_department,
+          email: response?.data.email,
+        });
+        setProfilePhoto(response.data.photo);
+      } else {
+        console.error(response?.message);
+      }
     };
+    fetchUser();
   }, []);
-
-  const initializeDatabase = async () => {
-    try {
-      const db = await SQLite.openDatabaseAsync("dataBase.db");
-      if (db) {
-        console.log("Base de datos inicializada correctamente");
-      }
-      return db;
-    } catch (error) {
-      console.error("Error al inicializar la base de datos:", error);
-      return null;
-    }
-  };
-
-  const updatePhotoUrlSQLite = async (photourl: string) => {
-    try {      
-      const db = await initializeDatabase();
-      if (!db) {
-        Alert.alert("Error", "No se pudo acceder a la base de datos local.");
-        return null;
-      }
-
-      const result = await db.runAsync(`UPDATE users SET photo = ? WHERE email = ?`, [photourl, account.email]);
-
-    } catch (error) {
-      console.error(
-        "Error al llamar la base de datos local en la actualizar el usuario:",
-        error
-      );
-      return null;
-    }
-  }
-
-  useEffect(() => {
-    const getUserSQLite = async () => {
-      try {
-        const db = await initializeDatabase();
-        if (!db) {
-          Alert.alert("Error", "No se pudo acceder a la base de datos local.");
-          return null;
-        }
-        const email = await AsyncStorage.getItem('user_email')
-        const results = await db.getAllAsync<User>(`SELECT * FROM users WHERE email = ?;`, email);
-        console.log("Usuario en bd local", results);
-
-        if (results.length > 0) {
-          setAccount({
-            id:results[0]._id,
-            name: results[0].name,
-            lastname: results[0].lastname,
-            documentType: results[0].type_doc,
-            document: results[0].num_doc,
-            position: results[0].position,
-            departament: results[0].id_department,
-            email: results[0].email,
-            photo: results[0].photo || ""
-          });
-          setProfilePhoto(account.photo);
-          return results[0];
-        } else {
-          console.warn(
-            "No se encontró ningún usuario en la base de datos local."
-          );
-          return null;
-        }
-      } catch (error) {
-        console.error(
-          "Error al llamar la base de datos local en la inserción de usuario:",
-          error
-        );
-        return null;
-      }
-    }
-      getUserSQLite();
-  },[account.photo]);
 
   const handlePhotoUpdate = async (uri: string) => {
     const formData = new FormData();
@@ -141,6 +80,39 @@ export default function Profile() {
     };
 
     formData.append("photo", file as any);
+
+    try {
+      const updatedPhotoUrl = await updateProfilePhoto(formData);
+      alert("Foto de perfil actualizada con éxito.");
+      setProfilePhoto(updatedPhotoUrl);
+    } catch (error) {
+      const message = (error as { message: string }).message || 'Error desconocido';
+      alert("Error al actualizar la foto: " + message);
+    }
+  };
+  const handlePress = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("¡Se requiere permiso para acceder a la galería!");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      handlePhotoUpdate(uri);
+    }
+  };
+
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
 
     try {
       const updatedPhotoUrl = await updateProfilePhoto(formData);
@@ -178,10 +150,14 @@ export default function Profile() {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("lodingStatus");
-    await AsyncStorage.removeItem("user_email");
+    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('lodingStatus');
+    await AsyncStorage.clear();
     router.push("/login");
+  };
+
+  const handlePassword = () => {
+    console.log("Cambiar contraseña");
   };
 
   const handleOpenModal = () => {
@@ -203,12 +179,7 @@ export default function Profile() {
           <TitleProfile />
         </View>
         <View className="w-full flex justify-center items-center mt-9">
-          {isOnline ? (
-            <ProfilePhotoScreen source={profilePhoto ? { uri: profilePhoto } : undefined} />
-          ) : (
-            <ProfilePhotoOffline source={require("../../assets/userProfileOffline.png")}/>
-          )}
-          
+        <ProfilePhotoScreen source={profilePhoto ? { uri: profilePhoto } : undefined} />
           <View className="flex relative -top-8 left-10">
             <EditProfileButton text="" customFun={handlePress} />
           </View>

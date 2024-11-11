@@ -1,13 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ip1 = "http://10.0.2.2";
-const ip2 = "http://192.168.217.210";
+const ip = "http://192.168.1.15:3001";
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
-    const response = await fetch(`${ip2}:3001/api/v1/login`, {
-      /* 192.168.1.75 */
-      /* para emulador la ip es 10.0.2.2 */
+    const response = await fetch(`${ip}/api/v1/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -83,7 +80,7 @@ export const createRequest = async (
       } as any);
     }
 
-    const response = await fetch(`${ip2}:3001/api/v1/request/`, {
+    const response = await fetch(`${ip}/api/v1/request/`, {
       method: "POST",
       headers: {
         Accept: 'application/json',
@@ -138,7 +135,7 @@ export const createRequest = async (
 
 export const accessRequest = async (email: string) => {
     try {
-      const response = await fetch(`${ip2}:3001/api/v1/request/access`, {
+      const response = await fetch(`${ip}/api/v1/request/access`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -170,7 +167,7 @@ export const accessRequest = async (email: string) => {
 export const getTickets = async () => {
   try {
     const token = await AsyncStorage.getItem("token");
-    const response = await fetch(`${ip2}:3001/api/v1/request/me`, {
+    const response = await fetch(`${ip}/api/v1/request/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -199,7 +196,7 @@ export const getTickets = async () => {
 export const getUserInfo = async () => {
   try {
     const token = await AsyncStorage.getItem("token");
-    const response = await fetch(`${ip2}:3001/api/v1/user/me`, {
+    const response = await fetch(`${ip}/api/v1/user/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -226,31 +223,10 @@ export const getUserInfo = async () => {
   }
 };
 
-export const updateProfilePhoto = async (formData: FormData) => {
-  const token = await AsyncStorage.getItem("token");
-  
-  const response = await fetch(`${ip2}:3001/api/v1/user/photo`, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${token}`, 
-    },
-    body: formData,
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Error: ${response.status} ${response.statusText}`);
-  }
-  
-  const data = await response.json();
-  return data.photo; 
-};
-
-
 export const getAssigments = async () => {
   try {
     const token = await AsyncStorage.getItem("token");
-    const response = await fetch(`${ip2}:3001/api/v1/assignment/me`, {
+    const response = await fetch(`${ip}/api/v1/assignment/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -307,7 +283,7 @@ export const getAssigments = async () => {
 
 export const getShiftDetails = async (id_shift: string) => {
   try {
-    const response = await fetch(`${ip2}:3001/api/v1/shift/${id_shift}`, {
+    const response = await fetch(`${ip}/api/v1/shift/${id_shift}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -349,7 +325,7 @@ export const updatePasswordRequest = async (currentPassword:String, newPassword:
       return { success: false, message: "No se encontró el token de autenticación." };
     }
 
-    const response = await fetch(`${ip2}:3001/api/v1/user/changepassword`, {
+    const response = await fetch(`${ip}/api/v1/user/changepassword`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -375,4 +351,25 @@ export const updatePasswordRequest = async (currentPassword:String, newPassword:
   } catch (error) {
     return { success: false, message: "Error de red. Verifica tu conexión." };
   }
+};
+
+
+export const updateProfilePhoto = async (formData: FormData) => {
+  const token = await AsyncStorage.getItem("token");
+  
+  const response = await fetch(`${ip}:/api/v1/user/photo`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`, 
+    },
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Error: ${response.status} ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  return data.photo; 
 };

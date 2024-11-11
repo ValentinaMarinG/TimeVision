@@ -17,7 +17,7 @@ export default function CalendarScreen() {
 
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(
-    dayjs().format("YYYY-MM-DD")
+    new Date().toISOString().split("T")[0]
   );
   const [filteredShifts, setFilteredShifts] = useState<Shift[]>([]);
 
@@ -52,35 +52,20 @@ export default function CalendarScreen() {
 
   LocaleConfig.defaultLocale = "LAA";
 
-  const initializeDatabase = async () => {
-    try {
-      const db = await SQLite.openDatabaseAsync("dataBase.db");
-      if (db) {
-        console.log("Base de datos inicializada correctamente");
-      }
-      return db;
-    } catch (error) {
-      console.error("Error al inicializar la base de datos:", error);
-      return null;
-    }
-  };
-
   useEffect(() => {
-    const getShiftLocal = async () => {
+    const loadShifts = async () => {
       try {
-        const db = await initializeDatabase();
-        if (!db) return;
-        const email = await AsyncStorage.getItem("user_email");
-        console.log("MI CORREO",email);
-        const results = await db.getAllAsync<Shift>(`SELECT * FROM shifts WHERE user_email = ?;`,[email]);
-        setShifts(results || []);
-        console.log(results);
+        const storedShifts = await AsyncStorage.getItem("shifts");
+        if (storedShifts) {
+          const parsedShifts = JSON.parse(storedShifts);
+          setShifts(parsedShifts); 
+        }
       } catch (error) {
-        console.error("Error al obtener shifts locales:", error);
+        console.error("Error al cargar shifts desde AsyncStorage:", error);
       }
     };
 
-    getShiftLocal(); 
+    loadShifts(); 
   }, []);
 
   const onDayPress = (day: { dateString: string }) => {

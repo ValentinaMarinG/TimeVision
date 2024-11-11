@@ -32,9 +32,6 @@ import { createRequest, getTickets } from "../../config/routers";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RequestSchema } from "../../schemas/requestSchema";
-import * as SQLite from "expo-sqlite";
-import NetInfo from "@react-native-community/netinfo";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type FormData = {
   title: string;
@@ -77,70 +74,6 @@ export default function TicketRequest() {
     };
   },[]); 
 
-  const initializeDatabase = async () => {
-    try {
-      const db = await SQLite.openDatabaseAsync("dataBase.db");
-      if (db) {
-        console.log("Base de datos inicializada correctamente");
-      }
-      return db;
-    } catch (error) {
-      console.error("Error al inicializar la base de datos:", error);
-      return null;
-    }
-  };
-
-  const insertRequestSQLite = async (data: FormData) => {
-    try {
-      const db = await initializeDatabase();
-
-      if (!db) {
-        Alert.alert("Error", "No se pudo acceder a la base de datos local.");
-        return;
-      }
-      const email = await AsyncStorage.getItem("user_email");
-
-      await db.runAsync(
-        `
-        INSERT INTO requests (type, title, start_date, end_date, description, user_email)
-        VALUES (?, ?, ?, ?, ?, ?);
-      `,
-        [
-          data.type,
-          data.title,
-          data.start_date.toISOString(),
-          data.end_date.toISOString(),
-          data.description,
-          email
-        ]
-      );
-
-      console.log("Nuevo ticket creado!");
-      verifyTickets();
-      router.push("/tickets");
-    } catch (error) {
-      console.log(
-        "Error al llamar la base de datos local en la creación de tickets:",
-        error
-      );
-    }
-  };
-
-  const verifyTickets = async () => {
-    try {
-      const db = await initializeDatabase();
-
-      if (!db) {
-        Alert.alert("Error", "No se pudo acceder a la base de datos local.");
-        return;
-      }
-
-      const results = await db.getAllAsync("SELECT * FROM requests;");
-      console.log("Tickets en la base de datos*:", results);
-    } catch (error) {
-      console.error("Error al verificar los tickets:", error);
-    }
-  };
 
   const onSubmit = handleSubmit(async (data) => {
     if (isConnectedToInternet) {
@@ -156,23 +89,10 @@ export default function TicketRequest() {
         if (response.success) {
           Alert.alert("Solicitud creada exitosamente en el servidor");
           router.push("/tickets");
-        } else {
-          insertRequestSQLite(data);
-          Alert.alert("Verifique su conexión, la solicitud se cargará pronto.")
         }
       } catch (error) {
         console.log("Error al enviar la solicitud:", error);
       }
-    } else {
-      Alert.alert("No hay conexión al servidor", "Guardando localmente...");
-      
-      if(imageUri != null){
-        Alert.alert("Para enviar archivo debe de tener conexión a internet");
-      }else{
-        insertRequestSQLite(data);
-        
-      }
-      router.push("/tickets");
     }
   });
 
