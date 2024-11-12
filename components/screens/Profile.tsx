@@ -12,15 +12,11 @@ import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
 import { useEffect, useState } from "react";
 import BottomBar from "../organisms/BottomBar";
-import { ProfilePhotoOffline, ProfilePhotoScreen } from "../atoms/ProfilePhoto";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import ChangePasswordModal from "../organisms/ChangePassword";
-import * as SQLite from "expo-sqlite";
-import { User } from "../../types/types";
-import NetInfo from "@react-native-community/netinfo";
+import { ProfilePhotoScreen } from "../atoms/ProfilePhoto";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserInfo, updateProfilePhoto } from "../../config/routers";
+import ChangePasswordModal from "../organisms/ChangePassword";
 import * as ImagePicker from "expo-image-picker";
-
 
 export default function Profile() {
   const insets = useSafeAreaInsets();
@@ -36,35 +32,30 @@ export default function Profile() {
     photo: "",
   });
 
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
+
   useEffect(() => {
-  SetAccount({
-      name: "",
-      lastname: "",
-      documentType: "",
-      document: "",
-      position: "",
-      departament: "",
-      email: "",
-    });
-    const fetchUser = async () => {
-      const response = await getUserInfo();
-      if (response?.success) {
-        SetAccount({
-          name: response?.data.name,
-          lastname: response?.data.lastname,
-          documentType: response?.data.type_doc,
-          document: response?.data.num_doc,
-          position: response?.data.position,
-          departament: response?.data.id_department,
-          email: response?.data.email,
-        });
-        setProfilePhoto(response.data.photo);
-      } else {
-        console.error(response?.message);
-      }
-    };
-    fetchUser();
-  }, []);
+      const fetchUser = async () => {
+        const response = await getUserInfo();
+        if (response?.success) {
+          setAccount({
+            name: response?.data.name || "",
+            lastname: response?.data.lastname || "",
+            documentType: response?.data.type_doc || "",
+            document: response?.data.num_doc || "",
+            position: response?.data.position || "",
+            departament: response?.data.id_department || "",
+            email: response?.data.email || "",
+          } as typeof account);
+          setProfilePhoto(response.data.photo);
+        } else {
+          console.error(response?.message);
+        }
+      };
+      fetchUser();
+    }, []);
 
   const handlePhotoUpdate = async (uri: string) => {
     const formData = new FormData();
@@ -83,41 +74,6 @@ export default function Profile() {
 
     try {
       const updatedPhotoUrl = await updateProfilePhoto(formData);
-      alert("Foto de perfil actualizada con éxito.");
-      setProfilePhoto(updatedPhotoUrl);
-    } catch (error) {
-      const message = (error as { message: string }).message || 'Error desconocido';
-      alert("Error al actualizar la foto: " + message);
-    }
-  };
-  const handlePress = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      alert("¡Se requiere permiso para acceder a la galería!");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const uri = result.assets[0].uri;
-      handlePhotoUpdate(uri);
-    }
-  };
-
-
-  const [modalVisible, setModalVisible] = useState(false);
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
-
-    try {
-      const updatedPhotoUrl = await updateProfilePhoto(formData);
-      alert("Foto de perfil actualizada con éxito.");
-      updatePhotoUrlSQLite(updatedPhotoUrl)
       setProfilePhoto(updatedPhotoUrl);
     } catch (error) {
       const message = (error as { message: string }).message || 'Error desconocido';
@@ -126,9 +82,7 @@ export default function Profile() {
   };
 
   const handlePress = async () => {
-    if(!isOnline){
-      Alert.alert("Para actualizar la foto debe estar conectado a internet");
-    }else{
+    
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
         alert("¡Se requiere permiso para acceder a la galería!");
@@ -146,7 +100,7 @@ export default function Profile() {
         const uri = result.assets[0].uri;
         handlePhotoUpdate(uri);
       }
-    }
+    
   };
 
   const handleLogout = async () => {
@@ -154,10 +108,6 @@ export default function Profile() {
     await AsyncStorage.removeItem('lodingStatus');
     await AsyncStorage.clear();
     router.push("/login");
-  };
-
-  const handlePassword = () => {
-    console.log("Cambiar contraseña");
   };
 
   const handleOpenModal = () => {

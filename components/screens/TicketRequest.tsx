@@ -65,16 +65,6 @@ export default function TicketRequest() {
     setShowPicker(!showPicker);
   };
 
-  useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
-      setIsConnectedToInternet(state.isConnected);
-    });
-    return () => {
-      unsubscribe();
-    };
-  },[]); 
-
-
   const onSubmit = handleSubmit(async (data) => {
     if (isConnectedToInternet) {
       try {
