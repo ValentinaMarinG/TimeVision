@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Modal,
-  BackHandler,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, ScrollView, Modal, BackHandler, ActivityIndicator } from "react-native";
 import React, { useEffect, useState } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ShiftTextHome, SubTitleTextHome } from "../atoms/SubtitleText";
@@ -21,19 +14,23 @@ import { useFocusEffect } from "expo-router";
 import { Shift } from "../../types/types";
 
 export default function Home() {
-  const [userInfo, setUserInfo] = useState<{ name: string; lastname: string; photo: string | undefined; email: string;}>({ name: "", lastname: "", photo: "", email:"" });
+  const [userInfo, setUserInfo] = useState({
+    name: "",
+    lastname: "",
+    photo: "",
+    email: "",
+  });
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [shifts, setShifts] = useState<Shift[]>([]);
 
-  
-  useEffect(() => {  
+  useEffect(() => {
     const fetchUserData = async () => {
       try {
         const userResponse = await getUserInfo();
         if (userResponse?.success) {
           const { name, lastname, photo, email } = userResponse.data;
-          await AsyncStorage.setItem('user_email', email);
+          await AsyncStorage.setItem("user_email", email);
           setUserInfo({ name, lastname, photo, email });
         } else {
           throw new Error("No data from server");
@@ -48,20 +45,20 @@ export default function Home() {
         const response = await getAssigments();
         if (response?.success) {
           const data = response.data;
+          await AsyncStorage.setItem("shifts", JSON.stringify(data));
           setShifts(data ?? []);
           setLoading(false);
         }
       } catch (error) {
-        
+        console.error("Error al obtener turnos", error);
       }
     };
+
     fetchUserData();
     fetchTickets();
   }, []);
 
-  const handleModalClose = () => {
-    setModalVisible(false);
-  };
+  const handleModalClose = () => setModalVisible(false);
 
   async function close() {
     await AsyncStorage.clear();
@@ -91,15 +88,12 @@ export default function Home() {
       <View className="flex-1 justify-between px-5 mt-12">
         {loading ? (
           <View className="flex-1 justify-center items-center bg-transparent">
-          <View className="p-4 rounded-full bg-transparent border border-[#00d4ff]/50 shadow-md shadow-[#00d4ff]/30">
-            <ActivityIndicator size="large" color="#00d4ff" className="scale-110" />
+            <View className="p-4 rounded-full bg-transparent border border-[#00d4ff]/50 shadow-md shadow-[#00d4ff]/30">
+              <ActivityIndicator size="large" color="#00d4ff" />
+            </View>
           </View>
-        </View>
         ) : (
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
-            showsVerticalScrollIndicator={false}
-          >
+          <>
             <View className="mb-3">
               <SubTitleTextHome />
               <Text className={`${Tokens.standardTextTitleBold}`}>
@@ -107,22 +101,28 @@ export default function Home() {
               </Text>
             </View>
             <View className="mb-3">
-              <HomeCard name={userInfo.name} lastname={userInfo.lastname } photo={userInfo.photo || ""}/>
+              <HomeCard
+                name={userInfo.name}
+                lastname={userInfo.lastname}
+                photo={userInfo.photo || ""}
+              />
             </View>
             <View className="mb-5">
               <SearchInput />
             </View>
-            <View>
+            <View className="flex-1">
               <ShiftTextHome />
-              <View className="flex-col">
+              <ScrollView
+                contentContainerStyle={{ paddingBottom: 20 }}
+                showsVerticalScrollIndicator={false}
+              >
                 <ShiftsList shifts={shifts} />
-              </View>
+              </ScrollView>
             </View>
-          </ScrollView>
+          </>
         )}
       </View>
       <BottomBar activeRoute="/home" />
-
       <Modal
         animationType="fade"
         transparent={true}
@@ -143,4 +143,5 @@ export default function Home() {
       </Modal>
     </View>
   );
+  
 }

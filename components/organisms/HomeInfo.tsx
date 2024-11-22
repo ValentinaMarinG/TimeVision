@@ -5,7 +5,7 @@ import {
   ProfilePhotoHome,
   ProfilePhotoOffline,
   ProfilePhotoOfflineHome,
-  ProfilePhotoScreen
+  ProfilePhotoScreen,
 } from "../atoms/ProfilePhoto";
 import { CompanyHomeCard, ProfileHomeCard } from "../atoms/DescriptionText";
 import { Link } from "expo-router";
@@ -33,28 +33,33 @@ export default function HomeCard({ name, lastname, photo }: HomeCardProps) {
 
   return (
     <View className="bg-cardColor w-full rounded-2xl p-5">
-      <View className="flex-row items-center">
-        {isOnline ? (
-          <ProfilePhotoHome source={photo ? { uri: photo } : undefined} />
-        ) : (
-          <ProfilePhotoOfflineHome source={require("../../assets/userProfileOffline.png")} />
-        )}
-        <View className="flex-1 justify-between ml-5">
-          <Text className="text-xl text-white">
-            {name} {lastname}
-          </Text>
-          <ProfileHomeCard />
-        </View>
-        <Link href={"/profile"}>
+      <Link href={"/profile"}>
+        <View className="flex-row items-center">
+          {isOnline ? (
+            <ProfilePhotoHome source={photo ? { uri: photo } : undefined} />
+          ) : (
+            <ProfilePhotoOfflineHome
+              source={require("../../assets/userProfileOffline.png")}
+            />
+          )}
+          <View className="flex-1 justify-between ml-5">
+            <Text className="text-xl text-white">
+              {name} {lastname}
+            </Text>
+            <ProfileHomeCard />
+          </View>
           <ArrowIcon
             size={Tokens.logoSizeIconCard}
             color={Tokens.logoColorCard}
           />
-        </Link>
-      </View>
+        </View>
+        
+      </Link>
       <View className="mt-5 border-t-[0.5px] border-white">
-        <CompanyHomeCard />
-      </View>
+      <Link href={"/profile"} className="mt-4">
+          <CompanyHomeCard />
+          </Link>
+        </View>
     </View>
   );
 }

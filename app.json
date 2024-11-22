@@ -2,7 +2,7 @@
   "expo": {
     "name": "TimeVision",
     "slug": "TimeVision",
-    "version": "1.0.0",
+    "version": "1.0.11",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,11 +17,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icono.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
       ],
       "package": "com.girveos.TimeVision"
     },
@@ -36,7 +39,13 @@
           "photosPermission": "The app accesses your photos.",
           "cameraPermission": "The app accesses your photos."
         }
-      ]
-    ]
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1b029766-2664-4c77-8a51-7ba2423a5563"
+      }
+    }
   }
 }

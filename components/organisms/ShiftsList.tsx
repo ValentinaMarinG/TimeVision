@@ -21,34 +21,18 @@ export default function ShiftsList({ shifts }: ShiftsListProps) {
       ) : (
         shifts.map((shift) => {
           return (
-            <View
-              key={shift._id}
-              className="bg-backGroundShiftList w-full rounded-2xl p-5 mb-3 shadow-lg mt-2"
-            >
+            <View key={shift._id} className="bg-backGroundShiftList w-full rounded-2xl p-5 mb-3 shadow-lg mt-2">
               <View className="flex-row items-center">
-                <CalendarIcon
-                  size={Tokens.iconSizeSearchHome}
-                  color={Tokens.iconColorSearchHome}
-                />
+                <CalendarIcon size={Tokens.iconSizeSearchHome} color={Tokens.iconColorSearchHome} />
                 <View className="flex-1 justify-between ml-5">
                   <Text className="text-lg font-bold">
                     {(() => {
-                      const dayOfWeek = new Date(
-                        shift.start_date
-                      ).toLocaleDateString("es-ES", {
-                        weekday: "long",
-                      });
-                      return (
-                        dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)
-                      );
+                      const dayOfWeek = new Date(shift.start_date).toLocaleDateString("es-ES", { weekday: "long" });
+                      return dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
                     })()}
                   </Text>
                   <Text className="text-gray-500">
-                    {new Date(shift.start_date).toLocaleDateString("es-ES", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
+                    {new Date(shift.start_date).toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" })}
                   </Text>
                 </View>
               </View>
@@ -60,12 +44,7 @@ export default function ShiftsList({ shifts }: ShiftsListProps) {
                     <Time size={Tokens.iconSizeTimeHome} color={"#FEB052"} />
                   </View>
                   <Text className={`${Tokens.standardShiftInHome}`}>
-                    {new Date(shift.start_date).toLocaleTimeString("es-ES", {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                      timeZone: "UTC",
-                    })}
+                    {new Date(shift.start_date).toLocaleTimeString("es-ES", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "UTC" })}
                   </Text>
                 </View>
                 <View className="mt-2 flex-grow flex-row justify-center content-center">
@@ -74,12 +53,7 @@ export default function ShiftsList({ shifts }: ShiftsListProps) {
                     <Time size={Tokens.iconSizeTimeHome} color={"#4894FE"} />
                   </View>
                   <Text className={`${Tokens.standardShiftOutHome}`}>
-                    {new Date(shift.time_end).toLocaleTimeString("es-ES", {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                      timeZone: "UTC",
-                    })}
+                    {new Date(shift.time_end).toLocaleTimeString("es-ES", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "UTC" })}
                   </Text>
                 </View>
               </View>

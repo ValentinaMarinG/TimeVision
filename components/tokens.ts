@@ -1,6 +1,6 @@
 export const standardInput = 'h-12 w-full rounded-xl bg-gray-200 p-3';
 
-export const homeInput = 'w-full rounded-xl bg-gray-200 p-2 flex-row mt-3';
+export const homeInput = 'w-full rounded-xl bg-gray-200 p-2 flex-row';
 
 export const standardFormDescriptionText = `text-md text-grayText mb-2`;
 

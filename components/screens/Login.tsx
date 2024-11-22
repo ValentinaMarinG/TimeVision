@@ -25,6 +25,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginSchema } from "../../schemas/loginSchema";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type FormData = {
   user: string;
@@ -35,6 +36,7 @@ export default function Login() {
   const [modalVisible, setModalVisible] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const insets = useSafeAreaInsets();
   const router = useRouter();
 
   const {
@@ -62,15 +64,18 @@ export default function Login() {
   };
 
   return (
+    
     <KeyboardAvoidingView
       className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={100}
+      
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
+          style={{ paddingBottom: insets.top}}
         >
           <View className="flex-1 mt-36 items-center">
             <TitleTextLogin />

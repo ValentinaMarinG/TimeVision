@@ -103,7 +103,7 @@ export const CompanyHomeCard = () => {
 
 export const InputTextHome = () => {
   return (
-    <Text className={`${Tokens.searchInputHome}`}>
+    <Text className={`${Tokens.searchInputHome} `}>
       Buscar una fecha
     </Text>
   );

@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ip = "http://www.timevision.lat";
+const ip = "https://timevision.lat";
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
@@ -353,11 +353,10 @@ export const updatePasswordRequest = async (currentPassword:String, newPassword:
   }
 };
 
-
 export const updateProfilePhoto = async (formData: FormData) => {
   const token = await AsyncStorage.getItem("token");
   
-  const response = await fetch(`${ip}:/api/v1/user/photo`, {
+  const response = await fetch(`${ip}/api/v1/user/photo`, {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
