@@ -26,6 +26,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginSchema } from "../../schemas/loginSchema";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { clearAllStores } from "../../store/Store";
 
 type FormData = {
   user: string;
@@ -53,6 +54,7 @@ export default function Login() {
     const result = await loginRequest(data.user, data.pass);
     await AsyncStorage.setItem('lodingStatus','false');
     if (result?.success) {
+      await clearAllStores();
       const token = await AsyncStorage.getItem("token");
       if (token) {
         router.push("/home");

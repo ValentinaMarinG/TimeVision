@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AddButton } from "../atoms/CustomButton";
 import { useRouter } from "expo-router";
@@ -7,43 +7,48 @@ import { TitleTextTickets } from "../atoms/TitleText";
 import BottomBar from "../organisms/BottomBar";
 
 import * as Tokens from "../tokens";
-import { createRequest, getTickets } from "../../config/routers";
-import { Ticket } from "../../types/types";
+import { useTicketsStore } from '../../store/Store' 
 
 export default function Tickets() {
   const insets = useSafeAreaInsets();
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
-  const [imageUri, setImageUri] = useState<string | null>(null);
-
   const router = useRouter();
+
+  const { tickets, loading, error, fetchTickets } = useTicketsStore()
+  
+  const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchTickets()
+  }, [])
 
   const handlePress = () => {
     router.push("/ticketrequest");
   };
 
-  useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        const response = await getTickets();
-        if (response?.success) {
-          const data = response.data;
-          setTickets(data);
-        } else {
-          throw new Error("No data from server");
-        }
-      } catch (error) {
-        console.warn(
-          "Fallo en la carga de datos."
-        );
-      }
-    };
-    fetchTickets();
-  }, []);
-
   const toggleExpandTicket = (ticketId: string) => {
     setExpandedTicketId(expandedTicketId === ticketId ? null : ticketId);
   };
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-transparent">
+        <View className="p-4 rounded-full bg-transparent border border-[#00d4ff]/50 shadow-md shadow-[#00d4ff]/30">
+          <ActivityIndicator size="large" color="#00d4ff" />
+        </View>
+        <Text className="mt-4 text-lg font-semibold text-[#00d4ff]">
+          Cargando Solicitudes...
+        </Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text className="text-red-500">{error}</Text>
+      </View>
+    )
+  }
 
   return (
     <View

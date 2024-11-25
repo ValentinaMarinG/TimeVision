@@ -4,23 +4,25 @@ import BottomBar from "../organisms/BottomBar";
 import { TitleTextCalendar } from "../atoms/TitleText";
 import { Calendar, LocaleConfig } from "react-native-calendars";
 import ShiftsList from "../organisms/ShiftsList";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Shift } from "../../types/types";
-import * as SQLite from "expo-sqlite";
 import dayjs from "dayjs";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useShiftsStore } from "../../store/Store";
 
 export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
 
   const todayDate = new Date().toISOString().split("T")[0];
-
-  const [shifts, setShifts] = useState<Shift[]>([]);
+  
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
   const [filteredShifts, setFilteredShifts] = useState<Shift[]>([]);
+  const { shifts, fetchShifts, loading } = useShiftsStore();
 
+  useEffect(() => {
+    fetchShifts();
+  }, []);
 
   LocaleConfig.locales["LAA"] = {
     monthNames: [
@@ -53,33 +55,25 @@ export default function CalendarScreen() {
   LocaleConfig.defaultLocale = "LAA";
 
   useEffect(() => {
-    const loadShifts = async () => {
-      try {
-        const storedShifts = await AsyncStorage.getItem("shifts");
-        if (storedShifts) {
-          const parsedShifts = JSON.parse(storedShifts);
-          setShifts(parsedShifts); 
-        }
-      } catch (error) {
-        console.error("Error al cargar shifts desde AsyncStorage:", error);
-      }
-    };
-
-    loadShifts(); 
-  }, []);
+    const shiftsForSelectedDate = shifts.filter((shift) => {
+      const shiftDate = dayjs(shift.start_date).format("YYYY-MM-DD");
+      return shiftDate === selectedDate;
+    });
+    setFilteredShifts(shiftsForSelectedDate);
+  }, [selectedDate, shifts]);
 
   const onDayPress = (day: { dateString: string }) => {
     setSelectedDate(day.dateString);
-    
+
     const shiftsForSelectedDate = shifts.filter(shift => {
       const shiftDate = new Date(shift.start_date).toISOString().split("T")[0];
-      return shiftDate === day.dateString; 
+      return shiftDate === day.dateString;
     });
-  
+
     setFilteredShifts(shiftsForSelectedDate);
   };
 
-  const getShiftColor = (shift:Shift) => {
+  const getShiftColor = (shift: Shift) => {
     const shiftDate = new Date(shift.start_date);
     const shiftHour = shiftDate.getHours();
     const isPast = shiftDate < new Date();
@@ -93,48 +87,43 @@ export default function CalendarScreen() {
     }
   };
 
-  const markedDates = {
-    ...(selectedDate !== todayDate
-      ? {
-          [selectedDate]: {
-            selected: true,
-            selectedColor: "#00adf5",
-            dots: [
-              {
-                key: "selected",
-                color: "#fff",
-              },
-            ],
-          },
-        }
-      : {
-          [todayDate]: {
-            selected: true,
-            selectedColor: "#00adf5",
-            dots: [
-              {
-                key: "today",
-                color: selectedDate === todayDate ? "#fff" : "#00adf5",
-              },
-            ],
-          },
-        }),
-  };
+  const markedDates = useMemo(() => {
+    const dates: { [key: string]: any } = {};
 
-  shifts.forEach((shift) => {
-    const startDate = new Date(shift.start_date).toISOString().split("T")[0];
+    if (selectedDate) {
+      dates[selectedDate] = {
+        selected: true,
+        selectedColor: "#00adf5",
+        dots: [
+          {
+            key: "selected",
+            color: "#fff",
+          },
+        ],
+      };
+    }
 
-    markedDates[startDate] = {
-      selected: true,
-      selectedColor: selectedDate === startDate ? "#00adf5" : getShiftColor(shift),
-      dots: [
-        {
-          key: shift._id,
-          color: selectedDate === startDate ? "#fff" : getShiftColor(shift),
-        },
-      ],
-    };
-  });
+    shifts.forEach((shift) => {
+      const startDate = new Date(shift.start_date).toISOString().split("T")[0];
+
+      
+      if (!dates[startDate]) {
+        dates[startDate] = { dots: [] };
+      }
+
+      dates[startDate].dots.push({
+        key: shift._id,
+        color: getShiftColor(shift),
+      });
+
+      if (startDate === selectedDate) {
+        dates[startDate].selected = true;
+        dates[startDate].selectedColor = "#00adf5";
+      }
+    });
+
+    return dates;
+  }, [shifts, selectedDate]);
 
   return (
     <View

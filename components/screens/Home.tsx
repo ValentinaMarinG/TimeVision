@@ -1,62 +1,28 @@
 import { View, Text, ScrollView, Modal, BackHandler, ActivityIndicator } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ShiftTextHome, SubTitleTextHome } from "../atoms/SubtitleText";
 import HomeCard from "../organisms/HomeInfo";
 import { SearchInput } from "../organisms/SearchInput";
 import ShiftsList from "../organisms/ShiftsList";
-import { getAssigments, getUserInfo } from "../../config/routers";
 import { TitleTextHome } from "../atoms/TitleText";
 import * as Tokens from "../tokens";
 import { CustomButton } from "../atoms/CustomButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "expo-router";
-import { Shift } from "../../types/types";
+
+import { useShiftsStore, useProfileStore } from "../../store/Store";
 
 export default function Home() {
-  const [userInfo, setUserInfo] = useState({
-    name: "",
-    lastname: "",
-    photo: "",
-    email: "",
-  });
-  const [modalVisible, setModalVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [shifts, setShifts] = useState<Shift[]>([]);
+  const { account, fetchUserInfo } = useProfileStore()
+  const { shifts, loading, fetchShifts } = useShiftsStore()
+  const [modalVisible, setModalVisible] = React.useState(false);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const userResponse = await getUserInfo();
-        if (userResponse?.success) {
-          const { name, lastname, photo, email } = userResponse.data;
-          await AsyncStorage.setItem("user_email", email);
-          setUserInfo({ name, lastname, photo, email });
-        } else {
-          throw new Error("No data from server");
-        }
-      } catch (error) {
-        console.error("Error al obtener datos del usuario", error);
-      }
-    };
+    fetchUserInfo()
+    fetchShifts()
 
-    const fetchTickets = async () => {
-      try {
-        const response = await getAssigments();
-        if (response?.success) {
-          const data = response.data;
-          await AsyncStorage.setItem("shifts", JSON.stringify(data));
-          setShifts(data ?? []);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Error al obtener turnos", error);
-      }
-    };
-
-    fetchUserData();
-    fetchTickets();
-  }, []);
+  }, [])
 
   const handleModalClose = () => setModalVisible(false);
 
@@ -97,14 +63,14 @@ export default function Home() {
             <View className="mb-3">
               <SubTitleTextHome />
               <Text className={`${Tokens.standardTextTitleBold}`}>
-                <TitleTextHome /> {userInfo.name}
+                <TitleTextHome /> {account.name}
               </Text>
             </View>
             <View className="mb-3">
               <HomeCard
-                name={userInfo.name}
-                lastname={userInfo.lastname}
-                photo={userInfo.photo || ""}
+                name={account.name}
+                lastname={account.lastname}
+                photo={account.photo || ""}
               />
             </View>
             <View className="mb-5">
@@ -143,5 +109,4 @@ export default function Home() {
       </Modal>
     </View>
   );
-  
 }

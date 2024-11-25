@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ip = "https://timevision.lat";
+const ip = "http://192.168.50.184:3001";
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
