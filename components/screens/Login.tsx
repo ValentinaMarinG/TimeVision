@@ -27,6 +27,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginSchema } from "../../schemas/loginSchema";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { clearAllStores } from "../../store/Store";
+import * as Notifications from 'expo-notifications';
 
 type FormData = {
   user: string;
@@ -57,6 +58,18 @@ export default function Login() {
       await clearAllStores();
       const token = await AsyncStorage.getItem("token");
       if (token) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "¡Bienvenido! 👋",
+            body: `Has iniciado sesión correctamente, ${data.user}`,
+            data: { screen: 'home' },
+            sound: true,
+            priority: Notifications.AndroidNotificationPriority.HIGH,
+            vibrate: [0, 250, 250, 250],
+          },
+          trigger: null,
+        });
+        
         router.push("/home");
       }
     } else {

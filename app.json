@@ -2,7 +2,7 @@
   "expo": {
     "name": "TimeVision",
     "slug": "TimeVision",
-    "version": "1.0.11",
+    "version": "1.0.13",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -22,11 +22,14 @@
       },
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED"
       ],
-      "package": "com.girveos.TimeVision"
+      "package": "com.girveos.TimeVision",
+      "useNextNotificationsApi": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -40,12 +43,16 @@
           "cameraPermission": "The app accesses your photos."
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icono.png",
+          "color": "#ffffff"
+        }
+      ]
     ],
-    "extra": {
-      "eas": {
-        "projectId": "1b029766-2664-4c77-8a51-7ba2423a5563"
-      }
-    }
+    
+    "owner": "girveos"
   }
 }

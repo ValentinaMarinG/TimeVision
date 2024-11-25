@@ -60,7 +60,8 @@
     "uuid": "^10.0.0",
     "zod": "^3.23.8",
     "zustand": "^5.0.1",
-    "zustand-persist": "^0.4.0"
+    "zustand-persist": "^0.4.0",
+    "expo-dev-client": "~5.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
