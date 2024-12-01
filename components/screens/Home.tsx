@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Modal, BackHandler, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, Modal, BackHandler, ActivityIndicator, TouchableOpacity } from "react-native";
 import React, { useEffect } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ShiftTextHome, SubTitleTextHome } from "../atoms/SubtitleText";
@@ -10,19 +10,31 @@ import * as Tokens from "../tokens";
 import { CustomButton } from "../atoms/CustomButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "expo-router";
+import { getExpoPushToken } from "../../notifications";
+import * as Clipboard from "expo-clipboard";
 
 import { useShiftsStore, useProfileStore } from "../../store/Store";
+import { setNotificationCategoryAsync } from "expo-notifications";
 
 export default function Home() {
   const { account, fetchUserInfo } = useProfileStore()
   const { shifts, loading, fetchShifts } = useShiftsStore()
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [notificationToken, setNotificationToken] = React.useState<string | null>(null);
 
   useEffect(() => {
     fetchUserInfo()
     fetchShifts()
 
+    getExpoPushToken().then((token) => { setNotificationToken(token) })
+
   }, [])
+  const copyTokenToClipboard = async () => {
+    if (notificationToken) {
+      await Clipboard.setStringAsync(notificationToken);
+      console.log('Éxito', 'Token copiado al portapapeles');
+    }
+  };
 
   const handleModalClose = () => setModalVisible(false);
 
@@ -73,6 +85,20 @@ export default function Home() {
                 photo={account.photo || ""}
               />
             </View>
+            <TouchableOpacity
+              onPress={copyTokenToClipboard}
+              className="mb-3 p-4 bg-white rounded-lg shadow-sm border border-[#00d4ff]/20"
+            >
+              <Text className="text-base font-bold mb-2 text-[#00d4ff]">
+                Token de Notificaciones
+              </Text>
+              <Text className="text-sm text-gray-600" numberOfLines={1} ellipsizeMode="middle">
+                {notificationToken || 'Cargando token...'}
+              </Text>
+              <Text className="text-xs text-gray-400 mt-2">
+                Toca para copiar el token
+              </Text>
+            </TouchableOpacity>
             <View className="mb-5">
               <SearchInput />
             </View>
