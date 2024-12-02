@@ -197,7 +197,7 @@ export default function TicketRequest() {
                     {showPicker && isStartDateSelected && (
                       <DateTimePicker
                         mode="date"
-                        display={Platform.OS === "ios" ? "inline" : "calendar"}
+                        display={Platform.OS === "ios" ? "spinner" : "calendar"}
                         value={value || new Date()}
                         onChange={(event, selectedDate) => {
                           const currentDate = selectedDate || value;

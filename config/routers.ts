@@ -3,7 +3,15 @@ import JSEncrypt from "jsencrypt";
 
 const ip = "http://192.168.0.13:3001";
 
-const publicKey = process.env.EXPO_PUBLIC_PUBLICKEY || "";
+const publicKey = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1JdP5oyqwODB26qcwuKR
+DbI09S/3zWHvVE4TJfjui1NRPE9eU7X4DNFn1WznA14MRmzbYknO5CNghXoN1PyL
+QUWhTv8brUYjM70a0+GrHaRIC32oDLACUB5hhMWTNoRzcWA7VgUxoqGmeK2EPcqO
+w7uC8mCXzoSU8R3U4S5OFHbFJH1QpoDMAIItamGFkGODeJ5nm4LtzXgCCCb+SJS3
+qXgW26xB5WKfROUi0WGAgWzCdr9bGQWY12/K6J5TxX9sby/nVQ3gyQIepdyQ2tPO
+yqYXvVm0K22oj6TR1fTUVk8vdKvHz5DDrMEYD8CvUO63cXKBlGQ5/sofzWiNu7Xu
+BwIDAQAB
+-----END PUBLIC KEY-----`;
 
 const encryptPassword = (password: string): string => {
     try {
