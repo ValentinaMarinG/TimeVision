@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CustomButton, EditProfileButton } from "../atoms/CustomButton";
 import { TitleProfile } from "../atoms/TitleText";
@@ -13,17 +13,17 @@ import * as Tokens from "../tokens";
 import { useState, useEffect } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ProfilePhotoScreen } from "../atoms/ProfilePhoto";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { updateProfilePhoto } from "../../config/routers";
 import ChangePasswordModal from "../organisms/ChangePassword";
 import * as ImagePicker from "expo-image-picker";
-import { useProfileStore, clearAllStores } from '../../store/Store';
+import { useProfileStore, clearAllStores } from "../../store/Store";
 
 export default function Profile() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
-  
+
   const { account, fetchUserInfo, updatePhoto, clearStore } = useProfileStore();
 
   useEffect(() => {
@@ -49,13 +49,15 @@ export default function Profile() {
       const updatedPhotoUrl = await updateProfilePhoto(formData);
       updatePhoto(updatedPhotoUrl);
     } catch (error) {
-      const message = (error as { message: string }).message || 'Error desconocido';
+      const message =
+        (error as { message: string }).message || "Error desconocido";
       alert("Error al actualizar la foto: " + message);
     }
   };
 
   const handlePress = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
       alert("¡Se requiere permiso para acceder a la galería!");
       return;
@@ -75,11 +77,11 @@ export default function Profile() {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.clear(); 
-    clearStore(); 
-    router.push("/login"); 
+    await AsyncStorage.clear();
+    clearStore();
+    router.push("/login");
     clearAllStores();
-};
+  };
 
   const handleOpenModal = () => {
     setModalVisible(true);
@@ -95,12 +97,20 @@ export default function Profile() {
       className="flex-1 bg-white"
       showsVerticalScrollIndicator={false}
     >
-      <View className="flex-1 w-full mt-9" style={{ paddingBottom: insets.bottom }}>
+      <View
+        className="flex-1 w-full mt-9"
+        style={{ paddingBottom: insets.bottom }}
+      >
         <View className="justify-center items-center border-b border-slate-200">
           <TitleProfile />
         </View>
         <View className="w-full flex justify-center items-center mt-9">
-          <ProfilePhotoScreen source={account.photo ? { uri: account.photo } : undefined} />
+          <Pressable onPress={handlePress}>
+            <ProfilePhotoScreen
+              source={account.photo ? { uri: account.photo } : undefined}
+              name={account.name}
+            />
+          </Pressable>
           <View className="flex relative -top-8 left-10">
             <EditProfileButton text="" customFun={handlePress} />
           </View>
@@ -137,7 +147,10 @@ export default function Profile() {
         </View>
         <View className="w-full flex items-center justify-center">
           <View className="w-3/4 justify-center items-center mt-3">
-            <CustomButton text="Actualizar contraseña" customFun={handleOpenModal} />
+            <CustomButton
+              text="Actualizar contraseña"
+              customFun={handleOpenModal}
+            />
           </View>
           <ChangePasswordModal
             visible={modalVisible}

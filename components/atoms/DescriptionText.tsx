@@ -71,8 +71,7 @@ export const RequestImageText = () => {
 export const AccessModal = () => {
   return (
     <Text className="text-center text-lg text-[#858585] my-5">
-      ¡Genial! Tu solicitud de acceso fue creada con éxito, tu administrador te
-      brindará acceso pronto.
+      Hemos enviado un enlace para restablecer tu contraseña a tu correo electrónico.
     </Text>
   );
 };

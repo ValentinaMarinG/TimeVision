@@ -69,11 +69,11 @@ export default function Tickets() {
                 <View className="left-80 top-8 z-10">
                   <View
                     className={`w-[17] h-[17] rounded-full  ${
-                      ticketMap.state === "aprobado"
+                      ticketMap.state.toLowerCase() === "aceptada"
                         ? "bg-green-500"
-                        : ticketMap.state === "pendiente"
+                        : ticketMap.state.toLowerCase() === "pendiente"
                         ? "bg-orange-500"
-                        : ticketMap.state === "rechazado"
+                        : ticketMap.state.toLowerCase() === "rechazada"
                         ? "bg-red-500"
                         : "bg-gray-500"
                     }`}

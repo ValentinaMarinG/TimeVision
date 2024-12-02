@@ -89,10 +89,10 @@ export default function TicketRequest() {
   const data = [
     { key: "1", value: "Incapacidad médica" },
     { key: "2", value: "Enfermedad" },
-   /*  { key: "3", value: "Cambio de turno" }, */
-    { key: "3", value: "Vacaciones" },
-    { key: "4", value: "Licencia" },
-    { key: "5", value: "Otro" },
+    /* { key: "3", value: "Cambio de turno" }, */
+    { key: "4", value: "Vacaciones" },
+    { key: "5", value: "Licencia" },
+    { key: "6", value: "Otro" },
   ];
 
   return (
@@ -197,7 +197,7 @@ export default function TicketRequest() {
                     {showPicker && isStartDateSelected && (
                       <DateTimePicker
                         mode="date"
-                        display="calendar"
+                        display={Platform.OS === "ios" ? "inline" : "calendar"}
                         value={value || new Date()}
                         onChange={(event, selectedDate) => {
                           const currentDate = selectedDate || value;
@@ -243,7 +243,7 @@ export default function TicketRequest() {
                         {showPicker && !isStartDateSelected && (
                           <DateTimePicker
                             mode="date"
-                            display="calendar"
+                            display={Platform.OS === "ios" ? "spinner" : "calendar"}
                             value={value || new Date()}
                             onChange={(event, selectedDate) => {
                               const currentDate = selectedDate || value;
@@ -292,7 +292,7 @@ export default function TicketRequest() {
                     {showPicker && isStartDateSelected && (
                       <DateTimePicker
                         mode="date"
-                        display="calendar"
+                        display={Platform.OS === "ios" ? "spinner" : "calendar"}
                         value={value || new Date()}
                         onChange={(event, selectedDate) => {
                           const currentDate = selectedDate || value;

@@ -1,51 +1,64 @@
-import { Image, ImageSourcePropType, View } from "react-native";
+import { Image, ImageSourcePropType, Text, View } from "react-native";
 
 type ProfilePhotoProps = {
   source?: ImageSourcePropType | any;
+  name: string;
 };
 
 type ProfilePhotoOffProps = {
   source: any;
 };
 
-export const ProfilePhotoHome = ({ source }: ProfilePhotoProps) => {
-  return (
+export const ProfilePhotoHome = ({ source, name }: ProfilePhotoProps) => {
+  const getInitial = (name: string) => {
+    return name ? name.charAt(0).toUpperCase() : "?";
+  };
+
+  return source ? (
     <Image
-      source={
-        source || {
-          uri: "https://images.pexels.com/photos/2876486/pexels-photo-2876486.png?auto=compress&cs=tinysrgb&dpr=1&w=500",
-        }
-      }
-      className="w-[55] h-[55] rounded-full"
+      source={source}
+      className="w-[55px] h-[55px] rounded-full"
     />
+  ) : (
+    <View className="w-[55px] h-[55px] rounded-full bg-gray-300 flex items-center justify-center">
+      <Text className="text-2xl font-bold text-white">
+        {getInitial(name)}
+      </Text>
+    </View>
   );
 };
 
-export const ProfilePhotoScreen = ({ source }: ProfilePhotoProps) => {
-  return (
+export const ProfilePhotoScreen = ({ source, name }: ProfilePhotoProps) => {
+  const getInitial = (name: string) => {
+    return name ? name.charAt(0).toUpperCase() : "?";
+  };
+
+  return source ? (
     <Image
-      source={
-        source || {
-          uri: "https://images.pexels.com/photos/2876486/pexels-photo-2876486.png?auto=compress&cs=tinysrgb&dpr=1&w=500",
-        }
-      }
-      className="w-[150] h-[150] rounded-full"
+      source={source}
+      className="w-[150px] h-[150px] rounded-full"
     />
+  ) : (
+    <View className="w-[150px] h-[150px] rounded-full bg-gray-300 flex items-center justify-center">
+      <Text className="text-5xl font-bold text-white text-center">
+        {getInitial(name)}
+      </Text>
+    </View>
   );
 };
 
 export const ProfilePhotoOffline = ({ source }: ProfilePhotoOffProps) => {
   return (
-    <View className="w-[150] h-[150] rounded-full bg-slate-300">
-      <Image source={source} className="w-[150] h-[150] rounded-full" />
+    <View className="w-[150px] h-[150px] rounded-full bg-slate-300">
+      <Image source={source} className="w-[150px] h-[150px] rounded-full" />
     </View>
   );
 };
 
 export const ProfilePhotoOfflineHome = ({ source }: ProfilePhotoOffProps) => {
   return (
-    <View className="w-[55] h-[55] rounded-full bg-white">
-      <Image source={source} className="w-[55] h-[55] rounded-full" />
+    <View className="w-[55px] h-[55px] rounded-full bg-white">
+      <Image source={source} className="w-[55px] h-[55px] rounded-full" />
     </View>
   );
 };

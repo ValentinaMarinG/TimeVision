@@ -17,7 +17,7 @@ export const SubTitleTextLogin = () => {
 export const SubTitleTextAccess = () => {
   return (
     <Text className={`${Tokens.standardSubtitleLogin}`}>
-      Ingresa tu correo para comenzar a usar TimeVision
+      Por favor, ingresa tu correo electrónico.
     </Text>
   );
 };
@@ -30,7 +30,7 @@ export const SubTitleTextRequest = () => {
   };
   return (
     <Text className={`${Tokens.standardSubtitleLogin}`}>
-      ¿No tienes acceso? Solicítalo a tu administrador{" "}
+      ¿Olvidaste tu contraseña? Para restaurarla ingresa {" "}
       <Text
         className="text-[#69748D] underline text-center"
         onPress={handlePress}

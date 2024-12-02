@@ -6,7 +6,7 @@ export const TitleTextLogin = () => {
 };
 
 export const TitleTextAccess = () => {
-  return <Text className={`${Tokens.standardTextTitle}`}>Solicita acceso a TimeVision</Text>;
+  return <Text className={`${Tokens.standardTextTitle}`}>Restaurar contraseña</Text>;
 };
 
 export const TitleTextTickets = () => {

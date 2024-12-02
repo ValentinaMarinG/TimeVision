@@ -1,15 +1,37 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import JSEncrypt from "jsencrypt";
 
-const ip = "https://timevision.lat";
+const ip = "http://192.168.0.13:3001";
+
+const publicKey = process.env.EXPO_PUBLIC_PUBLICKEY || "";
+
+const encryptPassword = (password: string): string => {
+    try {
+      const encryptor = new JSEncrypt();
+      encryptor.setPublicKey(publicKey);
+      const encrypted = encryptor.encrypt(password);
+      if (!encrypted) {
+        console.error("Error al cifrar la contraseña");
+        return "";
+      }
+  
+      return encrypted;
+    } catch (error) {
+      console.error("Error inesperado:", error);
+      return "";
+    }
+  };
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
+    const encryptedPassword = encryptPassword(pass);
+
     const response = await fetch(`${ip}/api/v1/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email: user, password: pass }),
+      body: JSON.stringify({ email: user, password: encryptedPassword }),
     });
 
     const data = await response.json();
@@ -206,6 +228,10 @@ export const getUserInfo = async () => {
 
     const data = await response.json();
 
+    const department = await getUserDepartment(data.id_department);
+
+    data.department_name = department?.data.name;
+
     if (response.ok) {
       return { success: true, data };
     } else {
@@ -371,4 +397,33 @@ export const updateProfilePhoto = async (formData: FormData) => {
   
   const data = await response.json();
   return data.photo; 
+};
+
+export const getUserDepartment = async (id: string) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      throw new Error("No se encontró el token. Inicia sesión nuevamente.");
+    }
+
+    const response = await fetch(`${ip}/api/v1/department/${id}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.status === 200) {
+      return { success: true, data: data };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: "Error al obtener el departamento del usuario",
+    };
+  }
 };

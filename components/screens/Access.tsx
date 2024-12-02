@@ -94,7 +94,7 @@ export default function Access() {
               )}
               <View className="my-5 items-center justify-center">
                 <CustomButton
-                  text="Realizar solicitud"
+                  text="Restaurar contraseña"
                   customFun={onSubmit}
                 />
               </View>

@@ -36,7 +36,7 @@ export default function HomeCard({ name, lastname, photo }: HomeCardProps) {
       <Link href={"/profile"}>
         <View className="flex-row items-center">
           {isOnline ? (
-            <ProfilePhotoHome source={photo ? { uri: photo } : undefined} />
+            <ProfilePhotoHome source={photo ? { uri: photo } : undefined} name={name}/>
           ) : (
             <ProfilePhotoOfflineHome
               source={require("../../assets/userProfileOffline.png")}

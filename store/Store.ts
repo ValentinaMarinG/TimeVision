@@ -59,7 +59,7 @@ export const useProfileStore = create<ProfileState>()(
                   documentType: response.data.type_doc || '',
                   document: response.data.num_doc || '',
                   position: response.data.position || '',
-                  departament: response.data.id_department || '',
+                  departament: response.data.department_name || '',
                   email: response.data.email || '',
                   photo: response.data.photo || '',
                 },
