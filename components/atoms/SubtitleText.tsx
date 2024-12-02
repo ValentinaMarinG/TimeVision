@@ -93,6 +93,11 @@ export const SubTitleProfileDepartament = () => {
     <Text className={`${Tokens.standardSubtitleLogin}`}>Departamento</Text>
   );
 };
+export const SubTitleProfileToken = () => {
+  return (
+    <Text className={`${Tokens.standardSubtitleLogin}`}>Token</Text>
+  );
+};
 
 export const SubTitleProfileEmail = () => {
   return <Text className={`${Tokens.standardSubtitleLogin}`}>Correo</Text>;

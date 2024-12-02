@@ -17,6 +17,16 @@ export const CustomButton = ({ text, customFun }: CustomButtonProps) => {
     </Pressable>
   );
 };
+export const CustomButtonCancel = ({ text, customFun }: CustomButtonProps) => {
+  return (
+    <Pressable
+      className="w-9/12 h-12 bg-gray-500 rounded-lg justify-center items-center shadow-2xl"
+      onPress={customFun}
+    >
+      <Text className="text-white text-base text-center">{text}</Text>
+    </Pressable>
+  );
+};
 
 export const CustomButtonPass = ({ text, customFun }: CustomButtonProps) => {
   return (

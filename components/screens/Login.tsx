@@ -140,7 +140,7 @@ export default function Login() {
               )}
             </View>
 
-            <View className="items-center justify-between mt-9 w-[300]">
+            <View className="items-center justify-between mt-9 w-[300] ">
               <CustomButton
                 text="Ingresar"
                 customFun={handleSubmit(onSubmit)}

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Modal, BackHandler, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, Modal, BackHandler, ActivityIndicator, TouchableOpacity, Pressable } from "react-native";
 import React, { useEffect } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ShiftTextHome, SubTitleTextHome } from "../atoms/SubtitleText";
@@ -17,6 +17,7 @@ export default function Home() {
   const { account, fetchUserInfo } = useProfileStore()
   const { shifts, loading, fetchShifts } = useShiftsStore()
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [notificationToken, setNotificationToken] = React.useState<string | null>(null);
 
   useEffect(() => {
     fetchUserInfo()
@@ -95,17 +96,46 @@ export default function Home() {
         visible={modalVisible}
         onRequestClose={handleModalClose}
       >
-        <View className="flex-1 justify-center items-center bg-[#858585] opacity-90">
-          <View className="bg-white p-6 rounded-lg w-3/4 items-center">
-            <Text className="text-center text-lg text-[#858585] my-5">
-              ¿Desea cerrar la aplicación?
-            </Text>
-            <View className="my-2 w-full justify-center items-center">
-              <CustomButton text="Cancelar" customFun={handleModalClose} />
+        <Pressable 
+          onPress={handleModalClose}
+          className="flex-1 justify-center items-center bg-black/70"
+        >
+          <Pressable 
+            onPress={(e) => e.stopPropagation()}
+            className="bg-white p-8 rounded-3xl w-[75%] items-center shadow-lg"
+          >
+            <View className="w-16 h-16 bg-blue-100 rounded-full items-center justify-center mb-4">
+              <Text className="text-3xl">⚠️</Text>
             </View>
-            <CustomButton text="Cerrar App" customFun={handleExit} />
-          </View>
-        </View>
+            <Text className="text-center text-base text-gray-600 mb-6">
+              ¿Estás seguro que deseas cerrar la aplicación?
+            </Text>
+            
+            <View className="w-full space-y-3">
+              <Pressable 
+                onPress={handleModalClose}
+                className="active:opacity-80"
+              >
+                <View className="w-full bg-[#4894FE] border-2 border-gray-200 py-3 rounded-xl">
+                  <Text className="text-center text-white font-medium">
+                    Cancelar
+                  </Text>
+                </View>
+              </Pressable>
+              
+              <Pressable 
+                onPress={handleExit}
+                className="active:opacity-80"
+              >
+                <View className="w-full bg-gray-500 py-3 rounded-xl">
+                  <Text className="text-center text-white font-medium">
+                    Cerrar App
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
       </Modal>
     </View>
   );
