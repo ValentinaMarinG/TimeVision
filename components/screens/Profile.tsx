@@ -1,33 +1,39 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CustomButton, EditProfileButton } from "../atoms/CustomButton";
+import { CustomButton, EditProfileButton, CustomButtonCancel } from "../atoms/CustomButton";
 import { TitleProfile } from "../atoms/TitleText";
 import {
   SubTitleProfileCargo,
   SubTitleProfileDocument,
   SubTitleProfileDepartament,
   SubTitleProfileDocumentType,
+  SubTitleProfileToken,
 } from "../atoms/SubtitleText";
 import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
 import { useState, useEffect } from "react";
 import BottomBar from "../organisms/BottomBar";
 import { ProfilePhotoScreen } from "../atoms/ProfilePhoto";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { updateProfilePhoto } from "../../config/routers";
 import ChangePasswordModal from "../organisms/ChangePassword";
 import * as ImagePicker from "expo-image-picker";
-import { useProfileStore, clearAllStores } from '../../store/Store';
+import { useProfileStore, clearAllStores } from "../../store/Store";
+import { getExpoPushToken } from "../../notifications";
+import * as Clipboard from "expo-clipboard";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Profile() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
-  
+  const [notificationToken, setNotificationToken] = useState<string | null>(null);
+
   const { account, fetchUserInfo, updatePhoto, clearStore } = useProfileStore();
 
   useEffect(() => {
     fetchUserInfo();
+    getExpoPushToken().then((token) => setNotificationToken(token));
   }, []);
 
   const handlePhotoUpdate = async (uri: string) => {
@@ -49,7 +55,7 @@ export default function Profile() {
       const updatedPhotoUrl = await updateProfilePhoto(formData);
       updatePhoto(updatedPhotoUrl);
     } catch (error) {
-      const message = (error as { message: string }).message || 'Error desconocido';
+      const message = (error as { message: string }).message || "Error desconocido";
       alert("Error al actualizar la foto: " + message);
     }
   };
@@ -74,12 +80,19 @@ export default function Profile() {
     }
   };
 
+  const copyTokenToClipboard = async () => {
+    if (notificationToken) {
+      await Clipboard.setStringAsync(notificationToken);
+      console.log("Éxito", "Token copiado al portapapeles");
+    }
+  };
+
   const handleLogout = async () => {
-    await AsyncStorage.clear(); 
-    clearStore(); 
-    router.push("/login"); 
+    await AsyncStorage.clear();
+    clearStore();
+    router.push("/login");
     clearAllStores();
-};
+  };
 
   const handleOpenModal = () => {
     setModalVisible(true);
@@ -90,12 +103,11 @@ export default function Profile() {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={{ flexGrow: 1 }}
+    <View
       className="flex-1 bg-white"
-      showsVerticalScrollIndicator={false}
+      style={{ paddingBottom: insets.bottom, justifyContent: "space-between" }}
     >
-      <View className="flex-1 w-full mt-9" style={{ paddingBottom: insets.bottom }}>
+      <View>
         <View className="justify-center items-center border-b border-slate-200">
           <TitleProfile />
         </View>
@@ -134,21 +146,24 @@ export default function Profile() {
               {account.departament}
             </Text>
           </View>
-        </View>
-        <View className="w-full flex items-center justify-center">
-          <View className="w-3/4 justify-center items-center mt-3">
-            <CustomButton text="Actualizar contraseña" customFun={handleOpenModal} />
-          </View>
-          <ChangePasswordModal
-            visible={modalVisible}
-            onClose={handleCloseModal}
-          />
-          <View className="w-3/4 justify-center items-center mt-5">
-            <CustomButton text="Cerrar sesión" customFun={handleLogout} />
+          <View className={Tokens.textSubtitleContainer}>
+            <SubTitleProfileToken />
+            <TouchableOpacity onPress={copyTokenToClipboard} className="ml-2 flex-row items-center">
+              <Ionicons name="copy-outline" size={20} color="#007BFF" />
+            </TouchableOpacity>
           </View>
         </View>
       </View>
+      <View className="w-full flex items-center justify-center">
+        <View className="w-3/4 justify-center items-center mt-1">
+          <CustomButton text="Actualizar contraseña" customFun={handleOpenModal} />
+        </View>
+        <ChangePasswordModal visible={modalVisible} onClose={handleCloseModal} />
+        <View className="w-3/4 justify-center items-center mt-3 p-1">
+          <CustomButtonCancel text="Cerrar sesión" customFun={handleLogout} />
+        </View>
+      </View>
       <BottomBar activeRoute="/profile" />
-    </ScrollView>
+    </View>
   );
 }

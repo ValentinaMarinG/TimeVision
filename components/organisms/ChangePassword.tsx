@@ -5,6 +5,7 @@ import {
     TextInput,
     Modal,
     TouchableOpacity,
+    Pressable,
 } from "react-native";
 import { CustomButtonPass } from "../atoms/CustomButton";
 import { Ionicons } from '@expo/vector-icons';
@@ -89,82 +90,163 @@ export default function ChangePasswordModal({ visible, onClose }) {
             visible={visible}
             onRequestClose={onClose}
         >
-            <View className="flex-1 justify-center items-center bg-[#858585] opacity-90">
-                <View className="bg-white p-6 rounded-lg w-3/4 items-center">
-                    <Text className="text-center text-lg text-[#858585]">Cambiar contraseña</Text>
+            <Pressable 
+                onPress={onClose}
+                className="flex-1 justify-center items-center bg-black/50"
+            >
+                <Pressable 
+                    onPress={(e) => e.stopPropagation()}
+                    className="bg-white p-8 rounded-3xl w-[85%] shadow-lg"
+                >
+                    <View className="items-center mb-6">
+                        <View className="w-16 h-16 bg-blue-100 rounded-full items-center justify-center mb-4">
+                            <Ionicons name="lock-closed" size={28} color="#3b82f6" />
+                        </View>
+                        <Text className="text-xl font-semibold text-gray-800">
+                            Cambiar contraseña
+                        </Text>
+                    </View>
 
-                    <View className="flex-row items-center rounded-xl bg-gray-200 pr-2 border mt-4 border-gray-300">
-                        <TextInput
-                            className="flex-1 rounded-lg p-2"
-                            placeholder="Contraseña actual"
-                            secureTextEntry={!showCurrentPassword}
-                            value={currentPassword}
-                            onChangeText={setCurrentPassword}
-                            onFocus={() => setCurrentError("")}
-                        />
-                        <TouchableOpacity onPress={() => setShowCurrentPassword(!showCurrentPassword)}>
-                            <Ionicons
-                                name={showCurrentPassword ? "eye" : "eye-off"}
-                                size={24}
-                                color="gray"
+                    <View className="space-y-4">
+                        <View>
+                            <View className="flex-row items-center bg-gray-50 rounded-xl border border-gray-200">
+                                <TextInput
+                                    className="flex-1 px-4 py-3 rounded-xl"
+                                    placeholder="Contraseña actual"
+                                    secureTextEntry={!showCurrentPassword}
+                                    value={currentPassword}
+                                    onChangeText={setCurrentPassword}
+                                    onFocus={() => setCurrentError("")}
+                                />
+                                <TouchableOpacity 
+                                    onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                                    className="px-4"
+                                >
+                                    <Ionicons
+                                        name={showCurrentPassword ? "eye" : "eye-off"}
+                                        size={24}
+                                        color="#9ca3af"
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            {currentError ? <Text className="text-red-500 text-sm mt-1 ml-1">{currentError}</Text> : null}
+                        </View>
+
+                        <View>
+                            <View className="flex-row items-center bg-gray-50 rounded-xl border border-gray-200">
+                                <TextInput
+                                    className="flex-1 px-4 py-3 rounded-xl"
+                                    placeholder="Nueva contraseña"
+                                    secureTextEntry={!showNewPassword}
+                                    value={newPassword}
+                                    onChangeText={setNewPassword}
+                                    onFocus={() => setNewError("")}
+                                />
+                                <TouchableOpacity 
+                                    onPress={() => setShowNewPassword(!showNewPassword)}
+                                    className="px-4"
+                                >
+                                    <Ionicons
+                                        name={showNewPassword ? "eye" : "eye-off"}
+                                        size={24}
+                                        color="#9ca3af"
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            {newError ? <Text className="text-red-500 text-sm mt-1 ml-1">{newError}</Text> : null}
+                        </View>
+
+                        <View>
+                            <TextInput
+                                className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200"
+                                placeholder="Confirmar contraseña"
+                                secureTextEntry={true}
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                onFocus={() => setError("")}
                             />
+                            {error ? <Text className="text-red-500 text-sm mt-1 ml-1">{error}</Text> : null}
+                        </View>
+                    </View>
+
+                    <View className="mt-6 space-y-3">
+                        <TouchableOpacity 
+                            onPress={handleChangePassword}
+                            className="bg-[#4894FE] py-3 rounded-xl active:opacity-80"
+                        >
+                            <Text className="text-center text-white font-medium">
+                                Guardar
+                            </Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            onPress={handleCancelButton}
+                            className="bg-gray-500 border-2 border-gray-200 py-3 rounded-xl active:opacity-80"
+                        >
+                            <Text className="text-center text-white font-medium">
+                                Cancelar
+                            </Text>
                         </TouchableOpacity>
                     </View>
-                    {currentError ? <Text className="text-red-500">{currentError}</Text> : null}
+                </Pressable>
+            </Pressable>
 
-                    <View className="flex-row items-center rounded-xl bg-gray-200 pr-2 border mt-4 border-gray-300">
-                        <TextInput
-                            className="flex-1 rounded-lg p-2"
-                            placeholder="Nueva contraseña"
-                            secureTextEntry={!showNewPassword}
-                            value={newPassword}
-                            onChangeText={setNewPassword}
-                            onFocus={() => setNewError("")}
-                        />
-                        <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
-                            <Ionicons
-                                name={showNewPassword ? "eye" : "eye-off"}
-                                size={24}
-                                color="gray"
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={successModalVisible || ErrorModalVisible}
+                onRequestClose={() => {
+                    if (successModalVisible) {
+                        setSuccessModalVisible(false);
+                        setModalMessage("");
+                        CloseModalSuccess();
+                    } else {
+                        setErrorModalVisible(false);
+                        setModalMessage("");
+                    }
+                }}
+            >
+                <View className="flex-1 justify-center items-center bg-black/50">
+                    <View className="bg-white p-8 rounded-3xl w-[85%] items-center shadow-lg">
+                        <View className="w-16 h-16 rounded-full items-center justify-center mb-4"
+                            style={{ 
+                                backgroundColor: successModalVisible ? '#dcfce7' : '#fee2e2'
+                            }}
+                        >
+                            <Ionicons 
+                                name={successModalVisible ? "checkmark-circle" : "alert-circle"} 
+                                size={32} 
+                                color={successModalVisible ? '#22c55e' : '#ef4444'}
                             />
+                        </View>
+                        
+                        <Text className="text-center text-xl font-semibold text-gray-800 mb-2">
+                            {successModalVisible ? 'Éxito' : 'Error'}
+                        </Text>
+                        <Text className="text-center text-base text-gray-600 mb-6">
+                            {modalMessage}
+                        </Text>
+                        
+                        <TouchableOpacity 
+                            onPress={() => {
+                                if (successModalVisible) {
+                                    setSuccessModalVisible(false);
+                                    setModalMessage("");
+                                    CloseModalSuccess();
+                                } else {
+                                    setErrorModalVisible(false);
+                                    setModalMessage("");
+                                }
+                            }}
+                            className="w-full bg-blue-500 py-3 rounded-xl active:opacity-80"
+                        >
+                            <Text className="text-center text-white font-medium">
+                                Aceptar
+                            </Text>
                         </TouchableOpacity>
-                    </View>
-                    {newError ? <Text className="text-red-500">{newError}</Text> : null}
-
-                    <TextInput
-                        className="border border-gray-300 rounded-lg p-2 w-full mb-4 bg-gray-200 mt-4"
-                        placeholder="Confirmar contraseña"
-                        secureTextEntry={true}
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                        onFocus={() => setError("")}
-                    />
-                    {error ? <Text className="text-red-500 mb-4">{error}</Text> : null}
-
-                    <View className="w-full items-center">
-                        <CustomButtonPass text="Cancelar" customFun={handleCancelButton} />
-                        <CustomButtonPass text="Guardar" customFun={handleChangePassword} />
                     </View>
                 </View>
-            </View>
-
-            <SuccessModal
-                visible={successModalVisible}
-                message={modalMessage}
-                onClose={() => {
-                    setSuccessModalVisible(false);
-                    setModalMessage("");
-                    CloseModalSuccess();
-                }}
-            />
-            <SuccessModal
-                visible={ErrorModalVisible}
-                message={modalMessage}
-                onClose={() => {
-                    setErrorModalVisible(false);
-                    setModalMessage("");
-                }}
-            />
+            </Modal>
         </Modal>
     );
 }
