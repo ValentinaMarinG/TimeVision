@@ -10,7 +10,6 @@ import {
   Text,
   Modal,
   TouchableOpacity,
-  Pressable,
 } from "react-native";
 import { AlertIcon, MainIcon } from "../atoms/Icon";
 import { TitleTextLogin } from "../atoms/TitleText";
@@ -20,7 +19,7 @@ import { CustomButton } from "../atoms/CustomButton";
 import { SubTitleTextRequest } from "../atoms/SubtitleText";
 import * as Tokens from "../tokens";
 import { useRouter } from "expo-router";
-import { loginRequest, recoverPasswordRequest } from "../../config/routers";
+import { loginRequest } from "../../config/routers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm, Controller } from "react-hook-form";
@@ -38,10 +37,6 @@ export default function Login() {
   const [modalVisible, setModalVisible] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showRecoverPassword, setShowRecoverPassword] = useState(false);
-  const [recoveryEmail, setRecoveryEmail] = useState("");
-  const [recoveryError, setRecoveryError] = useState("");
-  const [recoverySuccess, setRecoverySuccess] = useState(false);
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -67,26 +62,6 @@ export default function Login() {
     } else {
       setModalVisible(true);
       setLoginError(result?.message || "Error desconocido");
-    }
-  };
-
-  const handleRecoverPassword = async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!recoveryEmail || !emailRegex.test(recoveryEmail)) {
-      setRecoveryError("Por favor, ingresa un correo electrónico válido");
-      return;
-    }
-
-    try {
-      const response = await recoverPasswordRequest(recoveryEmail);
-      if (response.success) {
-        setRecoverySuccess(true);
-        setRecoveryError("");
-      } else {
-        setRecoveryError(response.message || "Error al procesar la solicitud");
-      }
-    } catch (error) {
-      setRecoveryError("Error al procesar la solicitud");
     }
   };
 
@@ -175,120 +150,6 @@ export default function Login() {
               </View>
             </View>
           </View>
-
-          <TouchableOpacity 
-            onPress={() => setShowRecoverPassword(true)}
-            className="mt-2"
-          >
-            <Text className="text-blue-500 text-center">
-              ¿Olvidaste tu contraseña?
-            </Text>
-          </TouchableOpacity>
-
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={showRecoverPassword}
-            onRequestClose={() => setShowRecoverPassword(false)}
-          >
-            <Pressable 
-              onPress={() => setShowRecoverPassword(false)}
-              className="flex-1 justify-center items-center bg-black/50"
-            >
-              <Pressable 
-                onPress={(e) => e.stopPropagation()}
-                className="bg-white p-8 rounded-3xl w-[85%] shadow-lg"
-              >
-                {!recoverySuccess ? (
-                  <>
-                    <View className="items-center mb-6">
-                      <View className="w-16 h-16 bg-blue-100 rounded-full items-center justify-center mb-4">
-                        <Ionicons name="mail" size={28} color="#3b82f6" />
-                      </View>
-                      <Text className="text-xl font-semibold text-gray-800">
-                        Recuperar Contraseña
-                      </Text>
-                      <Text className="text-center text-gray-600 mt-2">
-                        Ingresa tu correo electrónico
-                      </Text>
-                    </View>
-
-                    <View className="space-y-4">
-                      <View>
-                        <View className="flex-row items-center bg-gray-50 rounded-xl border border-gray-200">
-                          <TextInput
-                            className="flex-1 px-4 py-3 rounded-xl"
-                            placeholder="Correo electrónico"
-                            value={recoveryEmail}
-                            onChangeText={(text) => {
-                              setRecoveryEmail(text);
-                              setRecoveryError("");
-                            }}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                          />
-                          <View className="px-4">
-                            <Ionicons name="mail-outline" size={24} color="#9ca3af" />
-                          </View>
-                        </View>
-                        {recoveryError ? (
-                          <Text className="text-red-500 text-sm mt-1 ml-1">{recoveryError}</Text>
-                        ) : null}
-                      </View>
-                    </View>
-
-                    <View className="mt-6 space-y-3">
-                      <TouchableOpacity 
-                        onPress={handleRecoverPassword}
-                        className="bg-[#4894FE] py-3 rounded-xl active:opacity-80"
-                      >
-                        <Text className="text-center text-white font-medium">
-                          Enviar
-                        </Text>
-                      </TouchableOpacity>
-                      
-                      <TouchableOpacity 
-                        onPress={() => {
-                          setShowRecoverPassword(false);
-                          setRecoveryEmail("");
-                          setRecoveryError("");
-                        }}
-                        className="bg-gray-300 border-2 border-gray-200 py-3 rounded-xl active:opacity-80"
-                      >
-                        <Text className="text-center text-w font-medium">
-                          Cancelar
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </>
-                ) : (
-                  <View className="items-center">
-                    <View className="w-16 h-16 bg-green-100 rounded-full items-center justify-center mb-4">
-                      <Ionicons name="checkmark-circle" size={32} color="#22c55e" />
-                    </View>
-                    <Text className="text-xl font-semibold text-gray-800 mb-2">
-                      ¡Correo Enviado!
-                    </Text>
-                    <Text className="text-center text-gray-600 mb-6">
-                      Hemos enviado las instrucciones para recuperar tu contraseña al correo proporcionado
-                    </Text>
-                    <TouchableOpacity 
-                      onPress={() => {
-                        setShowRecoverPassword(false);
-                        setRecoveryEmail("");
-                        setRecoverySuccess(false);
-                      }}
-                      className="w-full bg-blue-500 py-3 rounded-xl active:opacity-80"
-                    >
-                      <Text className="text-center text-white font-medium">
-                        Entendido
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </Pressable>
-            </Pressable>
-          </Modal>
 
           <Modal
             animationType="fade"
