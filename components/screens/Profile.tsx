@@ -158,7 +158,7 @@ export default function Profile() {
           <View className={Tokens.textSubtitleContainer}>
             <SubTitleProfileToken />
             <TouchableOpacity onPress={copyTokenToClipboard} className="ml-2 flex-row items-center">
-              <Ionicons name="copy-outline" size={20} color="#007BFF" />
+              <Ionicons name="copy-outline" size={20} color="#8696BB" />
             </TouchableOpacity>
           </View>
         </View>
@@ -168,7 +168,7 @@ export default function Profile() {
           <CustomButton text="Actualizar contraseña" customFun={handleOpenModal} />
         </View>
         <ChangePasswordModal visible={modalVisible} onClose={handleCloseModal} />
-        <View className="w-3/4 justify-center items-center mt-3 p-1">
+        <View className="w-3/4 justify-center items-center mt-3 p-1 mb-2">
           <CustomButtonCancel text="Cerrar sesión" customFun={handleLogout} />
         </View>
       </View>

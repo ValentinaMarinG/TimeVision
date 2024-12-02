@@ -36,11 +36,6 @@
       "expo-image-picker",
       "expo-font",
       "expo-notifications"
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "1b029766-2664-4c77-8a51-7ba2423a5563"
-      }
-    }
+    ]
   }
 }
