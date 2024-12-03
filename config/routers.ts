@@ -1,7 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import JSEncrypt from "jsencrypt";
+import { Buffer } from 'buffer';
 
-const ip = "http://192.168.0.13:3001";
+const ip = "http://192.168.1.21:3001";
 
 const publicKey = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1JdP5oyqwODB26qcwuKR
@@ -13,47 +14,46 @@ yqYXvVm0K22oj6TR1fTUVk8vdKvHz5DDrMEYD8CvUO63cXKBlGQ5/sofzWiNu7Xu
 BwIDAQAB
 -----END PUBLIC KEY-----`;
 
+const secretKey = 'locadelpereira';
+
 const encryptPassword = (password: string): string => {
-    try {
-      const encryptor = new JSEncrypt();
-      encryptor.setPublicKey(publicKey);
-      const encrypted = encryptor.encrypt(password);
-      if (!encrypted) {
-        console.error("Error al cifrar la contraseña");
-        return "";
-      }
-  
-      return encrypted;
-    } catch (error) {
-      console.error("Error inesperado:", error);
-      return "";
-    }
-  };
+  // Usamos base64 como método de codificación simple
+  return Buffer.from(password).toString('base64');
+};
 
 export const loginRequest = async (user: string, pass: string) => {
   try {
-    const encryptedPassword = encryptPassword(pass);
+    const encodedPassword = encryptPassword(pass);
 
     const response = await fetch(`${ip}/api/v1/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Accept": "application/json"
       },
-      body: JSON.stringify({ email: user, password: encryptedPassword }),
+      body: JSON.stringify({ 
+        email: user, 
+        password: encodedPassword 
+      }),
     });
 
     const data = await response.json();
+
     if (response.ok) {
       await AsyncStorage.setItem("token", data.access);
       return { success: true, data };
     } else {
       return {
         success: false,
-        message: data.msg,
+        message: data.msg || "Error en el inicio de sesión",
       };
     }
   } catch (error) {
-    console.error("Error de red. Verifica tu conexión.");
+    console.error("Error completo:", error);
+    return {
+      success: false,
+      message: "Error de red. Verifica tu conexión."
+    };
   }
 };
 
@@ -123,7 +123,6 @@ export const createRequest = async (
     const data = await response.json();
 
     if (response.ok) {
-      console.log('Solicitud creada exitosamente:', data);
       return { success: true, data };
     } else {
       switch (response.status) {
