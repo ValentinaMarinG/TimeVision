@@ -163,33 +163,75 @@ export const createRequest = async (
 };
 
 export const accessRequest = async (email: string) => {
-    try {
-      const response = await fetch(`${ip}/api/v1/request/access`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ description: email }),
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        return { success: true, data };
-      } else {
-        switch (response.status) {
-          case 400:
-            return { success: false, message: "Solicitud incorrecta. Revisa los datos ingresados." };
-          case 404:
-            return { success: false, message: "El servicio no está disponible. Intenta más tarde." };
-          case 500:
-            return { success: false, message: "Error en el servidor. Intenta más tarde." };
-          default:
-            return { success: false, message: "Error desconocido. Intenta más tarde." };
-        }
-      }
-    } catch (error) {
-    return { success: false, message: "Error de red o servidor. Verifica tu conexión." };
+  try {
+    console.log('Enviando solicitud de reset para:', email);
+    
+    const response = await fetch(`${ip}/api/v1/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+    
+    console.log('Respuesta del servidor:', response.status);
+    const data = await response.json();
+    console.log('Datos de respuesta:', data);
+    
+    if (response.ok) {
+      return { success: true, data };
+    } else {
+      return { 
+        success: false, 
+        message: data.msg || "Error al procesar la solicitud" 
+      };
+    }
+  } catch (error) {
+    console.error('Error completo:', error);
+    return { 
+      success: false, 
+      message: "Error de red. Verifica tu conexión." 
+    };
+  }
+};
+
+export const verifyResetCode = async (email: string, code: string) => {
+  try {
+    const response = await fetch(`${ip}/api/v1/reset-password/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, code }),
+    });
+    
+    const data = await response.json();
+    return { success: response.ok, message: data.msg };
+  } catch (error) {
+    return { 
+      success: false, 
+      message: "Error de red. Verifica tu conexión." 
+    };
+  }
+};
+
+export const resetPassword = async (email: string, token: string, newPassword: string) => {
+  try {
+    const response = await fetch(`${ip}/api/v1/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, token, newPassword }),
+    });
+
+    const data = await response.json();
+    return { success: response.ok, message: data.msg };
+  } catch (error) {
+    return { 
+      success: false, 
+      message: "Error de red. Verifica tu conexión." 
+    };
   }
 };
 

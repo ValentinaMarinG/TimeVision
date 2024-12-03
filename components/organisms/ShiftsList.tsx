@@ -53,7 +53,7 @@ export default function ShiftsList({ shifts }: ShiftsListProps) {
                     <Time size={Tokens.iconSizeTimeHome} color={"#4894FE"} />
                   </View>
                   <Text className={`${Tokens.standardShiftOutHome}`}>
-                    {new Date(shift.time_end).toLocaleTimeString("es-ES", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "UTC" })}
+                    {new Date(shift.end_date).toLocaleTimeString("es-ES", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "UTC" })}
                   </Text>
                 </View>
               </View>

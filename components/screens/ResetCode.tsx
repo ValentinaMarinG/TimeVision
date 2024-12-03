@@ -2,7 +2,6 @@ import {
   View,
   Alert,
   TextInput,
-  Modal,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
@@ -11,47 +10,46 @@ import {
   Text,
 } from "react-native";
 import { useState } from "react";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 import { TitleTextAccess } from "../atoms/TitleText";
 import { SubTitleTextAccess } from "../atoms/SubtitleText";
-import { AccessModal, LoginUserText } from "../atoms/DescriptionText";
 import { CustomButton } from "../atoms/CustomButton";
 import { AlertIcon, MainIcon } from "../atoms/Icon";
-import { accessRequest } from "../../config/routers";
+import { verifyResetCode } from "../../config/routers";
 import * as Tokens from "../tokens";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AccessSchema } from "../../schemas/accessSchema";
+
+const ResetCodeSchema = z.object({
+  code: z.string().length(6, "El código debe tener 6 dígitos"),
+});
 
 type FormData = {
-  email: string;
+  code: string;
 };
 
-export default function Access() {
+export default function ResetCode() {
   const router = useRouter();
+  const { email } = useLocalSearchParams();
 
-  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({resolver: zodResolver(AccessSchema)});
-
-  const [modalVisible, setModalVisible] = useState(false);
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(ResetCodeSchema)
+  });
 
   const onSubmit = handleSubmit(async (data) => {
-    const response = await accessRequest(data.email);
-  
+    const response = await verifyResetCode(email as string, data.code);
+    
     if (response.success) {
       router.push({
-        pathname: "/reset-code",
-        params: { email: data.email }
+        pathname: "/reset-password",
+        params: { email, code: data.code }
       });
     } else {
       Alert.alert("Error", response.message);
     }
   });
-
-  const handleModalClose = () => {
-    setModalVisible(false);
-    router.push("/login");
-  };
 
   return (
     <KeyboardAvoidingView
@@ -75,7 +73,9 @@ export default function Access() {
               </View>
             </View>
             <View className="w-3/4 mt-5">
-              <LoginUserText />
+              <Text className="text-gray-600 mb-2">
+                Ingresa el código de 6 dígitos que enviamos a tu correo
+              </Text>
               <Controller
                 control={control}
                 render={({ field: { onChange, onBlur, value } }) => (
@@ -84,45 +84,28 @@ export default function Access() {
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
-                    keyboardType="email-address"
+                    keyboardType="number-pad"
+                    maxLength={6}
                   />
                 )}
-                name="email"
+                name="code"
               />
-              {errors.email && (
+              {errors.code && (
                 <View className="flex-row items-center mt-1 ml-1">
-                <AlertIcon size={20} color={"#F44336"} />
-                <Text className="text-red-500"> {errors.email.message}</Text>
-              </View>
+                  <AlertIcon size={20} color={"#F44336"} />
+                  <Text className="text-red-500"> {errors.code.message}</Text>
+                </View>
               )}
               <View className="my-5 items-center justify-center">
                 <CustomButton
-                  text="Restaurar contraseña"
+                  text="Verificar código"
                   customFun={onSubmit}
                 />
               </View>
             </View>
           </View>
-
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={() => {
-              setModalVisible(!modalVisible);
-            }}
-          >
-            <View className="flex-1 justify-center items-center bg-[#858585] opacity-90">
-              <View className="flex-1 justify-center items-center bg-black">
-                <View className="absolute bg-white p-6 rounded-lg w-3/4 items-center">
-                  <AccessModal />
-                  <CustomButton text="Salir" customFun={handleModalClose} />
-                </View>
-              </View>
-            </View>
-          </Modal>
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
-}
+} 

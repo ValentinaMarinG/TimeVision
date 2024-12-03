@@ -13,6 +13,9 @@ export default function Layout() {
       <Stack.Screen name="calendar"  />
       <Stack.Screen name="tickets"  />
       <Stack.Screen name="profile"  />
+      <Stack.Screen name="access"  />
+      <Stack.Screen name="reset-code"  />
+      <Stack.Screen name="reset-password"  />
     </Stack>
   );
 }
