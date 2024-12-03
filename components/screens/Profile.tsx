@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Pressable } from "react-native";
+import { View, Text, TouchableOpacity, Pressable, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CustomButton, EditProfileButton, CustomButtonCancel } from "../atoms/CustomButton";
 import { TitleProfile } from "../atoms/TitleText";
@@ -22,12 +22,17 @@ import { useProfileStore, clearAllStores } from "../../store/Store";
 import { getExpoPushToken } from "../../notifications";
 import * as Clipboard from "expo-clipboard";
 import { Ionicons } from "@expo/vector-icons";
+import { CheckCircleIcon, AlertIcon } from "../atoms/Icon";
 
 export default function Profile() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [notificationToken, setNotificationToken] = useState<string | null>(null);
+
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+const [errorModalVisible, setErrorModalVisible] = useState(false);
+const [errorMessage, setErrorMessage] = useState("");
 
   const { account, fetchUserInfo, updatePhoto, clearStore } = useProfileStore();
 
@@ -173,6 +178,80 @@ export default function Profile() {
         </View>
       </View>
       <BottomBar activeRoute="/profile" />
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={successModalVisible}
+        onRequestClose={() => setSuccessModalVisible(false)}
+      >
+        <Pressable 
+          onPress={() => setSuccessModalVisible(false)}
+          className="flex-1 justify-center items-center bg-black/70"
+        >
+          <Pressable 
+            onPress={(e) => e.stopPropagation()}
+            className="bg-white p-8 rounded-3xl w-[75%] items-center shadow-lg"
+          >
+            <View className="w-16 h-16 bg-blue-100 rounded-full items-center justify-center mb-4">
+              <CheckCircleIcon size={60} color="#4894FE" />
+            </View>
+            <Text className="text-center text-base text-gray-600 mb-6">
+              Foto de perfil actualizada exitosamente
+            </Text>
+            
+            <View className="w-full">
+              <Pressable 
+                onPress={() => setSuccessModalVisible(false)}
+                className="active:opacity-80"
+              >
+                <View className="w-full bg-[#4894FE] py-3 rounded-xl">
+                  <Text className="text-center text-white font-medium">
+                    Aceptar
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+     
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={errorModalVisible}
+        onRequestClose={() => setErrorModalVisible(false)}
+      >
+        <Pressable 
+          onPress={() => setErrorModalVisible(false)}
+          className="flex-1 justify-center items-center bg-black/70"
+        >
+          <Pressable 
+            onPress={(e) => e.stopPropagation()}
+            className="bg-white p-8 rounded-3xl w-[75%] items-center shadow-lg"
+          >
+            <View className="w-16 h-16 bg-red-100 rounded-full items-center justify-center mb-4">
+              <AlertIcon size={60} color="#4894FE" />
+            </View>
+            <Text className="text-center text-base text-gray-600 mb-6">
+              {errorMessage}
+            </Text>
+            
+            <View className="w-full">
+              <Pressable 
+                onPress={() => setErrorModalVisible(false)}
+                className="active:opacity-80"
+              >
+                <View className="w-full bg-[#4894FE] py-3 rounded-xl">
+                  <Text className="text-center text-white font-medium">
+                    Aceptar
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }

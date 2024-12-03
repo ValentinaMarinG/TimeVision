@@ -1,6 +1,7 @@
 import { Image } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 type IconLogo = {
   size: number;
@@ -66,4 +67,8 @@ export const EditIcon = ({ size, color }: IconsProps) => (
 
 export const AlertIcon = ({ size, color }: IconsProps) => (
   <Ionicons name="alert-circle-outline" size={size} color={color}/>
+);
+
+export const CheckCircleIcon = ({ size, color }: IconsProps) => (
+  <MaterialIcons name="check-circle" size={size} color={color} />
 );

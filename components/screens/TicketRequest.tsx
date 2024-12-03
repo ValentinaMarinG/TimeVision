@@ -7,6 +7,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import { TitleTextTicketsRequest } from "../atoms/TitleText";
 import {
@@ -25,7 +26,7 @@ import { CustomButton } from "../atoms/CustomButton";
 import { useRouter } from "expo-router";
 import * as Tokens from "../tokens";
 import ImagesPicker from "../molecules/ImagesPicker";
-import { AlertIcon, ArrowLeftIcon } from "../atoms/Icon";
+import { AlertIcon, ArrowLeftIcon, CheckCircleIcon } from "../atoms/Icon";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
 import { createRequest, getTickets } from "../../config/routers";
@@ -56,6 +57,7 @@ export default function TicketRequest() {
   const [showPicker, setShowPicker] = useState(false);
   const [isStartDateSelected, setIsStartDateSelected] = useState(true);
   const [isConnectedToInternet, setIsConnectedToInternet] = useState<Boolean | null>(true);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   const handleNavigation = (routeName: string) => {
     router.push(routeName);
@@ -64,6 +66,11 @@ export default function TicketRequest() {
   const toggleDatepicker = () => {
     setShowPicker(!showPicker);
   };
+
+  const handleModalClose = () => {
+    setSuccessModalVisible(false);
+    router.push("/tickets");
+  };  
 
   const onSubmit = handleSubmit(async (data) => {
     if (isConnectedToInternet) {
@@ -77,14 +84,14 @@ export default function TicketRequest() {
           imageUri
         );
         if (response.success) {
-          Alert.alert("Solicitud creada exitosamente en el servidor");
-          router.push("/tickets");
+          setSuccessModalVisible(true);
         }
       } catch (error) {
         console.log("Error al enviar la solicitud:", error);
       }
     }
   });
+
 
   const data = [
     { key: "1", value: "Incapacidad médica" },
@@ -376,6 +383,43 @@ export default function TicketRequest() {
           </View>
         </View>
       </ScrollView>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={successModalVisible}
+        onRequestClose={handleModalClose}
+      >
+        <Pressable 
+          onPress={handleModalClose}
+          className="flex-1 justify-center items-center bg-black/70"
+        >
+          <Pressable 
+            onPress={(e) => e.stopPropagation()}
+            className="bg-white p-8 rounded-3xl w-[75%] items-center shadow-lg"
+          >
+            <View className="w-16 h-16 bg-blue-100 rounded-full items-center justify-center mb-4">
+              <CheckCircleIcon size={60} color="#4894FE" />
+            </View>
+            <Text className="text-center text-base text-gray-600 mb-6">
+              Solicitud creada exitosamente
+            </Text>
+            
+            <View className="w-full">
+              <Pressable 
+                onPress={handleModalClose}
+                className="active:opacity-80"
+              >
+                <View className="w-full bg-[#4894FE] py-3 rounded-xl">
+                  <Text className="text-center text-white font-medium">
+                    Aceptar
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
     </KeyboardAvoidingView>
   );
 }
