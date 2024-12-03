@@ -7,16 +7,18 @@ import ShiftsList from "../organisms/ShiftsList";
 import { useEffect, useState, useMemo } from "react";
 import { Shift } from "../../types/types";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import { useShiftsStore } from "../../store/Store";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
+  const todayDate = dayjs().tz(dayjs.tz.guess()).format("YYYY-MM-DD");
 
-  const todayDate = new Date().toISOString().split("T")[0];
-  
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
-  );
+  const [selectedDate, setSelectedDate] = useState<string>(todayDate);
   const [filteredShifts, setFilteredShifts] = useState<Shift[]>([]);
   const { shifts, fetchShifts, loading } = useShiftsStore();
 
@@ -56,7 +58,7 @@ export default function CalendarScreen() {
 
   useEffect(() => {
     const shiftsForSelectedDate = shifts.filter((shift) => {
-      const shiftDate = dayjs(shift.start_date).format("YYYY-MM-DD");
+      const shiftDate = dayjs(shift.start_date).tz(dayjs.tz.guess()).format("YYYY-MM-DD");
       return shiftDate === selectedDate;
     });
     setFilteredShifts(shiftsForSelectedDate);
@@ -65,8 +67,8 @@ export default function CalendarScreen() {
   const onDayPress = (day: { dateString: string }) => {
     setSelectedDate(day.dateString);
 
-    const shiftsForSelectedDate = shifts.filter(shift => {
-      const shiftDate = new Date(shift.start_date).toISOString().split("T")[0];
+    const shiftsForSelectedDate = shifts.filter((shift) => {
+      const shiftDate = dayjs(shift.start_date).tz(dayjs.tz.guess()).format("YYYY-MM-DD");
       return shiftDate === day.dateString;
     });
 
@@ -74,9 +76,9 @@ export default function CalendarScreen() {
   };
 
   const getShiftColor = (shift: Shift) => {
-    const shiftDate = new Date(shift.start_date);
-    const shiftHour = shiftDate.getHours();
-    const isPast = shiftDate < new Date();
+    const shiftDate = dayjs(shift.start_date).tz(dayjs.tz.guess());
+    const shiftHour = shiftDate.hour();
+    const isPast = shiftDate.isBefore(dayjs(), "day");
 
     if (isPast) {
       return "#c8cbce"; 
@@ -90,37 +92,27 @@ export default function CalendarScreen() {
   const markedDates = useMemo(() => {
     const dates: { [key: string]: any } = {};
 
+    shifts.forEach((shift) => {
+      const startDate = dayjs(shift.start_date).tz(dayjs.tz.guess()).format("YYYY-MM-DD");
+      const shiftColor = getShiftColor(shift);
+
+      dates[startDate] = {
+        customStyles: {
+          container: { backgroundColor: shiftColor },
+          text: { color: "white" },
+        },
+      };
+    });
+
     if (selectedDate) {
       dates[selectedDate] = {
-        selected: true,
-        selectedColor: "#00adf5",
-        dots: [
-          {
-            key: "selected",
-            color: "#fff",
-          },
-        ],
+        ...dates[selectedDate],
+        customStyles: {
+          container: { backgroundColor: "#00adf5" },
+          text: { color: "white" },
+        },
       };
     }
-
-    shifts.forEach((shift) => {
-      const startDate = new Date(shift.start_date).toISOString().split("T")[0];
-
-      
-      if (!dates[startDate]) {
-        dates[startDate] = { dots: [] };
-      }
-
-      dates[startDate].dots.push({
-        key: shift._id,
-        color: getShiftColor(shift),
-      });
-
-      if (startDate === selectedDate) {
-        dates[startDate].selected = true;
-        dates[startDate].selectedColor = "#00adf5";
-      }
-    });
 
     return dates;
   }, [shifts, selectedDate]);
@@ -142,7 +134,7 @@ export default function CalendarScreen() {
             className="w-[380] my-3"
             current={todayDate}
             markedDates={markedDates}
-            markingType={"multi-dot"}
+            markingType={"custom"}
             onDayPress={onDayPress}
             theme={{
               selectedDayBackgroundColor: "#00adf5",

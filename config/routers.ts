@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import JSEncrypt from "jsencrypt";
 import { Buffer } from 'buffer';
 
-const ip = "http://192.168.1.21:3001";
+const ip = "https://backend-timevision.onrender.com";
 
 const publicKey = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1JdP5oyqwODB26qcwuKR
