@@ -34,32 +34,36 @@ export default function HomeCard({ name, lastname, photo }: HomeCardProps) {
   return (
     <View className="bg-cardColor w-full rounded-2xl p-5">
       <Link href={"/profile"}>
-        <View className="flex-row items-center">
-          {isOnline ? (
-            <ProfilePhotoHome source={photo ? { uri: photo } : undefined} name={name}/>
-          ) : (
-            <ProfilePhotoOfflineHome
-              source={require("../../assets/userProfileOffline.png")}
-            />
-          )}
-          <View className="flex-1 justify-between ml-5">
-            <Text className="text-xl text-white">
-              {name} {lastname}
-            </Text>
-            <ProfileHomeCard />
+        <View className="flex-row items-center justify-evenly pr-5">
+          <View className="flex-row items-center">
+            {isOnline ? (
+              <ProfilePhotoHome
+                source={photo ? { uri: photo } : undefined}
+                name={name}
+              />
+            ) : (
+              <ProfilePhotoOfflineHome
+                source={require("../../assets/userProfileOffline.png")}
+              />
+            )}
+            <View className="flex-1 justify-between ml-3">
+              <Text className="text-xl text-white">
+                {name} {lastname}
+              </Text>
+              <ProfileHomeCard />
+            </View>
           </View>
           <ArrowIcon
             size={Tokens.logoSizeIconCard}
             color={Tokens.logoColorCard}
           />
         </View>
-        
       </Link>
       <View className="mt-5 border-t-[0.5px] border-white">
-      <Link href={"/profile"} className="mt-4">
+        <Link href={"/profile"} className="mt-4">
           <CompanyHomeCard />
-          </Link>
-        </View>
+        </Link>
+      </View>
     </View>
   );
 }

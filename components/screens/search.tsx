@@ -17,6 +17,7 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Shift } from "../../types/types";
 import ShiftsList from "../organisms/ShiftsList";
+import { getAssigments } from "../../config/routers";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -29,39 +30,53 @@ export default function SearchScreen() {
   const [markedDates, setMarkedDates] = useState({});
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [filteredShifts, setFilteredShifts] = useState<Shift[]>([]);
+  const [isSelectingDates, setIsSelectingDates] = useState(true);
 
   useEffect(() => {
     const loadShifts = async () => {
       try {
-        const storedShifts = await AsyncStorage.getItem("shifts");
-        if (storedShifts) {
-          const parsedShifts = JSON.parse(storedShifts);
-          setShifts(parsedShifts);        
+        const response = await getAssigments();
+      
+        if (response && response.data && Array.isArray(response.data)) {
+          await AsyncStorage.setItem("shifts", JSON.stringify(response.data));
+          setShifts(response.data);
+        } else {
+          setShifts([]);
         }
       } catch (error) {
         console.error("Error al cargar turnos:", error);
-        console.error("Error al obtener shifts locales:", error);
+        setShifts([]);
       }
     };
+
     loadShifts();
-    loadShifts(); 
   }, []);
 
   const onDayPress = (day: { dateString: string }) => {
     if (!startDate || (startDate && endDate)) {
+      setIsSelectingDates(true);
       setStartDate(day.dateString);
       setEndDate(null);
       setMarkedDates({
         [day.dateString]: { startingDay: true, color: "#00d4ff", textColor: "#fff" },
       });
+      setFilteredShifts([]);
     } else {
-      const range = getDateRange(startDate, day.dateString);
-      setEndDate(day.dateString);
+      let start = startDate;
+      let end = day.dateString;
+      
+      if (dayjs(start).isAfter(dayjs(end))) {
+        [start, end] = [end, start];
+      }
+      
+      const range = getDateRange(start, end);
+      setEndDate(end);
       setMarkedDates(range);
-      const formattedRange = `${dayjs(startDate).format("DD-MM")} a ${dayjs(day.dateString).format("DD-MM")}`;
+      
+      const formattedRange = `${dayjs(start).format("DD-MM")} a ${dayjs(end).format("DD-MM")}`;
       setSearchText(formattedRange);
-      setCalendarVisibility(false);
-      filterShiftsByDateRange(startDate, day.dateString);
+      
+      // filterShiftsByDateRange(start, end);
     }
   };
 
@@ -88,14 +103,18 @@ export default function SearchScreen() {
   };
 
   const filterShiftsByDateRange = (start: string, end: string) => {
-    const startDate = dayjs(start);
-    const endDate = dayjs(end);
+    if (!Array.isArray(shifts)) {
+      setFilteredShifts([]);
+      return;
+    }
+
+    const startDate = dayjs(start).startOf('day');
+    const endDate = dayjs(end).endOf('day');
 
     const filtered = shifts.filter((shift) => {
       const shiftDate = dayjs(shift.start_date);
       return shiftDate.isSameOrAfter(startDate) && shiftDate.isSameOrBefore(endDate);
     });
-
     setFilteredShifts(filtered);
   };
 
@@ -107,6 +126,17 @@ export default function SearchScreen() {
     setFilteredShifts([]);
     router.push("/home");
   }
+
+  useEffect(() => {
+  }, [filteredShifts]);
+
+  const handleCloseCalendar = () => {
+    if (startDate && endDate) {
+      filterShiftsByDateRange(startDate, endDate);
+    }
+    setIsSelectingDates(false);
+    setCalendarVisibility(false);
+  };
 
   return (
     <View className="flex-1 w-full justify-between">
@@ -147,10 +177,14 @@ export default function SearchScreen() {
 
           <View className="mt-5">
             {filteredShifts.length > 0 ? (
-              <ShiftsList shifts={filteredShifts} />
+              <>
+                <ShiftsList shifts={filteredShifts} />
+              </>
             ) : (
               <Text className={`${Tokens.standardSubtitleLogin} mt-5 border-t-2 pt-2 border-gray-200`}>
-                No tienes turnos asignados en las fechas seleccionadas
+                {startDate && endDate 
+                  ? "No tienes turnos asignados en las fechas seleccionadas"
+                  : "Selecciona un rango de fechas para ver tus turnos"}
               </Text>
             )}
           </View>
@@ -161,10 +195,17 @@ export default function SearchScreen() {
           visible={isCalendarVisible}
           transparent={true}
           animationType="slide"
+          onRequestClose={() => {}}
+          statusBarTranslucent={true}
+          hardwareAccelerated={true}
+          onDismiss={() => {}}
         >
-          <View className="flex-1 justify-center items-center bg-[#858585] opacity-90">
+          <TouchableOpacity 
+            activeOpacity={1} 
+            className="flex-1 justify-center items-center bg-[#858585] opacity-90"
+          >
             <View className="bg-white p-5 rounded-lg w-11/12">
-              <Text className="text-lg font-bold text-center text-gray-800 mb-5 ">
+              <Text className="text-lg font-bold text-center text-gray-800 mb-5">
                 Selecciona un rango de fechas
               </Text>
               <Calendar
@@ -183,13 +224,15 @@ export default function SearchScreen() {
                 }}
               />
               <TouchableOpacity
-                onPress={() => setCalendarVisibility(false)}
-                className="mt-5 bg-blue-500 py-2 rounded-md items-center "
+                onPress={handleCloseCalendar}
+                className="mt-5 bg-blue-500 py-2 rounded-md items-center"
               >
-                <Text className="text-white font-bold text-lg">Cerrar</Text>
+                <Text className="text-white font-bold text-lg">
+                  {startDate && endDate ? "Buscar turnos" : "Cerrar"}
+                </Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </TouchableOpacity>
         </Modal>
       </View>
     </View>

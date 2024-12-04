@@ -4,7 +4,6 @@ import {
   ScrollView,
   Pressable,
   Platform,
-  Alert,
   KeyboardAvoidingView,
   TouchableOpacity,
   Modal,
@@ -70,7 +69,7 @@ export default function TicketRequest() {
   const handleModalClose = () => {
     setSuccessModalVisible(false);
     router.push("/tickets");
-  };  
+  };
 
   const onSubmit = handleSubmit(async (data) => {
     if (isConnectedToInternet) {
@@ -91,7 +90,6 @@ export default function TicketRequest() {
       }
     }
   });
-
 
   const data = [
     { key: "1", value: "Incapacidad médica" },
@@ -383,6 +381,7 @@ export default function TicketRequest() {
           </View>
         </View>
       </ScrollView>
+      
       <Modal
         animationType="fade"
         transparent={true}
@@ -419,7 +418,6 @@ export default function TicketRequest() {
           </Pressable>
         </Pressable>
       </Modal>
-
     </KeyboardAvoidingView>
   );
 }

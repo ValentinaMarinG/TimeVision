@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import JSEncrypt from "jsencrypt";
 import { Buffer } from 'buffer';
+import { format } from 'date-fns';
 
 const ip = "https://backend-timevision.onrender.com";
 
@@ -81,83 +82,47 @@ export const createRequest = async (
       };
     }
 
-    const formData = new FormData();
-    formData.append("start_date", start_date?.toISOString() || "");
-    formData.append("end_date", end_date?.toISOString() || "");
-    formData.append("type", type);
-    formData.append("title", title);
-    formData.append("description", description);
+    const requestData = {
+      start_date: start_date ? format(start_date, 'yyyy-MM-dd') : null,
+      end_date: end_date ? format(end_date, 'yyyy-MM-dd') : null,
+      type: type.trim(),
+      title: title.trim(),
+      description: description.trim()
+    };
 
-    if (imageUri) {
-      const extension = imageUri.split('.').pop() || 'jpg';
-      
-      const currentDate = new Date();
-      const formattedDate = currentDate.toISOString().split('T')[0]; 
-      const fileName = `incapacidad_medica_${formattedDate}.${extension}`;
-      
-      const mimeTypes: { [key: string]: string } = {
-        'jpg': 'image/jpeg',
-        'jpeg': 'image/jpeg',
-        'png': 'image/png',
-        'pdf': 'application/pdf'
-      };
-      const type = mimeTypes[extension.toLowerCase()] || 'image/jpeg';
-      
-      formData.append("attach", {
-        uri: imageUri,
-        name: fileName,
-        type,
-      } as any);
-    }
+    console.log('Datos a enviar:', JSON.stringify(requestData, null, 2));
 
     const response = await fetch(`${ip}/api/v1/request/`, {
       method: "POST",
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${token}`,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
-      body: formData,
+      body: JSON.stringify(requestData)
     });
 
-    const data = await response.json();
+    console.log('Status:', response.status);
+    const responseText = await response.text();
+    console.log('Respuesta:', responseText);
 
-    if (response.ok) {
-      return { success: true, data };
-    } else {
-      switch (response.status) {
-        case 400:
-          return {
-            success: false,
-            message: "Solicitud incorrecta. Revisa los datos ingresados.",
-          };
-        case 403:
-          return {
-            success: false,
-            message: "Acceso denegado. Verifica tus credenciales.",
-          };
-        case 404:
-          return {
-            success: false,
-            message: "El servicio no está disponible. Intenta más tarde.",
-          };
-        case 500:
-          return {
-            success: false,
-            message: "Error en el servidor. Intenta más tarde.",
-          };
-        default:
-          return {
-            success: false,
-            message: "Error desconocido. Intenta más tarde.",
-          };
-      }
+    if (responseText.trim().startsWith('{')) {
+      const data = JSON.parse(responseText);
+      return { success: response.ok, data };
     }
-  } catch (error) {
-    console.error('Error en createRequest:', error);
+
     return {
       success: false,
-      message: "Error de red. Verifica tu conexión.",
+      message: "Error en el servidor",
+      debug: responseText
+    };
+
+  } catch (error) {
+    console.error('Error completo:', error);
+    return {
+      success: false,
+      message: "Error de conexión",
+      debug: error instanceof Error ? error.message : String(error)
     };
   }
 };

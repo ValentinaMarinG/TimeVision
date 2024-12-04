@@ -31,8 +31,8 @@ export default function Profile() {
   const [notificationToken, setNotificationToken] = useState<string | null>(null);
 
   const [successModalVisible, setSuccessModalVisible] = useState(false);
-const [errorModalVisible, setErrorModalVisible] = useState(false);
-const [errorMessage, setErrorMessage] = useState("");
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const { account, fetchUserInfo, updatePhoto, clearStore } = useProfileStore();
 
@@ -44,7 +44,8 @@ const [errorMessage, setErrorMessage] = useState("");
   const handlePhotoUpdate = async (uri: string) => {
     const formData = new FormData();
     if (!uri) {
-      alert("No se ha seleccionado ninguna imagen.");
+      setErrorMessage("No se ha seleccionado ninguna imagen.");
+      setErrorModalVisible(true);
       return;
     }
 
@@ -59,17 +60,19 @@ const [errorMessage, setErrorMessage] = useState("");
     try {
       const updatedPhotoUrl = await updateProfilePhoto(formData);
       updatePhoto(updatedPhotoUrl);
+      setSuccessModalVisible(true);
     } catch (error) {
       const message = (error as { message: string }).message || "Error desconocido";
-      alert("Error al actualizar la foto: " + message);
+      setErrorMessage("Error al actualizar la foto: " + message);
+      setErrorModalVisible(true);
     }
   };
 
   const handlePress = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      alert("¡Se requiere permiso para acceder a la galería!");
+      setErrorMessage("¡Se requiere permiso para acceder a la galería!");
+      setErrorModalVisible(true);
       return;
     }
 
@@ -114,13 +117,13 @@ const [errorMessage, setErrorMessage] = useState("");
       style={{ paddingBottom: insets.bottom, justifyContent: "space-between" }}
     >
       <View
-        className="flex-1 w-full mt-9"
+        className="flex-1 w-full mt-3"
         style={{ paddingBottom: insets.bottom }}
       >
         <View className="justify-center items-center border-b border-slate-200">
           <TitleProfile />
         </View>
-        <View className="w-full flex justify-center items-center mt-9">
+        <View className="w-full flex justify-center items-center mt-6">
           <Pressable onPress={handlePress}>
             <ProfilePhotoScreen
               source={account.photo ? { uri: account.photo } : undefined}

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "957781142018",
+    "project_id": "timevision-edfcd",
+    "storage_bucket": "timevision-edfcd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957781142018:android:32f4ba2f4ec4752909d51b",
+        "android_client_info": {
+          "package_name": "com.girveos.TimeVision"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPaWaAnBZKsnybU6ei4ligS5lIT7yOVC8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
