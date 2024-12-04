@@ -180,7 +180,7 @@ export default function Profile() {
           <CustomButtonCancel text="Cerrar sesión" customFun={handleLogout} />
         </View>
       </View>
-      <BottomBar activeRoute="/profile" />
+      <BottomBar activeRoute="/profile"/>
       <Modal
         animationType="fade"
         transparent={true}
